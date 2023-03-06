@@ -1,8 +1,14 @@
 import asyncio
 import random
+import os
+import sys
 
 import shulker as mc
-from tools.sanitizer import sanitize, crop
+
+# Work around to be able to import from the same level folder 'tools'
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from tools.sanitize import pick_display, crop, sanitize
 from tools.odds import pick_from_queue
 
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
@@ -22,10 +28,6 @@ class Component(ApplicationSession):
               print(f"No comment to parse")
               return
             else:
-              profile["comment"] = sanitize(profile["comment"])
-              profile["nickname"] = sanitize(profile["nickname"])
-              if profile["nickname"] == "":
-                profile["nickname"] = profile["unique_id"]
               role = profile["role"]
             
             bypass = ["Moderator", "Subscriber", "Top Gifter"]
@@ -49,21 +51,24 @@ class Component(ApplicationSession):
                 del normal_queue[random.randint(0, len(normal_queue) - 1)]
               normal_queue.append(profile)
 
+            print(f"-> normal: {len(normal_queue)}, follower: {len(follower_queue)}, donator: {len(priority_queue)} forced: {len(bypass_queue)} total: {len(normal_queue) + len(follower_queue) + len(priority_queue) + len(bypass_queue)}")
+
         await self.subscribe(on_message, 'chat.comment')
         
         async def next_message():
             
             if normal_queue or follower_queue or priority_queue:
-              
-              print(f"normal: {len(normal_queue)}, follower: {len(follower_queue)}, donator: {len(priority_queue)} forced: {len(bypass_queue)} total: {len(normal_queue) + len(follower_queue) + len(priority_queue) + len(bypass_queue)}")
-              
+                            
               queues = [normal_queue, follower_queue, priority_queue, bypass_queue]
               profile = pick_from_queue(queues)
               
               if profile:
-
-                text = crop(profile["comment"])
-                name = crop(profile["nickname"])
+                
+                comment = sanitize(profile["comment"])
+                comment = crop(comment)
+                
+                name = pick_display(profile)
+                # do stuff
                 pass
                 
             await asyncio.sleep(2.5)

@@ -1,7 +1,16 @@
 import asyncio
+import os
+import sys
+
+import shulker as mc
+
+# Work around to be able to import from the same level folder 'tools'
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from tools.sanitize import pick_display
+from tools.odds import flip_coin
+
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
-import re
-import random
 
 queue = []
 
@@ -9,35 +18,25 @@ class Component(ApplicationSession):
     
     async def onJoin(self, details):
         
-        self.joins = 0
-        async def on_join(name):
+        async def on_join(profile):
 
-            pile_ou_face = random.randint(0, 2)
-            if pile_ou_face != 0:
-              return
+            """ Uncomment this if you want half of the joins to be ignored
+            if flip_coin(): return"""
             
-            try:
-                name = re.sub('[^A-Za-z0-9]+', '', name)
-            except:
-                pass
-            print(f"join queue len: {len(queue)}")
+            name = pick_display(profile)
+            if not name: return
+            
+            print(f"-> join queue len: {len(queue)}")
             queue.append(name)
             
         async def next_join():
 
             if queue:
                 name = queue.pop(0)
-            else:
-                name = None
+                # do stuff
+                pass
             
-            if name:
-                rand_x = random.randint(-10, 10)
-                rand_y = random.randint(-2, 2)
-                cmd = f"execute at Miaoumix run summon bee ~{rand_x} ~{rand_y} ~-40 {{CustomNameVisible:1b,Motion:[0.0,0.0,-1.5],Rotation:[180F,0F], CustomName:'{{\"text\":\"{name} joined\"}}', ActiveEffects:[{{Id:28b,Amplifier:5b,Duration:20000}}]}}"
-                self.joins += 1
-                self.call("minecraft.post", cmd)
-            
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.01)
             asyncio.get_event_loop().create_task(next_join())
             
         await self.subscribe(on_join, 'chat.join')

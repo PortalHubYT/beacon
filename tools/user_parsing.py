@@ -1,3 +1,5 @@
+from tools.sanitize import sanitize
+
 def role_parser(event):
 
     role = None
@@ -21,6 +23,7 @@ def get_profile(event):
         "userId": event.user.user_id,
         "role": role_parser(event),
         "comment": None if "comment" not in vars(event) else event.comment,
+        "gift": None if "gift" not in vars(event) else event.gift.info.name,
     }
     
     return profile
