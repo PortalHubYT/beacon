@@ -20,7 +20,17 @@ debug = False
 class Poster(ApplicationSession):
     async def onJoin(self, details):
 
-        mc.connect(server_ip, rcon_password, port=rcon_port)
+        print("Trying to connect to minecraft server...")
+        
+        try:
+          mc.connect(server_ip, rcon_password, port=rcon_port)
+        except ConnectionRefusedError:
+          print(f"Failed to connect to server: {server_ip}:{rcon_port} (password: {rcon_password})")
+          return
+        except ConnectionResetError:
+          print(f"Failed to connect to server: {server_ip}:{rcon_port} (password: {rcon_password})")
+          return
+        
         print(f"Connected to server: {server_ip}:{rcon_port} (password: {rcon_password})")
 
         def post(cmd):
@@ -38,5 +48,6 @@ class Poster(ApplicationSession):
         print(f"Poster is ready to operate!")
     
 if __name__ == "__main__":
+    print(f"Starting Poster...")
     runner = ApplicationRunner("ws://127.0.0.1:8080/ws", "realm1")
-    runner.run(Poster)
+    print(runner.run(Poster))

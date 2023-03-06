@@ -5,8 +5,10 @@ import os
 from dotenv import load_dotenv
 
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
+
+from TikTokLive.types.errors import FailedFetchRoomInfo
 from TikTokLive import TikTokLiveClient
-from TikTokLive.types.events import ViewerCountEvent, DisconnectEvent, CommentEvent, ConnectEvent, FollowEvent, LikeEvent, GiftEvent, JoinEvent, ShareEvent
+from TikTokLive.types.events import DisconnectEvent, CommentEvent, ConnectEvent, FollowEvent, LikeEvent, GiftEvent, JoinEvent, ShareEvent
 
 from tools.user_parsing import get_profile
 
@@ -17,11 +19,16 @@ verbose = os.getenv("VERBOSE")
 class Component(ApplicationSession):
     
     async def onJoin(self, details):
-        client = TikTokLiveClient(unique_id=f"@{streamer}")
+        try:
+          client = TikTokLiveClient(unique_id=f"@{streamer}")
+        except FailedFetchRoomInfo:
+          print(f"Failed to connect to @{streamer}")
+          return
         
         def parse_and_publish(handler: str, event):
+            
             if event.user:
-                user = get_profile(event.user)
+                user = get_profile(event)
                 self.publish(f'chat.{handler}', (user))
             else:
               if verbose: print(f"[{handler.upper()}] Failed to get profile for {event.user.unique_id}")
@@ -39,9 +46,9 @@ class Component(ApplicationSession):
         async def on_comment(event: CommentEvent):
           parse_and_publish('comment', event)
         
-        @client.on("viewer_count")
+        """@client.on("viewer_count")
         async def on_connect(event: ViewerCountEvent):
-          self.publish('chat.viewer_count', (event.viewer_count))
+          self.publish('chat.viewer_count', (event.viewer_count))"""
     
         @client.on("follow")
         async def on_follow(event: FollowEvent):
@@ -68,6 +75,7 @@ class Component(ApplicationSession):
       
         
 if __name__ == '__main__':
+    print(f"Starting Parser...")
     runner = ApplicationRunner("ws://127.0.0.1:8080/ws", "realm1")
     runner.run(Component)
     
