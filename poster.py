@@ -2,6 +2,7 @@ import asyncio
 import sys
 import os
 
+from dill import loads
 from dotenv import load_dotenv
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
 
@@ -42,8 +43,16 @@ class Poster(ApplicationSession):
               print(f"===============")
             return ret
 
-        await self.register(post, "minecraft.post")
-        await self.subscribe(post, "minecraft.post")
+        def lambda_post(cmd):
+          instruction = loads(cmd)
+          ret = instruction()
+          return str(ret)
+        
+        await self.register(post, "mc.post")
+        await self.subscribe(post, "mc.post")
+        
+        await self.register(lambda_post, "mc.lambda")
+        await self.subscribe(lambda_post, "mc.lambda")
         
         print(f"Poster is ready to operate!")
     

@@ -12,6 +12,7 @@ from tools.sanitize import pick_display, crop, sanitize
 from tools.odds import pick_from_queue
 
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
+from dill import dumps
 
 normal_queue = []
 follower_queue = []

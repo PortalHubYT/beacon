@@ -11,6 +11,7 @@ from tools.sanitize import pick_display
 from tools.odds import flip_coin
 
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
+from dill import dumps
 
 queue = []
 

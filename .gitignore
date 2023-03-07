@@ -1,3 +1,4 @@
 .crossbar
 *.pyc
 .env
+test.py
