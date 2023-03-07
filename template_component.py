@@ -30,8 +30,7 @@ class Component(ApplicationSession):
         # And send the instructions to the poster and it'll post it
         # This only allows you to use the Shulker functions that return the bare command
         cmd = mc.meta_say("World!")
-        for cmd in cmd['list']:
-          self.publish('mc.post', cmd)
+        self.publish('mc.post', cmd)
           
         # If you need return values from the Shulker functions
         # use self.call('mc.lambda', dumps(f))
