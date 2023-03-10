@@ -1,0 +1,3 @@
+2023-03-10 03:51:11.010480 | Now parsing viewers for: @ntv.news
+2023-03-10 04:49:39.294221 | Now parsing viewers for: @ntv.news
+2023-03-10 04:49:42.156043 | 57735

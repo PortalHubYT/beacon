@@ -1,9 +1,11 @@
 {
     "stream_ready": false,
     "server_ip": "localhost",
+    "postgres_user": "user",
+    "postgres_password": "test",
     "rcon_password": "test",
     "rcon_port": 25575,
-    "stream_id": "ntv.news",
+    "stream_id": "",
     "verbose": false,
     "crop_size": 50
 }

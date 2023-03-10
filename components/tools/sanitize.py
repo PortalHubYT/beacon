@@ -1,5 +1,5 @@
 import string
-from config import config
+from .config import config
 
 def pick_display(profile):
   

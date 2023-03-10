@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  minecraft:
+    image: ghcr.io/portalhubyt/template_server:latest
+    container_name: minecraft_server
+    ports:
+      - "25565:25565"
+    volumes:
+      - ./volumes/world:/server/world
+    environment:
+      - EULA=TRUE
+    restart: always
+  crossbar:
+    image: crossbario/crossbar
+    container_name: crossbar
+    ports:
+      - "8080:8080"
+    restart: always
+  postgres:
+    image: postgres
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./volumes/database:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=stream
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=test
+    restart: always

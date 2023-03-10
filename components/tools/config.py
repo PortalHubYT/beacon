@@ -13,15 +13,6 @@ class PostgresDB:
         self.password = password
         self.connect()
 
-    def store_dict(self, data, table):
-        keys = data.keys()
-        values = data.values()
-        # print(values)
-        query = f"INSERT INTO {table} ({','.join(keys)}) VALUES ({','.join(values)})"
-        # print(query)
-        
-        self.execute_commit(query, tuple(values))
-        
         
     def connect(self):
         """Establishes a connection to the database."""
@@ -79,7 +70,7 @@ class PostgresDB:
         return table_name in self.get_tables()
 
 
-db = PostgresDB("localhost", "stream", config["server_ip"], config["rcon_password"])
+db = PostgresDB("localhost", "stream", config["postgres_user"], config["postgres_password"])
 
 db.create_table(
     "users",
@@ -135,5 +126,3 @@ db.create_table(
         "parsed": "boolean",
     },
 )
-
-db.store_dict({"nickname": "test1", "unique_id": "test2", "user_id": "test3", "role": "test4"}, "users")

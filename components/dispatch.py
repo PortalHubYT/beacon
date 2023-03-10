@@ -32,6 +32,10 @@ verbose = config["verbose"]
 
 class Component(ApplicationSession):
     async def onJoin(self, details):
+      
+        if streamer == "":
+          exit("No streamer id defined")
+          
         try:
             client = TikTokLiveClient(unique_id=f"@{streamer}")
         except FailedFetchRoomInfo:

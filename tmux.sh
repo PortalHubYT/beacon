@@ -4,31 +4,6 @@ if [[ $1 == "--install" ]]; then
     sudo apt-get install libpq-dev
     pip install -r requirements.txt --upgrade
 
-    echo "------------------------------"
-
-    echo "Making sure the docker service is running..."
-    sudo service docker start
-
-    echo "------------------------------"
-
-    echo "Running crossbar docker container..."
-    sudo docker run -d -p 8080:8080 --name=crossbar crossbario/crossbar
-
-    echo "------------------------------"
-
-    echo "Running the minecraft server"
-    sudo docker run --name=minecraft -d --pull=always -e EULA=TRUE -p 25575:25575 -p 25565:25565 ghcr.io/portalhubyt/template_server_1_19:latest
-
-    echo "------------------------------"
-
-    echo "Running the POSTGRESQL Database"
-    password=$(grep -Po '(?<="rcon_password": ")[^"]*' config.json)
-    ip=$(grep -Po '(?<="server_ip": ")[^"]*' config.json)
-
-    sudo docker run --name=database -e POSTGRES_PASSWORD=$password -e POSTGRES_USER=$ip -e POSTGRES_DB=stream -p 5432:5432 -d --pull=always postgres
-
-    echo "------------------------------"
-
 fi
 
 # Save current working directory
