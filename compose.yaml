@@ -1,5 +1,9 @@
 version: '3.8'
 
+volumes:
+  world:
+  database:
+  
 services:
   minecraft:
     image: ghcr.io/portalhubyt/template_server:latest

@@ -12,11 +12,16 @@ if [[ "$@" == *"--prune"* ]]; then
 fi
 
 if [[ "$@" == *"--docker"* ]]; then
-  export POSTGRES_USER=$(grep -o '"server_ip": *"[^"]*"' config.json | sed 's/"//g' | awk -F': *' '{print $2}')
-  export POSTGRES_PASSWORD=$(grep -o '"rcon_password": *"[^"]*"' config.json | sed 's/"//g' | awk -F': *' '{print $2}')
+  POSTGRES_USER=$(grep -o '"server_ip": *"[^"]*"' config.json | sed 's/"//g' | awk -F': *' '{print $2}')
+  POSTGRES_PASSWORD=$(grep -o '"rcon_password": *"[^"]*"' config.json | sed 's/"//g' | awk -F': *' '{print $2}')
 
-  mkdir -p ./volumes/database
-  mkdir -p ./volumes/world
+  echo "POSTGRES_USER=$POSTGRES_USER" > .env
+  echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
+
+  if [[ "$@" == *"--restart"* ]]; then
+    echo "Restarting docker containers..."
+    sudo docker compose down
+  fi
   sudo docker compose up -d
 fi
 
@@ -77,6 +82,10 @@ if [[ "$@" == *"--run"* ]]; then
 fi
 
 echo "test"
+if [[ "$@" == *"--headless"* ]]; then
+    exit
+fi
+
 tmux attach-session -t stream
 
 echo "Done!"
