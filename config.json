@@ -1,0 +1,8 @@
+{
+    "stream_ready": false,
+    "server_ip": "localhost",
+    "rcon_password": "test",
+    "rcon_port": 25575,
+    "stream_id": "portalhub",
+    "verbose": false
+}

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo "Installing requirements..."
+sudo apt-get install libpq-dev
 pip install -r requirements.txt --upgrade
 
 echo "------------------------------"
@@ -17,6 +18,14 @@ echo "------------------------------"
 
 echo "Running the minecraft server"
 sudo docker run --name=minecraft -d --pull=always -e EULA=TRUE -p 25575:25575 -p 25565:25565 ghcr.io/portalhubyt/template_server_1_19:latest
+
+echo "------------------------------"
+
+echo "Running the POSTGRESQL Database"
+password=$(grep -Po '(?<="rcon_password": ")[^"]*' config.json)
+ip=$(grep -Po '(?<="server_ip": ")[^"]*' config.json)
+
+sudo docker run --name=database -e POSTGRES_PASSWORD=$password -e POSTGRES_USER=$ip -e POSTGRES_DB=stream -p 5432:5432 -d --pull=always postgres
 
 echo "------------------------------"
 
@@ -57,8 +66,8 @@ tmux split-window -v
 tmux select-layout tiled
 
 # Run the python scripts
-tmux send-keys -t 2 'python3 poster.py' C-m
-tmux send-keys -t 3 'python3 parser.py' C-m
+tmux send-keys -t 2 'python3 components/poster.py' C-m
+tmux send-keys -t 3 'python3 components/parser.py' C-m
 tmux send-keys -t 4 'python3 handlers/follow.py' C-m
 tmux send-keys -t 5 'python3 handlers/gift.py' C-m
 tmux send-keys -t 6 'python3 handlers/join.py' C-m

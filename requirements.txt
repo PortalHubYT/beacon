@@ -1,5 +1,5 @@
 autobahn
 TikTokLive
 shulker
-python-dotenv
 dill
+psycopg2
