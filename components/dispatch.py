@@ -35,7 +35,6 @@ class Component(ApplicationSession):
       
         if streamer == "":
           exit("No streamer id defined")
-          
         try:
             client = TikTokLiveClient(unique_id=f"@{streamer}")
         except FailedFetchRoomInfo:
