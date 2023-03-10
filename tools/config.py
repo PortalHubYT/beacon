@@ -53,12 +53,20 @@ class PostgresDB:
         - table_name: the name of the new table to create
         - columns: a dictionary where the keys are column names and the values are SQL data types
         """
+        
+        if self.table_exists(table_name):
+            return
+          
         columns_sql = ", ".join(
             [f"{col} {data_type}" for col, data_type in columns.items()]
         )
         query = f"CREATE TABLE {table_name} ({columns_sql})"
         self.cur.execute(query)
         self.conn.commit()
+        
+    # Check if a table exists
+    def table_exists(self, table_name):
+        return table_name in self.get_tables()
 
 
 db = PostgresDB("localhost", "stream", config["server_ip"], config["rcon_password"])
@@ -86,7 +94,6 @@ db.create_table(
     },
 )
 
-# Create a new table for followers
 db.create_table(
     "follows",
     {
@@ -95,11 +102,26 @@ db.create_table(
     },
 )
 
-# Create a new table for joins
-db.create_table("joins", {"user_id": "text", "parsed": "boolean"})
+db.create_table(
+    "joins",
+    {
+        "user_id": "text",
+        "parsed": "boolean",
+    },
+)
 
-# Create a table for likes
-db.create_table("likes", {"user_id": "text", "parsed": "boolean"})
+db.create_table(
+    "likes",
+    {
+        "user_id": "text",
+        "parsed": "boolean",
+    },
+)
 
-# Create a table for shares
-db.create_table("shares", {"user_id": "text", "parsed": "boolean"})
+db.create_table(
+    "shares",
+    {
+        "user_id": "text",
+        "parsed": "boolean",
+    },
+)
