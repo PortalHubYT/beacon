@@ -26,6 +26,6 @@ services:
       - ./volumes/database:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=stream
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=test
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     restart: always
