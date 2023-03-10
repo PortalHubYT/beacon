@@ -49,11 +49,11 @@ if [[ $1 == "--run" ]]; then
     echo "Running the scripts..."
     tmux send-keys -t 1 'python3 components/collector.py' C-m
     tmux send-keys -t 2 'python3 components/poster.py' C-m
-    tmux send-keys -t 3 'python3 components/parser.py' C-m
-    tmux send-keys -t 4 'python3 handlers/follow.py' C-m
-    tmux send-keys -t 5 'python3 handlers/gift.py' C-m
-    tmux send-keys -t 6 'python3 handlers/join.py' C-m
-    tmux send-keys -t 7 'python3 handlers/like.py' C-m
-    tmux send-keys -t 8 'python3 handlers/comment.py' C-m
-    tmux send-keys -t 9 'python3 handlers/share.py' C-m
+    tmux send-keys -t 3 'python3 components/handler.py' C-m
+    tmux send-keys -t 4 'python3 components/follow.py' C-m
+    tmux send-keys -t 5 'python3 components/gift.py' C-m
+    tmux send-keys -t 6 'python3 components/join.py' C-m
+    tmux send-keys -t 7 'python3 components/like.py' C-m
+    tmux send-keys -t 8 'python3 components/comment.py' C-m
+    tmux send-keys -t 9 'python3 components/share.py' C-m
 fi
