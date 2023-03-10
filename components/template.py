@@ -15,17 +15,12 @@ from tools.config import config, db
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
 from dill import dumps
 
-server_ip = config["server_ip"]
-rcon_password = config["rcon_password"]
-
 queue = []
 
 
 class Component(ApplicationSession):
     async def onJoin(self, details):
-        print(db.get_tables())
-        return
-
+      
         # One way to use Shulker is to lambda the function
         # Serialize it and use the poster to execute it
         # This allows you to use the Shulker decorating functions

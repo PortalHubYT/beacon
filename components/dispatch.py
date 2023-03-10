@@ -24,7 +24,7 @@ from TikTokLive.types.events import (
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from tools.config import config, db
-from tools.user_parsing import get_profile
+from tools.user_parse import get_profile
 
 streamer = config["stream_id"]
 verbose = config["verbose"]
@@ -47,7 +47,7 @@ class Component(ApplicationSession):
                     print(
                         f"[{handler.upper()}] Failed to get profile for {event.user.unique_id}"
                     )
-
+        
         with open("viewer_count.txt", "a") as f:
             f.write(
                 f"{datetime.datetime.now()} | Now parsing viewers for: @{streamer}\n"
@@ -96,6 +96,6 @@ class Component(ApplicationSession):
 
 
 if __name__ == "__main__":
-    print(f"Starting Parser...")
+    print(f"Starting Event dispatcher...")
     runner = ApplicationRunner("ws://127.0.0.1:8080/ws", "realm1")
     runner.run(Component)

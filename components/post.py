@@ -5,9 +5,6 @@ import os
 from dill import loads
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
 
-# Work around to be able to import from the same level folder 'tools'
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 from tools.config import config, db
 import shulker as mc
 

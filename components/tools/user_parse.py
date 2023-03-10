@@ -24,6 +24,7 @@ def get_profile(event):
         "role": role_parser(event),
         "comment": None if "comment" not in vars(event) else event.comment,
         "gift": None if "gift" not in vars(event) else event.gift.info.name,
+        
     }
     
     return profile
