@@ -10,7 +10,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from tools.sanitize import pick_display, crop, sanitize
 from tools.odds import pick_from_queue, flip_coin
-from tools.config import config, db
+from streams.tiktok.tiktok_stream_template.config import config, db
 
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
 from dill import dumps

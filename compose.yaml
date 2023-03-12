@@ -15,11 +15,12 @@ services:
     environment:
       - EULA=TRUE
     restart: always
-  crossbar:
-    image: crossbario/crossbar
-    container_name: crossbar
+  pulsar:
+    image: apachepulsar/pulsar
+    container_name: pulsar
     ports:
       - "8080:8080"
+      - "6650:6650"
     restart: always
   postgres:
     image: postgres

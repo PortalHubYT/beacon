@@ -1,5 +1,6 @@
-autobahn
 TikTokLive
 shulker
 dill
+dotenv
 psycopg2
+pulsar-client

@@ -9,7 +9,10 @@ Tmux.sh options:
 
 - `--install` to install the requirements.txt and eventually update the packages
 - `--prune` to prune the docker containers (useful with the next option)
-- `--docker` which runs the docker compose
+- `--docker` which runs the docker compose for all services
+- `--minecraft` which only runs the docker for the minecraft server
+- `--pulsar` which only runs the docker for the pulsar queue
+- `--postgres` which only runs the docker for the postgres
 - `--restart` to stops the dockers in the compose before attempting to run them
 - `--run` to automatically run the base components of the template inside the tmux
 - `--headless` to not attach to the tmux (useful when testing tmux.sh)

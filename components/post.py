@@ -5,7 +5,7 @@ import os
 from dill import loads
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
 
-from tools.config import config, db
+from streams.tiktok.tiktok_stream_template.config import config, db
 import shulker as mc
 
 server_ip = config["server_ip"]
