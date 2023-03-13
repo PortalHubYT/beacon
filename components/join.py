@@ -9,7 +9,7 @@ import shulker as mc
 
 from tools.sanitize import pick_display, crop, sanitize
 from tools.odds import pick_from_queue, flip_coin
-from config import config, db
+from tools.config import config, db
 
 queue = []
 

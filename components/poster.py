@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import shulker as mc
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
 
-from config import config, db
+from tools.config import config, db
 
 MINECRAFT_IP = os.getenv("MINECRAFT_IP")
 MINECRAFT_RCON_PASSWORD = os.getenv("MINECRAFT_RCON_PASSWORD")
@@ -14,9 +14,6 @@ MINECRAFT_RCON_PORT = os.getenv("MINECRAFT_RCON_PORT")
 
 fail = f"Failed to connect to: {MINECRAFT_IP}:{MINECRAFT_RCON_PORT} (password: {MINECRAFT_RCON_PASSWORD})"
 success = f"Connected to: {MINECRAFT_IP}:{MINECRAFT_RCON_PORT} (password: {MINECRAFT_RCON_PASSWORD})"
-
-regular_post_queue = pulsar.subscribe(prefix + "mc.post", "mc.post.reading")
-lambda_post_queue = pulsar.subscribe(prefix + "mc.lambda", "mc.lambda.reading")
 
 class Poster(ApplicationSession):
     async def onJoin(self, details):

@@ -11,7 +11,7 @@ Tmux.sh options:
 - `--prune` to prune the docker containers (useful with the next option)
 - `--docker` which runs the docker compose for all services
 - `--minecraft` which only runs the docker for the minecraft server
-- `--crossbar` which only runs the docker for the pulsar queue
+- `--crossbar` which only runs the docker for the crossbar queue
 - `--postgres` which only runs the docker for the postgres
 - `--restart` to stops the dockers in the compose before attempting to run them
 - `--run` to automatically run the base components of the template inside the tmux

@@ -20,8 +20,8 @@ from TikTokLive.types.events import (
     ShareEvent,
 )
 
-from config import config, db
-from components.tools.sanitize import get_profile
+from tools.config import config, db
+from tools.sanitize import get_profile
 
 
 class Component(ApplicationSession):

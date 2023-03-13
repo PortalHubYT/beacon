@@ -9,7 +9,7 @@ from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
 
 from tools.sanitize import pick_display, crop, sanitize
 from tools.odds import pick_from_queue
-from config import config, db
+from tools.config import config, db
 
 normal_queue = []
 follower_queue = []
