@@ -1,1 +1,0 @@
-2023-03-14 00:35:17.343569 | Now parsing viewers for: @tv_asahi_news

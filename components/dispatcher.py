@@ -49,11 +49,6 @@ class Component(ApplicationSession):
                         f"[{listener.upper()}] Failed to get profile for {event.user.unique_id}"
                     )
         
-        with open("viewer_count.txt", "a") as f:
-            f.write(
-                f"{datetime.datetime.now()} | Now parsing viewers for: @{config.stream_id}\n"
-            )
-
         @client.on("connect")
         async def on_connect(_: ConnectEvent):
             print(f"Connected to @{config.stream_id} Room ID: [{client.room_id}]")
