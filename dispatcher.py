@@ -72,8 +72,8 @@ async def parse_and_publish(event, listener: str):
     db.add_new_user(user)
     db.add_event(user, listener)
     
-    if config.verbose:
-      print(f"{datetime.datetime.now()} | {listener.upper()} | {event.user.nickname}")
+    #if config.verbose:
+    print(f"{datetime.datetime.now()} | {listener.upper()} | {event.user.nickname}")
         
             
 def views_handler(event):
