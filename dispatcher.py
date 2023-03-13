@@ -19,8 +19,10 @@ from TikTokLive.types.events import (
     ShareEvent,
 )
 
-from config import config, db
+from config import config, db, pulsar, prefix
 from components.tools.sanitize import get_profile
+
+listeners = {"comment": None, "follow": None, "join": None, "share": None, "like": None, "gift": None}
 
 def connect():
   """
@@ -53,8 +55,14 @@ async def parse_and_publish(event, listener: str):
     if not event.user: return
     
     user = get_profile(event)
-    #TODO: 
-    """self.publish(f"chat.{handler}", (user))"""
+    
+    pulsar_producer = listeners[listener]
+    result = pulsar_producer.send(user)
+    
+    if result == pulsar.Result.Timeout:
+      print("Message was not delivered to any consumer and has been discarded")
+    else:
+      print(f"Message was successfully delivered to live.{listener}")
 
     db.add_new_user(user)
     db.add_event(user, listener)
@@ -81,14 +89,11 @@ def views_handler(event):
 if __name__ == "__main__":
     print(f"Starting Dispatcher...")
     client = connect()
-    
-    # TODO: Remove this in production!!!!
-    db.reset_database()
-    
-    listeners = ["comment", "follow", "join", "share", "like", "gift"]
 
     for listener in listeners:
         client.add_listener(listener, lambda event, listener=listener: parse_and_publish(event, listener))
+        listeners[listener] = pulsar.create_producer(prefix + f"live.{listener}")
+        print(f"A pulsar producer has been created --> live.{listener}")
         
     client.add_listener("viewer_update", lambda event: views_handler(event))
     

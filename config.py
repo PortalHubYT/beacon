@@ -1,5 +1,7 @@
 import datetime
 import os
+import logging as log
+import signal
 
 import psycopg2
 from dotenv import load_dotenv
@@ -12,7 +14,7 @@ class Config:
   config_values = {
       "stream_ready": True,
       "stream_id": "tv_asahi_news",
-      "verbose": True,
+      "verbose": False,
       "crop_size": 50
   }
   
@@ -264,4 +266,7 @@ PULSAR_TOKEN = os.getenv("PULSAR_TOKEN")
 PULSAR_NAMESPACE = os.getenv("PULSAR_NAMESPACE")
 prefix = f'non-persistent://{PULSAR_NAMESPACE}/'
 
-pulsar = Client(PULSAR_URL, authentication=AuthenticationToken(PULSAR_TOKEN))
+pulsar_logger = log.getLogger("pulsar")
+pulsar_logger.setLevel(log.CRITICAL)
+
+pulsar = Client(PULSAR_URL, authentication=AuthenticationToken(PULSAR_TOKEN), logger=pulsar_logger)
