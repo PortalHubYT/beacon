@@ -13,12 +13,12 @@ if [[ "$@" == *"--prune"* ]]; then
     sudo docker system prune -a
 fi
 
-if [[ "$@" == *"--pulsar"* || "$@" == *"--docker"* ]]; then
+if [[ "$@" == *"--crossbar"* || "$@" == *"--docker"* ]]; then
   if [[ "$@" == *"--restart"* ]]; then
     echo "Restarting docker containers..."
     sudo docker compose down
   fi
-  sudo docker compose up pulsar -d 
+  sudo docker compose up crossbar -d 
 fi
 
 if [[ "$@" == *"--postgres"* || "$@" == *"--docker"* ]]; then

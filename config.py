@@ -5,7 +5,6 @@ import signal
 
 import psycopg2
 from dotenv import load_dotenv
-from pulsar import Client, AuthenticationToken
 
 load_dotenv()
 
@@ -260,13 +259,3 @@ POSTGRES_HOST = os.getenv("POSTGRES_HOST")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT")
 
 db = StreamDB(POSTGRES_HOST, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_PORT)
-
-PULSAR_URL = os.getenv("PULSAR_URL")
-PULSAR_TOKEN = os.getenv("PULSAR_TOKEN")
-PULSAR_NAMESPACE = os.getenv("PULSAR_NAMESPACE")
-prefix = f'non-persistent://{PULSAR_NAMESPACE}/'
-
-pulsar_logger = log.getLogger("pulsar")
-pulsar_logger.setLevel(log.CRITICAL)
-
-pulsar = Client(PULSAR_URL, authentication=AuthenticationToken(PULSAR_TOKEN), logger=pulsar_logger)

@@ -12,8 +12,10 @@ from tools.odds import pick_from_queue
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
 from dill import dumps
 
-with open("config.json", "r") as f:
-    config = json.load(f)
+# Work around to be able to import from the same level folder 'tools'
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from config import config, db
 
 normal_queue = []
 follower_queue = []

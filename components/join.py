@@ -14,26 +14,37 @@ from tools.odds import pick_from_queue, flip_coin
 # Work around to be able to import from the same level folder 'tools'
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from config import config, db, pulsar, prefix
+from config import config, db
 
-join_queue = pulsar.subscribe(prefix + "live.join", "live.join.reading")
-post_queue = pulsar.create_producer(prefix + "mc.post")
-lambda_queue = pulsar.create_producer(prefix + "mc.lambda")
+queue = []
 
-def join_loop():
-    while True:
-        try:
-            msg = join_queue.receive(timeout_millis=1000)
-            join_queue.acknowledge(msg)
-            profile = dict(loads(msg.data()))
-            
-            cmd = 'say ' + profile['display']
-            post_queue.send(cmd.encode("utf-8"))
+class Component(ApplicationSession):
+    async def onJoin(self, details):
+        async def on_join(profile):
+            """Uncomment this if you want half of the joins to be ignored
+            if flip_coin(): return"""
 
-        except Exception as e:
-            if config.verbose:
-                print(e)
+            name = pick_display(profile)
+            if not name:
+                return
+
+            print(f"-> join queue len: {len(queue)}")
+            queue.append(name)
+
+        async def next_join():
+            if queue:
+                name = queue.pop(0)
+                # do stuff
+                pass
+
+            await asyncio.sleep(0.01)
+            asyncio.get_event_loop().create_task(next_join())
+
+        await self.subscribe(on_join, "chat.join")
+        await next_join()
+
 
 if __name__ == "__main__":
-    print(f"Starting Join Handler...")
-    join_loop()
+    print("Starting Join Handler...")
+    runner = ApplicationRunner("ws://127.0.0.1:8080/ws", "realm1")
+    runner.run(Component)

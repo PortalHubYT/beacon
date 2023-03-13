@@ -19,45 +19,42 @@ success = f"Connected to: {MINECRAFT_IP}:{MINECRAFT_RCON_PORT} (password: {MINEC
 regular_post_queue = pulsar.subscribe(prefix + "mc.post", "mc.post.reading")
 lambda_post_queue = pulsar.subscribe(prefix + "mc.lambda", "mc.lambda.reading")
 
-def post_loop():
-  while True:
-    try:
-        msg = regular_post_queue.receive(timeout_millis=10)
-        regular_post_queue.acknowledge(msg)
-        cmd = msg.data().decode("utf-8")
-        ret = mc.post(cmd)
-        
-        if config.verbose:
-            print(f"===============")
-            print(f"[CMD]->[{cmd}]")
-            print(f"[RET]->[{ret}]")
-            print(f"===============")
-            
-    except Exception as e:
-        if config.verbose:
-            print(e)
-    
-    try:
-        msg = lambda_post_queue.receive(timeout_millis=10)
-        lambda_post_queue.acknowledge(msg)
-        data = msg.data().decode("utf-8")
-        instruction = loads(data)
-        ret = instruction()
-        
-    except Exception as e:
-        if config.verbose:
-            print(e)
-    
+class Poster(ApplicationSession):
+    async def onJoin(self, details):
+        print("Trying to connect to minecraft server...")
+
+        try:
+            mc.connect(MINECRAFT_IP, MINECRAFT_RCON_PASSWORD, port=MINECRAFT_RCON_PORT)
+            print(success)
+        except Exception as e:
+            print(fail)
+            print(f"Error: {e}")
+            return
+
+        def post(cmd):
+            ret = mc.post(cmd)
+            if config.verbose:
+                print(f"===============")
+                print(f"[CMD]->[{cmd}]")
+                print(f"[RET]->[{ret}]")
+                print(f"===============")
+            return ret
+
+        def lambda_post(cmd):
+            instruction = loads(cmd)
+            ret = instruction()
+            return str(ret)
+
+        await self.register(post, "mc.post")
+        await self.subscribe(post, "mc.post")
+
+        await self.register(lambda_post, "mc.lambda")
+        await self.subscribe(lambda_post, "mc.lambda")
+
+        print(f"Poster is ready to operate!")
+
 
 if __name__ == "__main__":
     print(f"Starting Poster...")
-    print("Trying to connect to minecraft server...")
-    try:
-        mc.connect(MINECRAFT_IP, MINECRAFT_RCON_PASSWORD, port=MINECRAFT_RCON_PORT)
-        print(success)
-    except Exception as e:
-        print(fail)
-        print(f"Error: {e}")
-        exit(1)
-  
-    post_loop()
+    runner = ApplicationRunner("ws://127.0.0.1:8080/ws", "realm1")
+    print(runner.run(Poster))
