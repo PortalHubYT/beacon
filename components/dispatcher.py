@@ -3,8 +3,6 @@ import datetime
 import time
 import os
 
-import dill
-
 from dotenv import load_dotenv
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
 
@@ -22,7 +20,7 @@ from TikTokLive.types.events import (
     ShareEvent,
 )
 
-from config import config, db, pulsar, prefix
+from config import config, db
 from components.tools.sanitize import get_profile
 
 

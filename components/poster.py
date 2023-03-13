@@ -1,13 +1,12 @@
 import asyncio
 import sys
 import os
-
-from dill import loads
-from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
 from dotenv import load_dotenv
 
-from config import config, db, pulsar, prefix
 import shulker as mc
+from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
+
+from config import config, db
 
 MINECRAFT_IP = os.getenv("MINECRAFT_IP")
 MINECRAFT_RCON_PASSWORD = os.getenv("MINECRAFT_RCON_PASSWORD")
