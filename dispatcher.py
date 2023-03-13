@@ -3,6 +3,8 @@ import datetime
 import time
 import os
 
+import dill
+
 from dotenv import load_dotenv
 from pulsar import Client, AuthenticationToken
 from TikTokLive.types.errors import FailedFetchRoomInfo
@@ -57,12 +59,15 @@ async def parse_and_publish(event, listener: str):
     user = get_profile(event)
     
     pulsar_producer = listeners[listener]
-    result = pulsar_producer.send(user)
     
-    if result == pulsar.Result.Timeout:
-      print("Message was not delivered to any consumer and has been discarded")
-    else:
-      print(f"Message was successfully delivered to live.{listener}")
+    try:
+        pulsar_producer.send(dill.dumps(user))
+        if config.verbose:
+            print(f"Message was successfully delivered to live.{listener}")
+    except Exception as e:
+        if config.verbose:
+            print("Message was not delivered to any consumer and has been discarded")
+            print(e)
 
     db.add_new_user(user)
     db.add_event(user, listener)
@@ -92,9 +97,11 @@ if __name__ == "__main__":
 
     for listener in listeners:
         client.add_listener(listener, lambda event, listener=listener: parse_and_publish(event, listener))
-        listeners[listener] = pulsar.create_producer(prefix + f"live.{listener}")
+        listeners[listener] = pulsar.create_producer(prefix + f"live.{listener}", send_timeout_millis=0)
         print(f"A pulsar producer has been created --> live.{listener}")
-        
+    
+    listeners["all"] = pulsar.create_producer(prefix + "live.all", send_timeout_millis=0)
+    
     client.add_listener("viewer_update", lambda event: views_handler(event))
     
     client.run()

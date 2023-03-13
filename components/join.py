@@ -4,16 +4,13 @@ import os
 import sys
 import json
 
+from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
+from dill import dumps
 import shulker as mc
 
 from tools.sanitize import pick_display, crop, sanitize
 from tools.odds import pick_from_queue, flip_coin
-
-from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
-from dill import dumps
-
-with open("config.json", "r") as f:
-    config = json.load(f)
+from ..config import config, db, pulsar, prefix
 
 queue = []
 

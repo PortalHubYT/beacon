@@ -10,6 +10,7 @@ services:
     container_name: minecraft_server
     ports:
       - "25565:25565"
+      - "25575:25575"
     volumes:
       - ./volumes/world:/server/world
     environment:
