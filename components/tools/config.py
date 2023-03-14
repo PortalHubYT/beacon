@@ -13,7 +13,7 @@ class Config:
   config_values = {
       "stream_ready": True,
       "stream_id": "tv_asahi_news",
-      "verbose": False,
+      "verbose": True,
       "crop_size": 50
   }
   
