@@ -243,11 +243,10 @@ class StreamDB(PostgresDB):
         """Adds an event to the database"""
         table_name = event + "s"
         if event == "gift":
-            self.insert(
-                table_name,
-                ["timestamp", "user_id", "gift", "parsed"],
-                [datetime.datetime.now(), profile["user_id"], profile["gift"], False],
-            )
+            self.insert(table_name, ["timestamp", "user_id", "gift", "parsed", "gift_value"], [
+            datetime.datetime.now(), profile["user_id"], profile["gift"], False, profile["gift_value"]])
+            
+            db.add_user_gifted(profile["gift_value"], str(profile["user_id"]))
         elif event == "comment":
             self.insert(
                 table_name,
@@ -279,17 +278,17 @@ class StreamDB(PostgresDB):
         self.execute_commit(sql)
 
     def set_user_gifted(self, value, user_id):
-        self.update_value_for_id("users", "gifted", value, user_id)
+        self.update_value_for_id("users", "total_gifted_value", value, user_id)
 
     def add_user_gifted(self, value, user_id):
-        self.increment_value_for_id("users", "gifted", value, user_id)
-        self.increment_value_for_id("users", "gifted_since_action", value, user_id)
+        self.increment_value_for_id("users", "total_gifted_value", value, user_id)
+        self.increment_value_for_id("users", "gifted_value_since_last_reset", value, user_id)
 
-    def reset_user_gifted_since_action(self, user_id):
-        self.update_value_for_id("users", "gifted_since_action", 0, user_id)
+    def reset_user_gifted_value_since_last_reset(self, user_id):
+        self.update_value_for_id("users", "gifted_value_since_last_reset", 0, user_id)
 
-    def get_user_gifted_since_action(self, user_id):
-        sql = f"SELECT gifted_since_action, avatar3 FROM users WHERE user_id = '{user_id}'"
+    def get_user_gifted_value_since_last_reset(self, user_id):
+        sql = f"SELECT gifted_value_since_last_reset, avatar3 FROM users WHERE user_id = '{user_id}'"
         ret = self.get(sql, (user_id,), one=True)
         return ret
 
