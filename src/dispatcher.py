@@ -27,16 +27,16 @@ class Dispatch(BaseAction):
 
     def connect(self, stream_id):
         if stream_id == "":
-            exit("No streamer id defined")
+            exit("-> No streamer id defined")
 
         try:
             client = TikTokLiveClient(unique_id=f"@{stream_id}")
         except FailedFetchRoomInfo:
-            exit(f"Failed to connect to @{stream_id}")
+            exit(f"-> Failed to connect to @{stream_id}")
 
         @client.on("connect")
         async def on_connect(event: ConnectEvent):
-            print(f"Connected to @{stream_id} Room ID: [{client.room_id}]")
+            print(f"-> Connected to @{stream_id} Room ID: [{client.room_id}]")
 
         @client.on("disconnect")
         async def on_disconnect(event: DisconnectEvent):
@@ -53,16 +53,17 @@ class Dispatch(BaseAction):
         try:
             await self.publish(topic_prefix + listener, user)
             if config.verbose:
-                print(f"Message was successfully delivered to live.{listener}")
+                print(f"-> Message was successfully delivered to live.{listener}")
         except Exception as e:
             if config.verbose:
-                print(f"Message was not delivered to any consumer and has been discarded")
+                print(f"-> Message was not delivered to any consumer and has been discarded")
             print(e)
 
         db.add_new_user(user)
         db.add_event(user, listener)
-
-        print(f"{datetime.datetime.now()} | {listener.upper()} | {event.user.nickname}")
+        
+        if config.verbose:
+            print(f"{datetime.datetime.now()} | {listener.upper()} | {event.user.nickname}")
 
     def views_handler(self, event):
         db.store_views(event.viewer_count)

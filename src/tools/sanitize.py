@@ -1,4 +1,5 @@
 import string
+from .config import config
 
 def pick_display(nickname, unique_id):
   
@@ -20,8 +21,8 @@ def sanitize(text):
     """Remove non-ASCII characters from string s"""
     return ''.join(filter(lambda x: x in string.printable, text))
   
-def crop(text, max = 50):
-    # Shorten text longer than 50 characters and end with '...'
+def crop(text, max=config.crop_size):
+    # Shorten text longer than (config.crop_size) characters and end with '...'
     text = text[:max] + "..." if len(text) > max else text
     return text
 
@@ -55,7 +56,7 @@ def get_profile(event):
         "following": event.user.info.following,
         "comment": None if "comment" not in vars(event) else event.comment,
         "gift": None if "gift" not in vars(event) else event.gift.info.name,
-        
+        "gift_value": None if "gift" not in vars(event) else event.gift.info.diamond_count
     }
     
     return profile
