@@ -1,7 +1,8 @@
 import datetime
 import os
 import logging as log
-import signal
+import threading
+import json
 
 import psycopg2
 from dotenv import load_dotenv
@@ -207,7 +208,6 @@ class PostgresDB:
     def table_exists(self, table_name):
         return table_name in self.get_tables()
 
-
 class StreamDB(PostgresDB):
   
   def check_user_exists(self, profile):
@@ -261,12 +261,84 @@ POSTGRES_PORT = os.getenv("POSTGRES_PORT")
 
 db = StreamDB(POSTGRES_HOST, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_PORT)
 
-PULSAR_URL = os.getenv("PULSAR_URL")
-PULSAR_TOKEN = os.getenv("PULSAR_TOKEN")
-PULSAR_NAMESPACE = os.getenv("PULSAR_NAMESPACE")
-prefix = f'non-persistent://{PULSAR_NAMESPACE}/'
+class Pulsar:
 
-pulsar_logger = log.getLogger("pulsar")
-pulsar_logger.setLevel(log.CRITICAL)
+    def __init__(self):
+        self.PULSAR_URL = os.getenv("PULSAR_URL")
+        self.PULSAR_TOKEN = os.getenv("PULSAR_TOKEN")
+        self.PULSAR_NAMESPACE = os.getenv("PULSAR_NAMESPACE")
+        self.prefix = f'non-persistent://{self.PULSAR_NAMESPACE}/'
+        
+        self.pulsar_logger = log.getLogger("pulsar")
+        self.pulsar_logger.setLevel(log.CRITICAL)
+        
+        self.SERVICE_TOPIC = self.prefix + "service_topic"
+        self.EVENT_TOPIC = self.prefix + "event_topic"
+        
+        self.client = Client(self.PULSAR_URL, authentication=AuthenticationToken(self.PULSAR_TOKEN), logger=self.pulsar_logger)
 
-pulsar = Client(PULSAR_URL, authentication=AuthenticationToken(PULSAR_TOKEN), logger=pulsar_logger)
+    def call(self, function_name, *args, **kwargs):
+        payload = json.dumps({
+            'function': function_name,
+            'args': args,
+            'kwargs': kwargs
+        })
+
+        producer = self.client.create_producer(self.SERVICE_TOPIC)
+        consumer = self.client.subscribe(self.SERVICE_TOPIC + '_response', 'my-subscription')
+
+        producer.send(payload.encode('utf-8'))
+
+        msg = consumer.receive()
+        response = json.loads(msg.data().decode('utf-8'))
+        consumer.acknowledge(msg)
+
+        return response
+
+    def register(self, function_name, function):
+        def register_thread():
+            consumer = self.client.subscribe(self.SERVICE_TOPIC, 'my-subscription')
+
+            while True:
+                msg = consumer.receive()
+                request = json.loads(msg.data().decode('utf-8'))
+
+                if request['function'] == function_name:
+                    result = function(*request['args'], **request['kwargs'])
+                    response_payload = json.dumps(result)
+                    producer = self.client.create_producer(self.SERVICE_TOPIC + '_response')
+                    producer.send(response_payload.encode('utf-8'))
+
+                consumer.acknowledge(msg)
+            
+        t = threading.Thread(target=register_thread)
+        t.daemon = True
+        t.start()
+
+    def publish(self, event_name, data):
+        payload = json.dumps({
+            'event': event_name,
+            'data': data
+        })
+
+        producer = self.client.create_producer(self.EVENT_TOPIC)
+        producer.send(content=payload.encode('utf-8'))
+
+    def subscribe(self, event_name, callback):
+        def subscribe_thread():
+            consumer = self.client.subscribe(self.EVENT_TOPIC, 'my-subscription')
+
+            while True:
+                msg = consumer.receive()
+                event = json.loads(msg.data().decode('utf-8'))
+
+                if event['event'] == event_name:
+                    callback(event['data'])
+
+                consumer.acknowledge(msg)
+
+        t = threading.Thread(target=subscribe_thread)
+        t.daemon = True
+        t.start()
+
+pulsar = Pulsar()
