@@ -12,24 +12,24 @@ class Poster(BaseAction):
         self.rcon_connect()
 
         print("o) Subscribing to mc.post")
-        await self.subscribe("mc.post", self.normal_post, subscription_name="mc.post.subscriber")
+        await self.subscribe("mc.post", self.normal_post)
 
         print("o) Subscribing to mc.lambda")
-        await self.subscribe("mc.lambda", self.lambda_post, subscription_name="mc.lambda.subscriber")
+        await self.subscribe("mc.lambda", self.lambda_post)
 
         print("o) Registering mc.post")
-        await self.register("mc.post.ret", self.normal_post, subscription_name="mc.post.register")
+        await self.register("mc.post", self.normal_post)
 
         print("o) Registering mc.lambda")
-        await self.register("mc.lambda.ret", self.lambda_post, subscription_name="mc.lambda.register")
+        await self.register("mc.lambda", self.lambda_post)
 
         print("-> Poster is ready and listening to pulsar")
         
     def normal_post(self, cmd):
-        print('-------------')
-        print(f"{datetime.datetime.now()} Sending command to server: ")
-        print(cmd)
-        print('-------------')
+        if not isinstance(cmd, str):
+            print(f"-> [ERROR] Command is not a string: {cmd}")
+            return None
+        
         ret = mc.post(cmd)
         if config.verbose:
             print(f"===============")

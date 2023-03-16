@@ -39,8 +39,8 @@ class BaseAction():
             await self.teardown()
         print(f"-> {self.__class__.__name__} is stopping")
     
-    async def register(self, topic_name, func, subscription_name=None):
-        await self.pulsar.register(topic_name, func, subscription_name)
+    async def register(self, topic_name, func):
+        await self.pulsar.register(topic_name, func)
         
     async def subscribe(self, topic, callback, subscription_name=None):
         await self.pulsar.subscribe(topic, callback, subscription_name)

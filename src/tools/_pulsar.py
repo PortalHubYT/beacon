@@ -27,14 +27,10 @@ pulsar_logger.setLevel(log.CRITICAL)
 class PulsarWrapper:
     def __init__(self, verbose=True):
         self.client = None
-        self.verbose = verbose
-        
         self.subscription_ready_events = {}
         self.subscribe_tasks = []
-        
         self.registered_functions = {}
-        self.pending_calls = {}
-        
+        self.verbose = verbose
         
     async def __aenter__(self):
         self.client = await aiopulsar.connect(PULSAR_URL, authentication=AuthenticationToken(PULSAR_TOKEN), logger=pulsar_logger)
@@ -45,10 +41,8 @@ class PulsarWrapper:
         
         return self
 
-
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.graceful_exit()
-        
         
     async def graceful_exit(self):
         print("-> Killing all pulsar subscriptions")
@@ -59,21 +53,83 @@ class PulsarWrapper:
         await self.client.close()
         print("-> Pulsar connection closed")
         
-        
     def handle_signal(self):
         print("-> Signal received, closing Pulsar connection.")
         loop = asyncio.get_event_loop()
         loop.remove_signal_handler(signal.SIGINT)
         loop.create_task(self.graceful_exit())
         exit(0)
-      
+        
+    async def register(self, topic_name, func, subscription_name=None):
+        if self.verbose:
+            print(f"{datetime.datetime.now()} -> Registering function {topic_name} for func: {func}")
+            
+        self.registered_functions[topic_name] = func
+        await self.subscribe(topic_name, self._registered_function_callback, subscription_name=subscription_name)
+
+    async def _registered_function_callback(self, message):
+
+        if type(message) != bytes:
+            return
+        
+        request = pickle.loads(message)
+        
+        if self.verbose:
+            print(f"{datetime.datetime.now()} -> Got message for registered function: {message}")
+        
+        topic = request['topic']
+        args = request['args']
+        kwargs = request['kwargs']
+
+        func = self.registered_functions.get(topic)
+        if func:
+            result = await func(*args, **kwargs) if asyncio.iscoroutinefunction(func) else func(*args, **kwargs)
+            response_topic = f'_response-{request["response_topic"]}'
+            await self.publish(response_topic, pickle.dumps(result))
+
+    async def call(self, topic, *args, **kwargs):
+
+        if self.verbose:
+            print(f"{datetime.datetime.now()} -> Calling function {topic}")
+            
+        response_topic = f'{topic}-{uuid.uuid4()}'
+        request = {
+            'topic': topic,
+            'args': args,
+            'kwargs': kwargs,
+            'response_topic': response_topic,
+        }
+
+        future = asyncio.get_event_loop().create_future()
+
+        async def handle_response(message):
+            future.set_result(pickle.loads(message))
+        
+        response_topic = f'_response-{response_topic}'
+        await self.subscribe(response_topic, handle_response)
+        
+        call_topic = f'_call-{topic}'
+        await self.publish(call_topic, pickle.dumps(request))
+        
+        result = await future
+        if self.verbose:
+            print(f"{datetime.datetime.now()} -> Got response for {topic}: [{result}]")
+        return result
       
     async def publish(self, topic, message):
+        if self.verbose:
+            print(f"{datetime.datetime.now()} -> Publishing to {topic} => {message}")
+            
+        if topic.startswith('_call-'):
+            topic = topic[6:]
+            
         async with self.client.create_producer(topic=prefix + topic) as producer:
             await producer.send(pickle.dumps(message))
 
-
     async def subscribe(self, topic, callback, subscription_name=None):
+        if self.verbose:
+            print(f"{datetime.datetime.now()} -> Subscribing to {topic}, callback: {callback}")
+        
         if subscription_name is None:
             subscription_name = topic + '-subscription'
             
@@ -86,9 +142,12 @@ class PulsarWrapper:
         await self.subscription_ready_events[topic].wait()
         return task
       
-      
     async def _subscribe(self, topic, callback, subscription_name):
                 
+        old_topic = topic
+        if topic.startswith('_response-'):          
+            topic = topic[9:]
+
         async with self.client.subscribe(
             topic=prefix + topic,
             subscription_name=subscription_name,
@@ -96,33 +155,20 @@ class PulsarWrapper:
             initial_position=pulsar.InitialPosition.Earliest
         ) as consumer:
             
-            self.subscription_ready_events[topic].set()
+            self.subscription_ready_events[old_topic].set()
             
             while True:
                 try:
                     msg = await consumer.receive()
                     data = pickle.loads(msg.data())
-
-                    if type(data) is dict and data['type'] == 'request':
-                        if topic in self.registered_functions:
-                            result = self.registered_functions[topic](*data['args'], **data['kwargs'])
-
-                            response_message = {
-                                'type': 'response',
-                                'request_id': data['request_id'],
-                                'result': result
-                            }
-                            await self.publish(topic + '_response', response_message)
-
-                        else:
-                            print(f"Topic '{topic}' not registered.")
-
+                    
+                    if self.verbose:
+                        print(f"{datetime.datetime.now()} -> Received message from {topic}: {data}")
+                    
+                    if asyncio.iscoroutinefunction(callback):
+                        await callback(data)
                     else:
-                        if asyncio.iscoroutinefunction(callback):
-                            await callback(data)
-                        else:
-                            callback(data)
-
+                        callback(data)
                     await consumer.acknowledge(msg)
                 except asyncio.CancelledError:
                     break
@@ -132,31 +178,5 @@ class PulsarWrapper:
 
             await asyncio.sleep(0.01)
             
-    async def register(self, topic_name, function):
-        self.registered_functions[topic_name] = function
-        
-    async def call(self, topic, *args, **kwargs):
-        request_id = str(uuid.uuid4())
-        request_message = {
-            'type': 'request',
-            'request_id': request_id,
-            'args': args,
-            'kwargs': kwargs
-        }
-        response_future = asyncio.Future()
-        
-        # Subscribe to the response topic if not already subscribed
-        if topic + '_response' not in self.subscription_ready_events:
-            await self.subscribe(topic + '_response', self._handle_response)
-            
-        self.pending_calls[request_id] = response_future
-        await self.publish(topic, request_message)
-        
-        return await response_future
-    
-    async def _handle_response(self, data):
-        if 'request_id' in data and 'result' in data:
-            request_id = data['request_id']
-            if request_id in self.pending_calls:
-                self.pending_calls[request_id].set_result(data['result'])
-                del self.pending_calls[request_id]
+    async def close(self):
+        await self.client.close()
