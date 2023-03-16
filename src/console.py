@@ -12,6 +12,10 @@ class Console(Portal):
     async def on_join(self):
         print("------------------CONSOLE------------------")
 
+    async def on_exit(self):
+        print("-------------------------------------------")
+        exit(0)
+        
     def time(self, trimmed=False):
         hour_minute = datetime.datetime.now().strftime("%H:%M")
         text = f"({hour_minute})> "
@@ -23,8 +27,7 @@ class Console(Portal):
         try:
             cmd = input(f'{self.time()}')
         except KeyboardInterrupt:
-            print("-------------------------------------------")
-            exit(0)
+            self.on_exit()
 
         # Send a regular minecraft command
         if cmd.startswith("/"):
@@ -37,8 +40,7 @@ class Console(Portal):
         
         # Exit the terminal
         elif cmd in ["q", "quit", "exit"]:
-            print("-------------------------------------------")
-            exit(0)
+            self.on_exit()
 
 
 if __name__ == "__main__":
