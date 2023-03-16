@@ -2,9 +2,9 @@ import asyncio
 import shulker as mc
 from dill import dumps
 
-from tools._base_action import BaseAction
+from tools.pulsar import Portal
 
-class Template(BaseAction):
+class Template(Portal):
     async def on_join(self):
         
         f = lambda: mc.say('hello')

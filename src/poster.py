@@ -4,10 +4,9 @@ import shulker as mc
 from dill import loads
 
 from tools.config import config
-from tools.pulsar import PulsarWrapper
-from tools._base_action import BaseAction
+from tools.pulsar import Portal
 
-class Poster(BaseAction):
+class Poster(Portal):
     async def on_join(self):
         self.rcon_connect()
 

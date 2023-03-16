@@ -8,13 +8,13 @@ from TikTokLive.types.events import DisconnectEvent, ConnectEvent
 from tools.config import config
 from tools.database import db
 from tools.sanitize import get_profile
-from tools._base_action import BaseAction
+from tools.pulsar import Portal
 
 listeners = ["comment", "follow", "join", "share", "like", "gift"]
 topic_prefix = "live."
 # This means that the topic will be live.comment, live.follow, etc.
 
-class Dispatch(BaseAction):
+class Dispatch(Portal):
     async def on_join(self):
         self.client = self.connect(config.stream_id)
 
