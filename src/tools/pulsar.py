@@ -155,7 +155,7 @@ class Hub:
                     msg = await consumer.receive()
                     data = pickle.loads(msg.data())
 
-                    if type(data) is dict and data['type'] == 'request':
+                    if type(data) is dict and data.get('type') and data['type'] == 'request':
                         if topic in self.registered_functions:
                             result = self.registered_functions[topic](*data['args'], **data['kwargs'])
 
@@ -182,7 +182,7 @@ class Hub:
                     print(f"An error occurred while processing the message:")
                     traceback.print_exc()
 
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.001)
             
     async def register(self, topic_name, function):
         self.registered_functions[topic_name] = function
