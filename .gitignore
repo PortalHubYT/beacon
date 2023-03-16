@@ -2,4 +2,5 @@
 *.pyc
 .env
 test.py
-volumes
+__pycache__/
+volumes/
