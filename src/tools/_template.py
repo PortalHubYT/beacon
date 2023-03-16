@@ -33,5 +33,8 @@ async def main():
     
 if __name__ == "__main__":
     print(f"-> Starting {__file__.split('/')[-1]}")
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
     print(f"-> {__file__.split('/')[-1]} is stopping")
