@@ -20,14 +20,16 @@ pulsar_logger = log.getLogger("pulsar")
 pulsar_logger.setLevel(log.CRITICAL)
 
 class PulsarWrapper:
-    def __init__(self):
+    def __init__(self, verbose=False):
         self.client = None
         self.subscription_ready_events = {}
         self.subscribe_tasks = []
         self.registered_functions = {}
+        self.verbose = verbose
 
     async def __aenter__(self):
         self.client = await aiopulsar.connect(PULSAR_URL, authentication=AuthenticationToken(PULSAR_TOKEN), logger=pulsar_logger)
+        print("-> Pulsar connection established")
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -36,8 +38,12 @@ class PulsarWrapper:
             await task
             
         await self.client.close()
+        print("-> Pulsar connection closed")
         
     async def register(self, topic_name, func):
+        if self.verbose:
+            print(f"-> Registering function {topic_name} for func: {func}")
+            
         self.registered_functions[topic_name] = func
         await self.subscribe(topic_name, self._registered_function_callback)
 
@@ -54,6 +60,9 @@ class PulsarWrapper:
             await self.publish(response_topic, json.dumps(result))
 
     async def call(self, function_name, *args, **kwargs):
+        if self.verbose:
+            print(f"-> Calling function {function_name}")
+            
         response_topic = f'response-{function_name}-{uuid.uuid4()}'
         request = {
             'function': function_name,
@@ -73,10 +82,19 @@ class PulsarWrapper:
         return result
       
     async def publish(self, topic, message):
+        if self.verbose:
+            print(f"-> Publishing to {topic} => {message}")
+            
         async with self.client.create_producer(topic=prefix + topic) as producer:
-            await producer.send(message.encode('utf-8'))
+            if isinstance(message, bytes):
+                await producer.send(message)
+            else:
+                await producer.send(message.encode('utf-8'))
 
     async def subscribe(self, topic, callback):
+        if self.verbose:
+            print(f"-> Subscribing to {topic}, callback: {callback}")
+            
         if topic not in self.subscription_ready_events:
               self.subscription_ready_events[topic] = asyncio.Event()
               
