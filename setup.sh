@@ -1,6 +1,8 @@
 #!/bin/bash
+
 if [[ "$@" == *"--install"* ]]; then
     echo "Installing requirements..."
+    sudo apt-get update
     sudo apt-get install libpq-dev
     pip install -r requirements.txt --upgrade
 
@@ -11,18 +13,28 @@ if [[ "$@" == *"--prune"* ]]; then
     sudo docker system prune -a
 fi
 
-if [[ "$@" == *"--docker"* ]]; then
-  POSTGRES_USER=$(grep -o '"server_ip": *"[^"]*"' config.json | sed 's/"//g' | awk -F': *' '{print $2}')
-  POSTGRES_PASSWORD=$(grep -o '"rcon_password": *"[^"]*"' config.json | sed 's/"//g' | awk -F': *' '{print $2}')
-
-  echo "POSTGRES_USER=$POSTGRES_USER" > .env
-  echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
-
+if [[ "$@" == *"--pulsar"* || "$@" == *"--docker"* ]]; then
   if [[ "$@" == *"--restart"* ]]; then
     echo "Restarting docker containers..."
     sudo docker compose down
   fi
-  sudo docker compose up -d
+  sudo docker compose up pulsar -d 
+fi
+
+if [[ "$@" == *"--postgres"* || "$@" == *"--docker"* ]]; then
+  if [[ "$@" == *"--restart"* ]]; then
+    echo "Restarting docker containers..."
+    sudo docker compose down
+  fi
+  sudo docker compose up postgres -d 
+fi
+
+if [[ "$@" == *"--minecraft"* || "$@" == *"--docker"* ]]; then
+  if [[ "$@" == *"--restart"* ]]; then
+    echo "Restarting docker containers..."
+    sudo docker compose down
+  fi
+  sudo docker compose up minecraft -d 
 fi
 
 # Save current working directory
@@ -81,7 +93,6 @@ if [[ "$@" == *"--run"* ]]; then
     tmux send-keys -t 9 'python3 components/share.py' C-m
 fi
 
-echo "test"
 if [[ "$@" == *"--headless"* ]]; then
     exit
 fi
