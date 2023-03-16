@@ -18,3 +18,17 @@ Tmux.sh options:
 - `--headless` to not attach to the tmux (useful when testing tmux.sh)
 
 With no options, and by default, the tmux.sh only create a tmux session and split it evenly with 9 tabs
+
+You need to provide a .env file inside the `tools/` folder, with the following values needed:
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DB`
+- `POSTGRES_HOST`
+- `POSTGRES_PORT`
+- `POSTGRES_URI`
+- `MINECRAFT_IP`
+- `MINECRAFT_RCON_PORT`
+- `MINECRAFT_RCON_PASSWORD`
+- `PULSAR_URL`
+- `PULSAR_TOKEN`
+- `PULSAR_NAMESPACE`
