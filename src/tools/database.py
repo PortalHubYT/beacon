@@ -193,6 +193,11 @@ class PostgresDB:
     def table_exists(self, table_name):
         return table_name in self.get_tables()
 
+    def check_tables_empty(self):
+        for table in self.tables:
+            if self.get(f"SELECT * FROM {table} LIMIT 1", one=True) != None:
+                return False
+        return True
 
 class StreamDB(PostgresDB):
     def check_user_exists(self, profile):

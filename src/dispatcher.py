@@ -52,8 +52,6 @@ class Dispatch(Portal):
 
         try:
             await self.publish(topic_prefix + listener, user)
-            if config.verbose:
-                print(f"-> Message was successfully delivered to live.{listener}")
         except Exception as e:
             if config.verbose:
                 print(f"-> Message was not delivered to any consumer and has been discarded")
