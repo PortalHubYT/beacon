@@ -31,7 +31,7 @@ class Console(Portal):
         self.register_command("help", self.help, "Show this help message.")
         self.register_command("mimic", self.mimic, "Mimic n (live)-actions through pulsar", args=["action", "amount", "time_between (optional)"])
         self.register_command("sql", self.sql, "Query the database", args=["query"])
-        self.register_command("post", self.sql, "Sends a minecraft commands and listen for return value", args=["cmd"])
+        self.register_command("post", self.post, "Sends a minecraft commands and listen for return value", args=["cmd"])
         
         self.session = PromptSession(history=FileHistory(".console_history"),
                                      completer=CommandCompleter(self.commands),
@@ -128,7 +128,7 @@ class Console(Portal):
        
         ret = await self.call('mc.post', cmd)
         
-        print(f"o> [{bcolors.GREEN}{ret}{bcolors.ENDC}]")
+        print(f"o> [{bcolors.OKGREEN}{ret}{bcolors.ENDC}]")
         
     async def loop(self):
         try:
