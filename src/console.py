@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import random
-import colorama
 
 import shulker as mc
 from prompt_toolkit import PromptSession
