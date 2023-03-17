@@ -41,6 +41,7 @@ class PostgresDB:
             "timestamp": "timestamp",
             "user_id": "text",
             "gift": "text",
+            "gift_value": "integer",
             "parsed": "boolean",
         },
         "follows": {"timestamp": "timestamp", "user_id": "text", "parsed": "boolean",},
