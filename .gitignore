@@ -4,3 +4,4 @@
 test.py
 __pycache__/
 volumes/
+src/.console_history

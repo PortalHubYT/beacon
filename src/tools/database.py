@@ -48,6 +48,7 @@ class PostgresDB:
         "likes": {"timestamp": "timestamp", "user_id": "text", "parsed": "boolean",},
         "shares": {"timestamp": "timestamp", "user_id": "text", "parsed": "boolean",},
         "views": {"timestamp": "timestamp", "count": "integer",},
+        "console_commands": {"timestamp": "timestamp", "command": "text",},
     }
 
     def __init__(self, host, database, user, password, port):
@@ -62,11 +63,12 @@ class PostgresDB:
 
     def initialize_tables(self):
         for keys in self.tables:
-
+            
             if keys in self.get_tables():
                 continue
 
-            if keys == "views":
+            if keys == "views" or keys == "console_commands":
+
                 self.create_table(keys, self.tables[keys])
                 continue
 
