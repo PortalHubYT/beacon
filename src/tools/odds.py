@@ -26,7 +26,7 @@ def pick_from_queue(queues):
     
     if 0 <= randint <= 80:
       return priority_queue.pop(0)
-    elif 80 < randint <= 95:
+    elif 80 < randint <= 95 and follower_queue:
       return follower_queue.pop(0)
     else:
       try:
