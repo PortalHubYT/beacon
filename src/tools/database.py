@@ -1,10 +1,19 @@
 import datetime
-import psycopg2
 import os
+import logging
 
+import psycopg2
 from dotenv import load_dotenv
 
 from .config import config
+
+# Configure the logger
+logging.basicConfig(
+    filename='db_error.log',
+    level=logging.ERROR,
+    format='%(asctime)s [%(levelname)s]: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 load_dotenv()
 
@@ -115,12 +124,6 @@ class PostgresDB:
         )
         self.cur = self.conn.cursor()
 
-    def execute(self, query, params=None):
-        """Executes a SQL query and returns the result."""
-        if config.stream_ready == False:
-            return
-        self.cur.execute(query, params)
-
     def get(self, query, params=None, one=False):
         """Executes a SQL query and returns the result."""
         if config.stream_ready == False:
@@ -131,12 +134,23 @@ class PostgresDB:
         else:
             return self.cur.fetchall()
 
+    def execute(self, query, params=None):
+        """Executes a SQL query and returns the result."""
+        if config.stream_ready == False:
+            return
+        self.cur.execute(query, params)
+        
     def execute_commit(self, query, params=None):
         """Executes a SQL query and commits the transaction."""
         if config.stream_ready == False:
             return
-        self.cur.execute(query, params)
-        self.conn.commit()
+        try:
+            self.cur.execute(query, params)
+            self.commit()
+        except psycopg2.Error as e:
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            logging.error(error_msg)
 
     def insert(self, table_name, columns, values):
         """Inserts a row into the given table."""
@@ -147,12 +161,23 @@ class PostgresDB:
 
     def insert_commit(self, table_name, columns, values):
         """Inserts a row into the given table and commits."""
-        self.insert(table_name, columns, values)
-        self.commit()
+        try:
+            self.insert(table_name, columns, values)
+            self.commit()
+        except psycopg2.Error as e:
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            logging.error(error_msg)
 
     def commit(self):
         """Commits the transaction."""
-        self.conn.commit()
+        try:
+            self.conn.commit()
+        except psycopg2.Error as e:
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            logging.error(error_msg)
+            self.conn.rollback()
 
     def close(self):
         """Closes the cursor and connection."""

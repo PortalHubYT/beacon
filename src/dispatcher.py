@@ -40,6 +40,8 @@ class Dispatch(Portal):
 
         @client.on("disconnect")
         async def on_disconnect(event: DisconnectEvent):
+            print(f"-> Disconnected from @{stream_id} Room ID: [{client.room_id}]")
+            print(f"-> Trying to reconnect...")
             client._connect()
 
         return client
@@ -47,6 +49,8 @@ class Dispatch(Portal):
     async def parse_and_publish(self, event, listener: str):
         if not event.user:
             return
+        
+        if listener not in config.listen_to: return
 
         user = get_profile(event)
 
@@ -61,7 +65,7 @@ class Dispatch(Portal):
         db.add_event(user, listener)
         
         if config.verbose:
-            print(f"{datetime.datetime.now()} | {listener.upper()} | {event.user.nickname}")
+            print(f"{datetime.datetime.now()} | {listener.upper()} | {user['display']}")
 
     def views_handler(self, event):
         db.store_views(event.viewer_count)

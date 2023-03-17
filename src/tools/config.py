@@ -9,7 +9,8 @@ config_values = {
     "rcon_password": os.getenv("MINECRAFT_RCON_PASSWORD"),
     "stream_ready": True,
     "stream_id": "tv_asahi_news",
-    "verbose": False,
+    "verbose": True,
+    "listen_to": ["follow", "gift", "comment", "like", "share"],
     "crop_size": 50
 }
 
