@@ -4,3 +4,4 @@ dill
 dotenv
 psycopg2
 pulsar-client
+aiopulsar-py
