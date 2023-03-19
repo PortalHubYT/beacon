@@ -76,7 +76,9 @@ class PostgresDB:
             
             if keys in self.get_tables():
                 continue
-
+            
+            print(f"-> Initializing (empty) table {keys}...")
+            
             if keys == "views" or keys == "console_commands":
 
                 self.create_table(keys, self.tables[keys])
@@ -94,24 +96,18 @@ class PostgresDB:
             )
 
     def reset_database(self, confirm=False):
-        print("YOU JUST RESETTED DATABASE? MAKE SURE THIS IS INTENTIONAL")
-        print(
-            "NO PRESSURE, YOU CAN ALWAYS REVERT WHAT YOU DID, idk how though good luck"
-        )
-        print("...")
-        print("You have to pass 'confirm' as True to actually reset the database")
-        print(
-            "Sorry for the inconvenience, I'm just making sure this is absolutely intentional"
-        )
-        print("Please remove this line ASAP from the code")
-        print("... and sorry if you are just doing testing")
         if not confirm:
             return
         if self.tables:
             for table in self.get_tables():
                 print(f"-> Dropping table {table}...")
                 self.execute_commit(f"DROP TABLE {table} CASCADE")
+            
             self.initialize_tables()
+            
+            is_empty = self.check_tables_empty()
+            print(f'-> Checking if tables are empty: {is_empty}')
+            print(f"-> Database reset complete.")
 
     def connect(self):
         """Establishes a connection to the database."""

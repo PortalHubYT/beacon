@@ -10,7 +10,7 @@ config_values = {
     "stream_ready": True,
     "stream_id": "tv_asahi_news",
     "verbose": True,
-    "listen_to": ["follow", "gift", "comment", "like", "share"],
+    "listen_to": ["comment", "follow", "join", "share", "like", "gift"],
     "crop_size": 50
 }
 

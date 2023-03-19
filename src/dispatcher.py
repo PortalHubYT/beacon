@@ -24,6 +24,7 @@ class Dispatch(Portal):
         self.client.add_listener("viewer_update", lambda event: self.views_handler(event))
         
         await self.client._start()
+        print("-> Dispatcher started")
 
     def connect(self, stream_id):
         if stream_id == "":
@@ -49,7 +50,7 @@ class Dispatch(Portal):
     async def parse_and_publish(self, event, listener: str):
         if not event.user:
             return
-        
+                
         if listener not in config.listen_to: return
 
         user = get_profile(event)
@@ -78,4 +79,8 @@ class Dispatch(Portal):
 
 if __name__ == "__main__":
     dispatch = Dispatch()
-    asyncio.run(dispatch.run())
+    try:
+        asyncio.run(dispatch.run(), debug=True)
+    except Exception as e:
+        print(e)
+        raise e

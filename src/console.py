@@ -32,7 +32,8 @@ class Console(Portal):
         self.register_command("mimic", self.mimic, "Mimic n (live)-actions through pulsar", args=["action", "amount", "time_between (optional)"])
         self.register_command("sql", self.sql, "Query the database", args=["query"])
         self.register_command("post", self.post, "Sends a minecraft commands and listen for return value", args=["cmd"])
-        
+        self.register_command("reset_db", self.reset_db, "Reset the database specified in tools/.env, requires 'confirm' as arg", args=["confirm"])
+
         self.session = PromptSession(history=FileHistory(".console_history"),
                                      completer=CommandCompleter(self.commands),
                                      auto_suggest=ArgumentSuggest(self.commands),)
@@ -129,7 +130,15 @@ class Console(Portal):
         ret = await self.call('mc.post', cmd)
         
         print(f"o> [{bcolors.OKGREEN}{ret}{bcolors.ENDC}]")
-        
+
+    async def reset_db(self, *args):
+        if len(args) == 0:
+            print("You need to confirm the reset of the database by typing 'reset_db confirm'.")
+        elif len(args) == 1 and args[0] == "confirm":
+            print("\n-> Resetting database...")
+            db.reset_database(confirm=True)
+            print("Database reset.\n")
+       
     async def loop(self):
         try:
             cmd = await self.session.prompt_async(f'({datetime.datetime.now().strftime("%H:%M")})> ')
