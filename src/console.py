@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import random
 
 import shulker as mc
 from prompt_toolkit import PromptSession
@@ -10,6 +9,7 @@ from prompt_toolkit.auto_suggest import AutoSuggest, Suggestion
 
 from tools.pulsar import Portal
 from tools.database import db
+from tools.mimic import gen_fake_profiles
 
 class bcolors:
     HEADER = '\033[95m'
@@ -62,33 +62,11 @@ class Console(Portal):
     async def mimic(self, action, amount, time_between=1):
         amount = int(amount)
         time_between = float(time_between)
-            
-        with open('tools/random_comments.txt', 'r') as f:
-            random_comments = f.readlines()
-            
-        with open('tools/random_pseudos.txt', 'r') as f:
-            random_pseudos = f.readlines()
         
-        random_gift = ["Diamond", "Gold", "Silver", "Bronze"]
-        random_avatars = ["https://i.imgur.com/0Z0Z0Z0.png", "https://i.imgur.com/1Z1Z1Z1.png", "https://i.imgur.com/2Z2Z2Z2.png", "https://i.imgur.com/3Z3Z3Z3.png", "https://i.imgur.com/4Z4Z4Z4.png", "https://i.imgur.com/5Z5Z5Z5.png", "https://i.imgur.com/6Z6Z6Z6.png", "https://i.imgur.com/7Z7Z7Z7.png", "https://i.imgur.com/8Z8Z8Z8.png", "https://i.imgur.com/9Z9Z9Z9.png"]
-        random_role = ["Moderator", "Top Gifter", "New Gifter", "Follower", None]
+        profiles = gen_fake_profiles(amount)
         
         start = datetime.datetime.now()
-        for i in range(amount):
-            random_name = random.choice(random_pseudos).strip()
-            profile = {
-                "display": f'{i + 1}_{random_name}',
-                "nickname": f'{i + 1}_{random_name}',
-                "unique_id": f'{i + 1}_{random_name}',
-                "user_id": random.randint(100000000, 999999999),
-                "role": random.choice(random_role),
-                "avatars": random_avatars,
-                "followers": random.randint(0, 100000),
-                "following": random.randint(0, 100000),
-                "comment": random.choice(random_comments).strip(),
-                "gift": random.choice(random_gift),
-                "gift_value": random.randint(0, 100000),
-            }
+        for i, profile in enumerate(profiles):
             
             await asyncio.sleep(time_between)
             time_elapsed_seconds = (datetime.datetime.now() - start).total_seconds()
