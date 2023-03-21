@@ -1,5 +1,7 @@
 import asyncio
 import datetime
+import logging
+import time
 
 from TikTokLive.types.errors import FailedFetchRoomInfo
 from TikTokLive import TikTokLiveClient
@@ -10,21 +12,39 @@ from tools.database import db
 from tools.sanitize import get_profile
 from tools.pulsar import Portal
 
+logging.basicConfig(
+    filename='logs/dispatcher_error.log',
+    level=logging.ERROR,
+    format='%(asctime)s [%(levelname)s]: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
 listeners = ["comment", "follow", "join", "share", "like", "gift"]
 topic_prefix = "live."
 # This means that the topic will be live.comment, live.follow, etc.
 
 class Dispatch(Portal):
-    async def on_join(self):
+    async def loop(self):
+        print("-> Connecting TikTok client")
         self.client = self.connect(config.stream_id)
 
+        print("-> Adding all the listeners...")
         for listener in listeners:
             self.client.add_listener(listener, lambda event, listener=listener: self.parse_and_publish(event, listener))
 
         self.client.add_listener("viewer_update", lambda event: self.views_handler(event))
+        print("-> Done!")
         
-        await self.client._start()
-        print("-> Dispatcher started")
+        print("-> Starting dispatcher...")
+        try:
+            await self.client._start()
+        except Exception as e:
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            logging.error(error_msg)
+            
+        print("-> Dispatcher stopped?")
+        await asyncio.sleep(15)
 
     def connect(self, stream_id):
         if stream_id == "":
@@ -44,6 +64,13 @@ class Dispatch(Portal):
             print(f"-> Disconnected from @{stream_id} Room ID: [{client.room_id}]")
             print(f"-> Trying to reconnect...")
             client._connect()
+            
+        @client.on("error")
+        async def on_error(event):
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            logging.error(error_msg)
+
 
         return client
 
@@ -79,8 +106,13 @@ class Dispatch(Portal):
 
 if __name__ == "__main__":
     dispatch = Dispatch()
-    try:
-        asyncio.run(dispatch.run(), debug=True)
-    except Exception as e:
-        print(e)
-        raise e
+    while True:
+        try:
+            asyncio.run(dispatch.run(), debug=True)
+        except Exception as e:
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            logging.error(error_msg)
+            print("-> Restarting in 5 seconds...")
+            time.sleep(5)
+    

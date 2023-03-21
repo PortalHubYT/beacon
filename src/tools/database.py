@@ -9,7 +9,7 @@ from .config import config
 
 # Configure the logger
 logging.basicConfig(
-    filename='db_error.log',
+    filename='logs/db_error.log',
     level=logging.ERROR,
     format='%(asctime)s [%(levelname)s]: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
@@ -101,7 +101,7 @@ class PostgresDB:
         if self.tables:
             for table in self.get_tables():
                 print(f"-> Dropping table {table}...")
-                self.execute_commit(f"DROP TABLE {table} CASCADE")
+                self.execute_commit(f"TRUNCATE TABLE {table} CASCADE")
             
             self.initialize_tables()
             
