@@ -1,3 +1,7 @@
+Default Template
+
+------------
+
 This template needs:
 
 - `Python and requirements.txt`
