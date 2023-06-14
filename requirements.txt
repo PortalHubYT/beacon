@@ -1,7 +1,7 @@
 TikTokLive
 shulker
 dill
-dotenv
+python-dotenv
 psycopg2
 pulsar-client
 aiopulsar-py
