@@ -9,7 +9,7 @@ from .config import config
 
 # Configure the logger
 logging.basicConfig(
-    filename='logs/db_error.log',
+    filename='./logs/db_error.log',
     level=logging.ERROR,
     format='%(asctime)s [%(levelname)s]: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'

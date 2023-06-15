@@ -34,7 +34,7 @@ class Console(Portal):
         self.register_command("post", self.post, "Sends a minecraft commands and listen for return value", args=["cmd"])
         self.register_command("reset_db", self.reset_db, "Reset the database specified in tools/.env, requires 'confirm' as arg", args=["confirm"])
 
-        self.session = PromptSession(history=FileHistory(".console_history"),
+        self.session = PromptSession(history=FileHistory("./tools/logs/console_history.log"),
                                      completer=CommandCompleter(self.commands),
                                      auto_suggest=ArgumentSuggest(self.commands),)
         
