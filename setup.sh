@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#######################################################################
+############################# ARG = reset #############################
+
 # Check if script is run to reset (source setup.sh reset)
 if [ ! -z "$1" ] && [ "$1" = "reset" ]; then
     # Deactivate the virtual environment
@@ -15,6 +18,9 @@ if [ ! -z "$1" ] && [ "$1" = "reset" ]; then
     git pull origin main
     return 0
 fi
+
+#######################################################################
+############################## FUNCTIONS ##############################
 
 # Function to validate the input name
 validate_name() {
@@ -42,6 +48,7 @@ create_and_activate_venv() {
     
     # Installing requirements for psycopg2
     echo "-> Installing requirements for psycopg2..."
+    sudo apt-get update
     sudo apt-get -qq install python3-dev
 
     # Install requirements
@@ -51,14 +58,19 @@ create_and_activate_venv() {
     echo "---------------------------"
 }
 
-# Check if the current branch is "main"
+#######################################################################
+################################ MAIN #################################
+
+# 1. Check if the current branch is "main"
 current_branch=$(git symbolic-ref --short HEAD)
 if [[ $current_branch != "main" ]]; then
     echo "-> Error: The current branch is not 'main'. Please switch to the 'main' branch."
     return 1
 fi
 
-# Check if a name argument is provided
+################################
+
+# 2. Check if a name argument is provided
 if [ -z "$1" ]; then
     # Read the input name from the user
     echo -n "-> Enter a name (letters and '-' only): "
@@ -67,13 +79,17 @@ else
     name="$1"
 fi
 
-# Validate the input name
+################################
+
+# 3. Validate the input name
 if ! validate_name "$name"; then
     echo "-> Error: Invalid name. Name should contain only letters and '-'."
     return 1
 fi
 
-# Check if the branch already exists
+################################
+
+# 4. Check if the branch already exists
 if git rev-parse --quiet --verify "$name" > /dev/null; then
     echo "-> Branch '$name' already exists. Switching to the branch..."
     git checkout "$name"
@@ -83,12 +99,16 @@ else
     git checkout -b "$name"
 fi
 
-# Create and/or activate the virtual environment
+echo "-> Switched to branch '$name'"
+
+################################
+
+# 5. Create and/or activate the virtual environment
 create_and_activate_venv
 
-echo "-> New branch '$name' is checked out, and virtual environment (.pyenv) is created."
+################################
 
-# Modify the README.md file
+# 6. Modify the README.md file (if it is the default template)
 echo "-> Modifying the README.md file..."
 
 filename="README.md"
@@ -119,5 +139,9 @@ if [[ "$first_line" == "# Default Template" ]]; then
 else
     echo "-> First line of the README is not 'Default Template'. No modifications made."
 fi
+
+################################
+
+# 7. Prompt user if they want to prune docker
 
 
