@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import os
 
 import shulker as mc
 from prompt_toolkit import PromptSession
@@ -22,6 +23,15 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+# Get the absolute path of the current file
+current_file_path = os.path.abspath(__file__)
+
+# Get the directory containing the current file
+directory = os.path.dirname(current_file_path)
+
+# Construct the absolute file path by joining the directory and the desired file name
+log_file_path = os.path.join(directory, 'tools/logs/console_history.log')
+
 class Console(Portal):
     
     async def on_join(self):
@@ -34,7 +44,7 @@ class Console(Portal):
         self.register_command("post", self.post, "Sends a minecraft commands and listen for return value", args=["cmd"])
         self.register_command("reset_db", self.reset_db, "Reset the database specified in tools/.env, requires 'confirm' as arg", args=["confirm"])
 
-        self.session = PromptSession(history=FileHistory("./tools/logs/console_history.log"),
+        self.session = PromptSession(history=FileHistory(log_file_path),
                                      completer=CommandCompleter(self.commands),
                                      auto_suggest=ArgumentSuggest(self.commands),)
         
