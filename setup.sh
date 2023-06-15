@@ -221,5 +221,48 @@ done
 
 ################################
 
+# 10. Prompt the user to fill in the .env file with the relevant keys
+
+dotenv_file="src/tools/.env"
+
+# Function to prompt for a value
+prompt_value() {
+    echo -n "\n-> Enter the value for $1: "
+    read value
+
+    echo "$1=$value" >> "$dotenv_file"
+    echo
+    echo "---> Set $1 = $value\n"
+}
+
+# Check if dotenv file already exists
+if [[ -e "$dotenv_file" ]]; then
+    echo "-> The dotenv file already exists: $dotenv_file"
+
+    echo -n "\n-> Do you want to overwrite it? (y/n): "
+    read overwrite
+
+    if [[ "$overwrite" = "y" ]]; then
+        # Create or overwrite the dotenv file
+        echo "\n-> Creating dotenv file: $dotenv_file\n"
+
+        # Prompt for each value
+        prompt_value "POSTGRES_USER"
+        prompt_value "POSTGRES_PASSWORD"
+        prompt_value "POSTGRES_DB"
+        prompt_value "POSTGRES_HOST"
+        prompt_value "POSTGRES_PORT"
+        prompt_value "MINECRAFT_IP"
+        prompt_value "MINECRAFT_RCON_PORT"
+        prompt_value "MINECRAFT_RCON_PASSWORD"
+        prompt_value "PULSAR_URL"
+        prompt_value "PULSAR_TOKEN"
+        prompt_value "PULSAR_NAMESPACE"
+
+        echo "\n-> Dotenv file created successfully!\n"
+    fi
+fi
+
+
 
 
