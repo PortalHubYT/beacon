@@ -67,10 +67,6 @@ else
     name="$1"
 fi
 
-# Prompt the user for a brief description
-echo -n "-> Enter a brief description of what the stream will be about: "
-read description
-
 # Validate the input name
 if ! validate_name "$name"; then
     echo "-> Error: Invalid name. Name should contain only letters and '-'."
@@ -104,7 +100,8 @@ if [[ "$first_line" == "# Default Template" ]]; then
     sed -i "1s/.*/# $name/" "$filename"
 
     # Prompt the user for a brief description
-    read -p "Enter a one-line description of what the stream is about: " description
+    echo -n "Enter a one-line description of what the stream is about: "
+    read description
 
     # Replace the lines between the start and end lines with the user's description
     sed -i "3s/.*/$description/" "$filename"
@@ -112,7 +109,7 @@ if [[ "$first_line" == "# Default Template" ]]; then
      # Git commands
     git add README.md
     git commit -m "Modified README.md"
-    git push
+    git git push --set-upstream origin "$name"
 
     echo "-> README.md modified and pushed successfully."
 else
