@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# Check if script is run to reset (source setup.sh reset)
+if [ "$1" == "reset"]; then
+    # Deactivate the virtual environment
+    deactivate
+
+    # Switch back to the main branch
+    git checkout main
+
+    echo "Virtual environment deactivated, and switched back to the 'main' branch."
+
+    # Update the repository to reflect the state of the main branch
+    echo "Updating the repository to reflect the state of the 'main' branch..."
+    git pull origin main
+    exit 1
+fi
+
 # Function to validate the input name
 validate_name() {
     # Regex pattern to check if the name contains only letters and '-'
