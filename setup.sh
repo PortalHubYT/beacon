@@ -1,102 +1,60 @@
 #!/bin/bash
 
-if [[ "$@" == *"--install"* ]]; then
-    echo "Installing requirements..."
-    sudo apt-get update
-    sudo apt-get install libpq-dev
-    pip install -r requirements.txt --upgrade
+# Function to validate the input name
+validate_name() {
+    # Regex pattern to check if the name contains only letters and '-'
+    pattern="^[a-zA-Z-]+$"
 
+    if [[ $1 =~ $pattern ]]; then
+        return 0  # Name is valid
+    else
+        return 1  # Name is invalid
+    fi
+}
+
+# Check if the current branch is "main"
+current_branch=$(git symbolic-ref --short HEAD)
+if [[ $current_branch != "main" ]]; then
+    echo "Error: The current branch is not 'main'. Please switch to the 'main' branch."
+    exit 1
 fi
 
-if [[ "$@" == *"--prune"* ]]; then
-    echo "Pruning docker images..."
-    sudo docker system prune -a
+# Read the input name from the user
+echo -n "Enter a name (letters and '-' only): "
+read name
+
+# Validate the input name
+if ! validate_name "$name"; then
+    echo "Error: Invalid name. Name should contain only letters and '-'."
+    exit 1
 fi
 
-if [[ "$@" == *"--pulsar"* || "$@" == *"--docker"* ]]; then
-  if [[ "$@" == *"--restart"* ]]; then
-    echo "Restarting docker containers..."
-    sudo docker compose down
-  fi
-  sudo docker compose up pulsar -d 
+# Check if the branch already exists
+if git rev-parse --quiet --verify "$name" > /dev/null; then
+    echo "Branch '$name' already exists. Switching to the branch..."
+    git checkout "$name"
+else
+    # Create and switch to a new branch with the input name
+    echo "Creating a new branch '$name'..."
+    git checkout -b "$name"
 fi
 
-if [[ "$@" == *"--postgres"* || "$@" == *"--docker"* ]]; then
-  if [[ "$@" == *"--restart"* ]]; then
-    echo "Restarting docker containers..."
-    sudo docker compose down
-  fi
-  sudo docker compose up postgres -d 
+# Create a new virtual environment
+venv_name="tiktok_stream_$name"
+echo "Creating a new virtual environment '$venv_name'..."
+python3 -m venv "$venv_name"
+
+# Check if the name is already in .gitignore
+if ! grep -q "$venv_name/" .gitignore; then
+    # Append the virtual environment name to .gitignore
+    echo "$venv_name/" >> .gitignore
+    echo "Added '$venv_name/' to .gitignore."
+else
+    echo "'$venv_name/' is already in .gitignore. Skipping."
 fi
 
-if [[ "$@" == *"--minecraft"* || "$@" == *"--docker"* ]]; then
-  if [[ "$@" == *"--restart"* ]]; then
-    echo "Restarting docker containers..."
-    sudo docker compose down
-  fi
-  sudo docker compose up minecraft -d 
-fi
+# Activate the new virtual environment
+source "$venv_name/bin/activate"
 
-# Save current working directory
-cwd=$(pwd)
+echo "New branch '$name' is checked out, and virtual environment '$venv_name' is created."
 
-cd ~
-
-if [ ! -d ".tmux" ]; then
-  # Fill .tmux.conf file with desired settings
-  echo "Preparing tmux options..."
-  git clone https://github.com/gpakosz/.tmux.git
-  ln -s -f .tmux/.tmux.conf
-  cp .tmux/.tmux.conf.local .
-  sed -i '/#set -g mouse on/s|^#||' .tmux.conf.local
-fi
-
-cd $cwd
-
-if tmux has-session -t stream >/dev/null 2>&1; then
-    echo "Attaching to existing session..."
-    tmux attach-session -t stream
-    exit
-fi
-
-# Create the tmux session
-tmux new-session -d -s stream
-tmux split-window -h
-tmux split-window -h
-tmux split-window -h
-tmux select-pane -t 1
-tmux split-window -v
-tmux split-window -v
-tmux select-pane -t 4
-tmux split-window -v
-tmux split-window -v
-tmux select-pane -t 7
-tmux split-window -v
-tmux split-window -v
-tmux select-pane -t 10
-tmux split-window -v
-tmux split-window -v
-tmux select-layout tiled
-
-# Run the python scripts
-# parse the args to see if there's "-run"
-if [[ "$@" == *"--run"* ]]; then
-    echo "Running the scripts..."
-    tmux send-keys -t 1 'python3 components/collector.py' C-m
-    tmux send-keys -t 2 'python3 components/poster.py' C-m
-    tmux send-keys -t 3 'python3 components/handler.py' C-m
-    tmux send-keys -t 4 'python3 components/follow.py' C-m
-    tmux send-keys -t 5 'python3 components/gift.py' C-m
-    tmux send-keys -t 6 'python3 components/join.py' C-m
-    tmux send-keys -t 7 'python3 components/like.py' C-m
-    tmux send-keys -t 8 'python3 components/comment.py' C-m
-    tmux send-keys -t 9 'python3 components/share.py' C-m
-fi
-
-if [[ "$@" == *"--headless"* ]]; then
-    exit
-fi
-
-tmux attach-session -t stream
-
-echo "Done!"
