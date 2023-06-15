@@ -96,8 +96,12 @@ first_line=$(head -n 1 "$filename")
 
 # Check if the first line is "Default Template"
 if [[ "$first_line" == "# Default Template" ]]; then
+
+    # Replace hyphen with space and capitalize first letters
+    pretty_name=$(echo "$name" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i)}1')
+    
     # Replace the first line with "#" + the variable $name  
-    sed -i "1s/.*/# $name/" "$filename"
+    sed -i "1s/.*/# $pretty_name/" "$filename"
 
     # Prompt the user for a brief description
     echo -n "Enter a one-line description of what the stream is about: "
