@@ -90,9 +90,11 @@ if ! validate_name "$name"; then
     return 1
 fi
 
+
 ################################
 
 # 4. Check if the branch already exists
+
 if git rev-parse --quiet --verify "$name" > /dev/null; then
     echo "\n-> Branch '$name' already exists. Switching to the branch...\n"
     git checkout "$name"
@@ -102,10 +104,11 @@ else
     git checkout -b "$name"
 fi
 
+
 # Check the exit status of the previous git checkout command
 if [ $? -ne 0 ]; then
     echo "\n-> Failed to switch to branch '$name'. Exiting the script.\n"
-    exit 1
+    return 1
 fi
 
 echo "\n-> Switched to branch '$name'"
@@ -297,6 +300,8 @@ if [ $? -eq 1 ]; then
 
 fi
 
+echo
+
 ################################
 
 # 12. Check if the pulsar login details are correct and if the connection is successful
@@ -311,6 +316,7 @@ fi
 
 # 13. Check if the rcon connection is successful
 
+echo "\n-> Checking if the rcon connection is successful...\n"
 python3 status.py check_rcon
 
 if [ $? -eq 1 ]; then
@@ -355,21 +361,35 @@ fi
 
 # Create the tmux session
 tmux new-session -d -s stream
-tmux split-window -h
-tmux split-window -h
+tmux split-window -v
+tmux split-window -v
 tmux select-pane -t 1
-tmux split-window -v
-tmux select-pane -t 2
-tmux split-window -v
+tmux split-window -h
 tmux select-pane -t 3
-tmux split-window -v
-tmux select-layout tiled
+tmux split-window -h
+tmux split-window -h
 
+# Get the width of the screen
+screen_width=$(tmux display-message -p '#{window_width}')
+
+# Calculate the desired width for the pane
+pane_width=$((screen_width * 33 / 100))
+
+# Resize the pane
+tmux select-pane -t 3
+tmux resize-pane -x "$pane_width"
+tmux resize-pane -y "$pane_width"
+tmux select-pane -t 4
+tmux resize-pane -x "$pane_width"
+tmux select-pane -t 5
+tmux resize-pane -x "$pane_width"
+
+tmux attach-session -t stream
 
 if [ "$answer_run" = "y" ] || [ "$answer_run" = "Y" ]; then
-    tmux send-keys -t 1 'python3 src/console.py' C-m
-    tmux send-keys -t 2 'python3 src/dispatcher.py' C-m
-    tmux send-keys -t 3 'python3 src/poster.py' C-m
+    tmux send-keys -t 6 'python3 src/console.py' C-m
+    tmux send-keys -t 1 'python3 src/dispatcher.py' C-m
+    tmux send-keys -t 2 'python3 src/poster.py' C-m
 fi
 
 if [ "$answer_attach" = "y" ] || [ "$answer_attach" = "Y" ]; then
