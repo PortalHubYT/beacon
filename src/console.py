@@ -113,7 +113,7 @@ class Console(Portal):
         if cmd[0] in ['"', "'"] and cmd[-1] in ['"', "'"]:
             cmd = cmd[1:-1]
         else:
-            print(f"\n{bcolors.WARNING}The cmd must be typed between "" or ''.\n")
+            print(f"\n{bcolors.WARNING}The cmd must be typed between \"\" or ''.{bcolors.ENDC}\n")
             return
        
         ret = await self.call('mc.post', cmd)
