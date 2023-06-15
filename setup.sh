@@ -12,6 +12,23 @@ validate_name() {
     fi
 }
 
+# Function to create and activate the virtual environment
+create_and_activate_venv() {
+    # Check if virtual environment exists
+    if [ ! -d ".pyenv" ]; then
+        echo "Creating virtual environment '.pyenv'..."
+        python3 -m venv .pyenv
+    fi
+
+    # Activate the virtual environment
+    echo "Activating virtual environment..."
+    source .pyenv/bin/activate
+
+    # Install requirements
+    echo "Installing requirements..."
+    pip install -r requirements.txt
+}
+
 # Check if the current branch is "main"
 current_branch=$(git symbolic-ref --short HEAD)
 if [[ $current_branch != "main" ]]; then
@@ -39,22 +56,8 @@ else
     git checkout -b "$name"
 fi
 
-# Create a new virtual environment
-venv_name="tiktok_stream_$name"
-echo "Creating a new virtual environment '$venv_name'..."
-python3 -m venv "$venv_name"
-
-# Check if the name is already in .gitignore
-if ! grep -q "$venv_name/" .gitignore; then
-    # Append the virtual environment name to .gitignore
-    echo "$venv_name/" >> .gitignore
-    echo "Added '$venv_name/' to .gitignore."
-else
-    echo "'$venv_name/' is already in .gitignore. Skipping."
-fi
-
-# Activate the new virtual environment
-source "$venv_name/bin/activate"
+# Create and/or activate the virtual environment
+create_and_activate_venv
 
 echo "New branch '$name' is checked out, and virtual environment '$venv_name' is created."
 
