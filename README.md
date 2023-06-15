@@ -1,6 +1,6 @@
-# Default Template
+# Npc Showoff
 
-This default template serves as a boilerplate to create custom TikTok streams, any branch on this repository might represent a unique stream based on this template.
+NPC walking in front of camera with speech bubbles representing users in the chat
 
 ------------
 
