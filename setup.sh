@@ -11,10 +11,10 @@ if [ ! -z "$1" ] && [ "$1" = "reset" ]; then
     # Switch back to the main branch
     git checkout main
 
-    echo "-> Virtual environment deactivated, and switched back to the 'main' branch."
+    echo "\n-> Virtual environment deactivated, and switched back to the 'main' branch."
 
     # Update the repository to reflect the state of the main branch
-    echo "-> Updating the repository to reflect the state of the 'main' branch..."
+    echo "\n-> Updating the repository to reflect the state of the 'main' branch..."
     git pull origin main
     return 0
 fi
@@ -38,24 +38,27 @@ validate_name() {
 create_and_activate_venv() {
     # Check if virtual environment exists
     if [ ! -d ".pyenv" ]; then
-        echo "-> Creating virtual environment '.pyenv'..."
+        echo "\n-> Creating virtual environment '.pyenv'..."
         python3 -m venv .pyenv
     fi
 
     # Activate the virtual environment
-    echo "-> Activating virtual environment..."
+    echo "\n-> Activating virtual environment..."
     . .pyenv/bin/activate
     
+    
+    echo "\n-> Running apt-get update..."
+    sudo apt-get -qq update
+
     # Installing requirements for psycopg2
-    echo "-> Installing requirements for psycopg2..."
-    sudo apt-get update
+    echo "\n-> Installing requirements for psycopg2..."
     sudo apt-get -qq install python3-dev
 
     # Install requirements
-    echo "---------------------------"
-    echo "-> Installing python requirements..."
+    echo "\n---------------------------"
+    echo "-> Installing python requirements...\n"
     pip install -q -r requirements.txt
-    echo "---------------------------"
+    echo "\n---------------------------"
 }
 
 #######################################################################
@@ -64,7 +67,7 @@ create_and_activate_venv() {
 # 1. Check if the current branch is "main"
 current_branch=$(git symbolic-ref --short HEAD)
 if [[ $current_branch != "main" ]]; then
-    echo "-> Error: The current branch is not 'main'. Please switch to the 'main' branch."
+    echo "\n-> Error: The current branch is not 'main'. Please switch to the 'main' branch."
     return 1
 fi
 
@@ -73,7 +76,7 @@ fi
 # 2. Check if a name argument is provided
 if [ -z "$1" ]; then
     # Read the input name from the user
-    echo -n "-> Enter a name (letters and '-' only): "
+    echo -n "\n-> Enter a name (letters and '-' only): "
     read name
 else
     name="$1"
@@ -83,7 +86,7 @@ fi
 
 # 3. Validate the input name
 if ! validate_name "$name"; then
-    echo "-> Error: Invalid name. Name should contain only letters and '-'."
+    echo "\n-> Error: Invalid name. Name should contain only letters and '-'."
     return 1
 fi
 
@@ -91,15 +94,15 @@ fi
 
 # 4. Check if the branch already exists
 if git rev-parse --quiet --verify "$name" > /dev/null; then
-    echo "-> Branch '$name' already exists. Switching to the branch..."
+    echo "\n-> Branch '$name' already exists. Switching to the branch..."
     git checkout "$name"
 else
     # Create and switch to a new branch with the input name
-    echo "-> Creating a new branch '$name'..."
+    echo "\n-> Creating a new branch '$name'..."
     git checkout -b "$name"
 fi
 
-echo "-> Switched to branch '$name'"
+echo "\n-> Switched to branch '$name'"
 
 ################################
 
@@ -109,7 +112,7 @@ create_and_activate_venv
 ################################
 
 # 6. Modify the README.md file (if it is the default template)
-echo "-> Modifying the README.md file..."
+echo "\n-> Modifying the README.md file..."
 
 filename="README.md"
 first_line=$(head -n 1 "$filename")
@@ -135,15 +138,15 @@ if [[ "$first_line" == "# Default Template" ]]; then
     git commit -m "Modified README.md"
     git push --set-upstream origin "$name"
 
-    echo "-> README.md modified and pushed successfully."
+    echo "\n-> README.md modified and pushed successfully."
 else
-    echo "-> First line of the README is not 'Default Template'. No modifications made."
+    echo "\n-> First line of the README is not 'Default Template'. No modifications made."
 fi
 
 ################################
 
 # 7. Start the docker deamon
-echo "-> Starting the docker deamon..."
+echo "\n-> Starting the docker deamon...\n"
 sudo service docker start
 
 ################################
@@ -152,21 +155,40 @@ sudo service docker start
 echo "-----------------------------------------------------------"
 sudo docker container ps
 echo "-----------------------------------------------------------"
-echo -n "-> Do you wish to stop and kill all running docker containers? (y/n)"
+echo -n "\n-> Do you wish to stop and kill all running docker containers? (y/n): "
 read answer
 
 if [[ $answer == "y" || $answer == "Y" ]]; then
-    echo "-> Stopping and killing all running docker containers..."
-    sudo docker container stop $(sudo docker container ls -q)
-    sudo docker container rm $(sudo docker container ls -aq)
-    echo "-> All running docker containers have been stopped and killed."
+    echo "\n-> Stopping and killing all running docker containers..."
+
+    # Stop running containers
+    running_containers=$(sudo docker container ls -q)
+    if [[ -n $running_containers ]]; then
+        sudo docker container stop $running_containers
+        echo "\n-> Stopped the following containers:"
+        echo $running_containers
+    else
+        echo "\n-> No running containers to stop."
+    fi
+
+    # Remove containers
+    all_containers=$(sudo docker container ls -aq)
+    if [[ -n $all_containers ]]; then
+        sudo docker container rm $all_containers
+        echo "\n-> Removed the following containers:"
+        echo $all_containers
+    else
+        echo "\n-> No containers to remove."
+    fi
+
+    echo "\n-> All running docker containers have been stopped and killed."
 
     # Prompt user if they want to prune docker
-    echo "-> Do you wish to delete all unused docker images, containers, networks and volumes?"
-    sudo docker system prune --volumes --force
+    echo "\n-> Do you wish to delete all unused docker images, containers, networks and volumes?\n"
+    sudo docker system prune --volumes
 
 else
-    echo "-> No docker containers were stopped or killed."
+    echo "\n-> No docker containers were stopped or killed."
 fi
 
 ################################
