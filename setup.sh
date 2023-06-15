@@ -316,3 +316,66 @@ python3 status.py check_rcon
 if [ $? -eq 1 ]; then
     return 1
 fi
+
+################################
+
+# 14. Prepare the tmux session and maybe attach to it
+
+# Save current working directory
+cwd=$(pwd)
+
+cd ~
+
+if [ ! -d ".tmux" ]; then
+  # Fill .tmux.conf file with desired settings
+  echo "Preparing tmux options..."
+  git clone https://github.com/gpakosz/.tmux.git
+  ln -s -f .tmux/.tmux.conf
+  cp .tmux/.tmux.conf.local .
+  sed -i '/#set -g mouse on/s|^#||' .tmux.conf.local
+fi
+
+cd $cwd
+
+# Query the user wether they wish to attach to the tmux session
+echo -n "\n-> Do you wish to attach to the tmux session right now? (y/n): "
+read answer_attach
+
+# Query the user if they wish to run the basic stream components
+echo -n "\n-> Do you wish to run the basic stream components (console, dispatcher, poster) right now, in tmux? (y/n): "
+read answer_run
+
+if [ "$answer_attach" = "y" ] || [ "$answer_attach" = "Y" ]; then
+    if tmux has-session -t stream >/dev/null 2>&1; then
+        echo "Attaching to existing session..."
+        tmux attach-session -t stream
+        return 0
+    fi
+fi
+
+# Create the tmux session
+tmux new-session -d -s stream
+tmux split-window -h
+tmux split-window -h
+tmux select-pane -t 1
+tmux split-window -v
+tmux select-pane -t 4
+tmux split-window -v
+tmux select-pane -t 7
+tmux split-window -v
+tmux select-layout tiled
+
+
+if [ "$answer_run" = "y" ] || [ "$answer_run" = "Y" ]; then
+    tmux send-keys -t 1 'python3 components/console.py' C-m
+    tmux send-keys -t 2 'python3 components/dispatcher.py' C-m
+    tmux send-keys -t 3 'python3 components/poster.py' C-m
+fi
+
+if [ "$answer_attach" = "y" ] || [ "$answer_attach" = "Y" ]; then
+    tmux attach-session -t stream
+    return 0
+fi
+
+echo "Done! If you want to attach to the tmux session, run the following command:"
+echo "tmux attach-session -t stream"
