@@ -38,7 +38,7 @@ create_and_activate_venv() {
 
     # Activate the virtual environment
     echo "-> Activating virtual environment..."
-    source .pyenv/bin/activate
+    . .pyenv/bin/activate
     
     # Installing requirements for psycopg2
     sudo apt-get install python3-dev
