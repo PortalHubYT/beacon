@@ -109,7 +109,12 @@ if [[ "$first_line" == "# Default Template" ]]; then
     # Replace the lines between the start and end lines with the user's description
     sed -i "3s/.*/$description/" "$filename"
 
-    echo "-> README.md modified successfully."
+     # Git commands
+    git add README.md
+    git commit -m "Modified README.md"
+    git push
+
+    echo "-> README.md modified and pushed successfully."
 else
     echo "-> First line of the README is not 'Default Template'. No modifications made."
 fi
