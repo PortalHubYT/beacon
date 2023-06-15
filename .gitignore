@@ -4,6 +4,10 @@
 test.py
 __pycache__/
 volumes/
-.pyenv/
-test.sh
 src/tools/logs/*.log
+.pyenv/
+src/tools/.env
+src/tools/__pycache__/
+test.sh
+volumes/database/
+volumes/world/
