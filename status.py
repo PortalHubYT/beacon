@@ -1,8 +1,11 @@
 import sys
 import asyncio
 
+import shulker as mc
+
 from src.tools.database import db
 from src.tools.pulsar import Portal
+from src.tools.config import config
 
 if sys.argv[1] == "check_database":
     print("\n-> Checking database connection...")
@@ -46,4 +49,13 @@ elif sys.argv[1] == "check_pulsar":
         exit(1)
         
 elif sys.argv[1] == "check_rcon":
-    pass
+    server_status = f"{config.server_ip}:{config.rcon_port} (password: {config.rcon_password})"
+    success = f"-> Connected to: {server_status}"
+    fail = f"-> Failed to connect to: {server_status}"
+
+    try:
+        mc.connect(config.server_ip, config.rcon_password, port=config.rcon_port)
+        print(success)
+    except Exception as e:
+        print(fail)
+        exit(f"Error: {e}")

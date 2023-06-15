@@ -306,3 +306,13 @@ python3 status.py check_pulsar
 if [ $? -eq 1 ]; then
     return 1
 fi
+
+################################
+
+# 13. Check if the rcon connection is successful
+
+python3 status.py check_rcon
+
+if [ $? -eq 1 ]; then
+    return 1
+fi
