@@ -205,7 +205,7 @@ echo "\n-> Do you wish to create a new world? (y/n): "
 read answer
 
 if [[ $answer == "y" || $answer == "Y" ]]; then
-    rm -rf database/world
+    rm -rf volumes/world/*
 else
     echo "\n-> Using the existing world..."
 fi
