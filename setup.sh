@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check if script is run to reset (source setup.sh reset)
-if [ "$1" == "reset"]; then
+if [ -z "$1" ] && [ "$1" == "reset"]; then
     # Deactivate the virtual environment
     deactivate
 
@@ -39,10 +39,13 @@ create_and_activate_venv() {
     # Activate the virtual environment
     echo "Activating virtual environment..."
     source .pyenv/bin/activate
+    
+    # Installing requirements for psycopg2
+    sudo apt-get install python3-dev
 
     # Install requirements
     echo "Installing requirements..."
-    pip install -r requirements.txt
+    pip install -q -r requirements.txt
 }
 
 # Check if the current branch is "main"
