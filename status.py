@@ -1,5 +1,6 @@
 import sys
 import asyncio
+import signal
 
 import shulker as mc
 
@@ -38,13 +39,10 @@ elif sys.argv[1] == "check_pulsar":
         class Template(Portal):
             async def on_join(self):
                 print("\n-> Pulsar connection successful!")
-                exit(0)
+                signal.SIGINT
 
         action = Template()
-        try:
-            asyncio.run(action.run())
-        except:
-            exit(0)
+        asyncio.run(action.run())
         
     except Exception as e:
         print("\n-> Pulsar connection failed! Trace:\n")

@@ -357,7 +357,6 @@ fi
 tmux new-session -d -s stream
 tmux split-window -h
 tmux split-window -h
-tmux split-window -h
 tmux select-pane -t 1
 tmux split-window -v
 tmux select-pane -t 2
