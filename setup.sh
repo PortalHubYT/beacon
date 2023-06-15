@@ -13,7 +13,7 @@ if [ ! -z "$1" ] && [ "$1" = "reset" ]; then
     # Update the repository to reflect the state of the main branch
     echo "-> Updating the repository to reflect the state of the 'main' branch..."
     git pull origin main
-    return
+    return 0
 fi
 
 # Function to validate the input name
