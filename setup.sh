@@ -13,7 +13,7 @@ if [ ! -z "$1" ] && [ "$1" = "reset" ]; then
     # Update the repository to reflect the state of the main branch
     echo "-> Updating the repository to reflect the state of the 'main' branch..."
     git pull origin main
-    exit 1
+    return
 fi
 
 # Function to validate the input name
@@ -54,7 +54,7 @@ create_and_activate_venv() {
 current_branch=$(git symbolic-ref --short HEAD)
 if [[ $current_branch != "main" ]]; then
     echo "-> Error: The current branch is not 'main'. Please switch to the 'main' branch."
-    exit 1
+    return 1
 fi
 
 # Check if a name argument is provided
@@ -69,7 +69,7 @@ fi
 # Validate the input name
 if ! validate_name "$name"; then
     echo "-> Error: Invalid name. Name should contain only letters and '-'."
-    exit 1
+    return 1
 fi
 
 # Check if the branch already exists
