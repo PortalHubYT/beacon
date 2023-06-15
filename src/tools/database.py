@@ -7,9 +7,18 @@ from dotenv import load_dotenv
 
 from .config import config
 
+# Get the absolute path of the current file
+current_file_path = os.path.abspath(__file__)
+
+# Get the directory containing the current file
+directory = os.path.dirname(current_file_path)
+
+# Construct the absolute file path by joining the directory and the desired file name
+log_file_path = os.path.join(directory, 'logs/db_error.log')
+
 # Configure the logger
 logging.basicConfig(
-    filename='./logs/db_error.log',
+    filename=log_file_path,
     level=logging.ERROR,
     format='%(asctime)s [%(levelname)s]: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
