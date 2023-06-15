@@ -67,6 +67,10 @@ else
     name="$1"
 fi
 
+# Prompt the user for a brief description
+echo -n "-> Enter a brief description of what the stream will be about: "
+read description
+
 # Validate the input name
 if ! validate_name "$name"; then
     echo "-> Error: Invalid name. Name should contain only letters and '-'."
@@ -87,4 +91,27 @@ fi
 create_and_activate_venv
 
 echo "-> New branch '$name' is checked out, and virtual environment '$venv_name' is created."
+
+# Modify the README.md file
+echo "-> Modifying the README.md file..."
+
+filename="README.md"
+first_line=$(head -n 1 "$filename")
+
+# Check if the first line is "Default Template"
+if [[ "$first_line" == "# Default Template" ]]; then
+    # Replace the first line with "#" + the variable $name  
+    sed -i "1s/.*/# $name/" "$filename"
+
+    # Prompt the user for a brief description
+    read -p "Enter a one-line description of what the stream is about: " description
+
+    # Replace the lines between the start and end lines with the user's description
+    sed -i "3s/.*/$description/" "$filename"
+
+    echo "-> README.md modified successfully."
+else
+    echo "-> First line of the README is not 'Default Template'. No modifications made."
+fi
+
 
