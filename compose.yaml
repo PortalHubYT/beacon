@@ -7,7 +7,7 @@ volumes:
 services:
   minecraft:
     image: ghcr.io/portalhubyt/template_server:latest
-    container_name: minecraft_server
+    container_name: minecraft
     ports:
       - "25565:25565"
       - "25575:25575"
