@@ -94,12 +94,18 @@ fi
 
 # 4. Check if the branch already exists
 if git rev-parse --quiet --verify "$name" > /dev/null; then
-    echo "\n-> Branch '$name' already exists. Switching to the branch..."
+    echo "\n-> Branch '$name' already exists. Switching to the branch...\n"
     git checkout "$name"
 else
     # Create and switch to a new branch with the input name
     echo "\n-> Creating a new branch '$name'..."
     git checkout -b "$name"
+fi
+
+# Check the exit status of the previous git checkout command
+if [ $? -ne 0 ]; then
+    echo "\n-> Failed to switch to branch '$name'. Exiting the script.\n"
+    exit 1
 fi
 
 echo "\n-> Switched to branch '$name'"
@@ -193,8 +199,27 @@ fi
 
 ################################
 
+# 9. Running the minecraft docker container
+echo "\n-> Running the minecraft server docker container...\n"
+sudo docker compose up minecraft -d
 
+echo "\n-> Waiting for the Minecraft server to start...\n"
 
+# Loop until the desired message is found
+while true; do
+  # Read the last line of the container's logs
+  container_logs=$(sudo docker logs minecraft)
+
+  # Check if the desired message is found
+  if [[ $container_logs == *"Done ("* ]]; then
+    echo "\n-> Minecraft server is running!"
+    break  # Exit the loop
+  fi
+
+  sleep 1  # Wait for 1 second before checking again
+done
+
+################################
 
 
 
