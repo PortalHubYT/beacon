@@ -142,6 +142,37 @@ fi
 
 ################################
 
-# 7. Prompt user if they want to prune docker
+# 7. Start the docker deamon
+echo "-> Starting the docker deamon..."
+sudo service docker start
+
+################################
+
+# 8. Prompt user to stop and kill all running docker containers
+echo "-----------------------------------------------------------"
+sudo docker container ps
+echo "-----------------------------------------------------------"
+echo -n "-> Do you wish to stop and kill all running docker containers? (y/n)"
+read answer
+
+if [[ $answer == "y" || $answer == "Y" ]]; then
+    echo "-> Stopping and killing all running docker containers..."
+    sudo docker container stop $(sudo docker container ls -q)
+    sudo docker container rm $(sudo docker container ls -aq)
+    echo "-> All running docker containers have been stopped and killed."
+
+    # Prompt user if they want to prune docker
+    echo "-> Do you wish to delete all unused docker images, containers, networks and volumes?"
+    sudo docker system prune --volumes --force
+
+else
+    echo "-> No docker containers were stopped or killed."
+fi
+
+################################
+
+
+
+
 
 
