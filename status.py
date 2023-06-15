@@ -39,7 +39,7 @@ elif sys.argv[1] == "check_pulsar":
         class Template(Portal):
             async def on_join(self):
                 print("\n-> Pulsar connection successful!")
-                signal.SIGINT
+                raise KeyboardInterrupt
 
         action = Template()
         asyncio.run(action.run())
