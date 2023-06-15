@@ -86,7 +86,7 @@ fi
 # Create and/or activate the virtual environment
 create_and_activate_venv
 
-echo "-> New branch '$name' is checked out, and virtual environment '$venv_name' is created."
+echo "-> New branch '$name' is checked out, and virtual environment (.pyenv) is created."
 
 # Modify the README.md file
 echo "-> Modifying the README.md file..."
