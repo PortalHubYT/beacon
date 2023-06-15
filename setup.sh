@@ -395,5 +395,5 @@ if [ "$answer_attach" = "y" ] || [ "$answer_attach" = "Y" ]; then
     return 0
 fi
 
-echo "Done! If you want to attach to the tmux session, run the following command:"
+echo "\n\nDone! If you want to attach to the tmux session, run the following command:"
 echo "tmux attach-session -t stream"
