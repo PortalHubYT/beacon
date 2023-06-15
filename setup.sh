@@ -273,6 +273,27 @@ if [[ -e "$dotenv_file" ]]; then
     fi
 fi
 
+################################
 
+# 11. Check if the database login details are correct and if it's empty or needs to be
 
+python3 status.py check_database
+
+if [ $? -eq 1 ]; then
+    return 1
+fi
+
+#####
+
+python3 status.py check_tables_empty
+
+if [ $? -eq 1 ]; then
+    echo -n "\n-> Would you like to reset the database? (y/n): "
+    read answer
+
+    if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+        python3 status.py reset_database
+    fi
+
+fi
 
