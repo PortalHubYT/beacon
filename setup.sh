@@ -36,9 +36,14 @@ if [[ $current_branch != "main" ]]; then
     exit 1
 fi
 
-# Read the input name from the user
-echo -n "Enter a name (letters and '-' only): "
-read name
+# Check if a name argument is provided
+if [ -z "$1" ]; then
+    # Read the input name from the user
+    echo -n "Enter a name (letters and '-' only): "
+    read name
+else
+    name="$1"
+fi
 
 # Validate the input name
 if ! validate_name "$name"; then
