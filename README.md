@@ -1,6 +1,6 @@
-# Default Template
+# Chat Printer
 
-This default template serves as a boilerplate to create custom TikTok streams, any branch on this repository might represent a unique stream based on this template.
+Prints the live chat on the screen in a theater
 
 ------------
 
