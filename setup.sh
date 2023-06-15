@@ -199,7 +199,17 @@ fi
 
 ################################
 
-# 9. Running the minecraft docker container
+# 9. Running the minecraft docker container and prompting for new world
+
+echo "\n-> Do you wish to create a new world? (y/n): "
+read answer
+
+if [[ $answer == "y" || $answer == "Y" ]]; then
+    rm -rf database/world
+else
+    echo "\n-> Using the existing world..."
+fi
+
 echo "\n-> Running the minecraft server docker container...\n"
 sudo docker compose up minecraft -d
 
