@@ -114,6 +114,7 @@ class Console(Portal):
             cmd = cmd[1:-1]
         else:
             print(f"\n{bcolors.WARNING}The cmd must be typed between "" or ''.\n")
+            return
        
         ret = await self.call('mc.post', cmd)
         
