@@ -67,7 +67,7 @@ class Dispatch(Portal):
             
         @client.on("error")
         async def on_error(event):
-            error_msg = f"An error occurred: {e}"
+            error_msg = f"An error occurred: {event}"
             print(error_msg)
             logging.error(error_msg)
 

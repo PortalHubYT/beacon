@@ -93,7 +93,7 @@ fi
 
 ################################
 
-# 4. Check if the branch already exists
+# 4. Check if the branch already exists and pull origin main eventually
 
 if git rev-parse --quiet --verify "$name" > /dev/null; then
     echo "\n-> Branch '$name' already exists. Switching to the branch...\n"
@@ -112,6 +112,14 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "\n-> Switched to branch '$name'"
+
+echo -n "\n-> Would you like to pull origin main? (y/n): "
+read answer
+
+if [[ $answer == "y" || $answer == "Y" ]]; then
+    echo "\n-> Pulling origin main..."
+    git pull origin main
+fi
 
 ################################
 
