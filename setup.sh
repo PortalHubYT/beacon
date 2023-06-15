@@ -297,3 +297,12 @@ if [ $? -eq 1 ]; then
 
 fi
 
+################################
+
+# 12. Check if the pulsar login details are correct and if the connection is successful
+
+python3 status.py check_pulsar
+
+if [ $? -eq 1 ]; then
+    return 1
+fi
