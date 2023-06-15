@@ -11,7 +11,9 @@ config_values = {
     "stream_id": "tv_asahi_news",
     "verbose": True,
     "listen_to": ["comment", "follow", "join", "share", "like", "gift"],
-    "crop_size": 50
+    "crop_size": 50,
+    "camera_name": "PortalHub",
+    "camera_pos": "-6.5 105 239.5 -90 0"
 }
 
 class Config:
