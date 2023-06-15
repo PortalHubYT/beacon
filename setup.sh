@@ -109,7 +109,7 @@ if [[ "$first_line" == "# Default Template" ]]; then
      # Git commands
     git add README.md
     git commit -m "Modified README.md"
-    git git push --set-upstream origin "$name"
+    git push --set-upstream origin "$name"
 
     echo "-> README.md modified and pushed successfully."
 else
