@@ -201,11 +201,11 @@ fi
 
 # 9. Running the minecraft docker container and prompting for new world
 
-echo "\n-> Do you wish to create a new world? (y/n): "
+echo -n "\n-> Do you wish to create a new world? (y/n): "
 read answer
 
 if [[ $answer == "y" || $answer == "Y" ]]; then
-    rm -rf volumes/world/*
+    sudo rm -rf volumes/world/*
 else
     echo "\n-> Using the existing world..."
 fi
