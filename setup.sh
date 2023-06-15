@@ -42,11 +42,11 @@ create_and_activate_venv() {
     
     # Installing requirements for psycopg2
     echo "-> Installing requirements for psycopg2..."
-    sudo apt-get install python3-dev
+    sudo apt-get -qq install python3-dev
 
     # Install requirements
-    echo "-> Installing python requirements..."
     echo "---------------------------"
+    echo "-> Installing python requirements..."
     pip install -q -r requirements.txt
     echo "---------------------------"
 }
