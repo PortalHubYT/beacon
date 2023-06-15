@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check if script is run to reset (source setup.sh reset)
-if [ ! -z "$1" ] && [ "$1" == "reset" ]; then
+if [ ! -z "$1" ] && [ "$1" = "reset" ]; then
     # Deactivate the virtual environment
     deactivate
 
