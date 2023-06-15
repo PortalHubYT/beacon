@@ -6,4 +6,4 @@ __pycache__/
 volumes/
 .pyenv/
 test.sh
-*.log
+src/tools/logs/*.log
