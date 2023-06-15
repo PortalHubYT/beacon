@@ -357,19 +357,20 @@ fi
 tmux new-session -d -s stream
 tmux split-window -h
 tmux split-window -h
+tmux split-window -h
 tmux select-pane -t 1
 tmux split-window -v
-tmux select-pane -t 4
+tmux select-pane -t 2
 tmux split-window -v
-tmux select-pane -t 7
+tmux select-pane -t 3
 tmux split-window -v
 tmux select-layout tiled
 
 
 if [ "$answer_run" = "y" ] || [ "$answer_run" = "Y" ]; then
-    tmux send-keys -t 1 'python3 components/console.py' C-m
-    tmux send-keys -t 2 'python3 components/dispatcher.py' C-m
-    tmux send-keys -t 3 'python3 components/poster.py' C-m
+    tmux send-keys -t 1 'python3 src/console.py' C-m
+    tmux send-keys -t 2 'python3 src/dispatcher.py' C-m
+    tmux send-keys -t 3 'python3 src/poster.py' C-m
 fi
 
 if [ "$answer_attach" = "y" ] || [ "$answer_attach" = "Y" ]; then

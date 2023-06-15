@@ -39,9 +39,12 @@ elif sys.argv[1] == "check_pulsar":
             async def on_join(self):
                 print("\n-> Pulsar connection successful!")
                 exit(0)
-        
+
         action = Template()
-        asyncio.run(action.run())
+        try:
+            asyncio.run(action.run())
+        except:
+            exit(0)
         
     except Exception as e:
         print("\n-> Pulsar connection failed! Trace:\n")
