@@ -8,10 +8,10 @@ if [ -z "$1" ] && [ "$1" == "reset"]; then
     # Switch back to the main branch
     git checkout main
 
-    echo "Virtual environment deactivated, and switched back to the 'main' branch."
+    echo "-> Virtual environment deactivated, and switched back to the 'main' branch."
 
     # Update the repository to reflect the state of the main branch
-    echo "Updating the repository to reflect the state of the 'main' branch..."
+    echo "-> Updating the repository to reflect the state of the 'main' branch..."
     git pull origin main
     exit 1
 fi
@@ -32,33 +32,35 @@ validate_name() {
 create_and_activate_venv() {
     # Check if virtual environment exists
     if [ ! -d ".pyenv" ]; then
-        echo "Creating virtual environment '.pyenv'..."
+        echo "-> Creating virtual environment '.pyenv'..."
         python3 -m venv .pyenv
     fi
 
     # Activate the virtual environment
-    echo "Activating virtual environment..."
+    echo "-> Activating virtual environment..."
     source .pyenv/bin/activate
     
     # Installing requirements for psycopg2
     sudo apt-get install python3-dev
 
     # Install requirements
-    echo "Installing requirements..."
+    echo "-> Installing requirements..."
+    echo "---------------------------"
     pip install -q -r requirements.txt
+    echo "---------------------------"
 }
 
 # Check if the current branch is "main"
 current_branch=$(git symbolic-ref --short HEAD)
 if [[ $current_branch != "main" ]]; then
-    echo "Error: The current branch is not 'main'. Please switch to the 'main' branch."
+    echo "-> Error: The current branch is not 'main'. Please switch to the 'main' branch."
     exit 1
 fi
 
 # Check if a name argument is provided
 if [ -z "$1" ]; then
     # Read the input name from the user
-    echo -n "Enter a name (letters and '-' only): "
+    echo -n "-> Enter a name (letters and '-' only): "
     read name
 else
     name="$1"
@@ -66,22 +68,22 @@ fi
 
 # Validate the input name
 if ! validate_name "$name"; then
-    echo "Error: Invalid name. Name should contain only letters and '-'."
+    echo "-> Error: Invalid name. Name should contain only letters and '-'."
     exit 1
 fi
 
 # Check if the branch already exists
 if git rev-parse --quiet --verify "$name" > /dev/null; then
-    echo "Branch '$name' already exists. Switching to the branch..."
+    echo "-> Branch '$name' already exists. Switching to the branch..."
     git checkout "$name"
 else
     # Create and switch to a new branch with the input name
-    echo "Creating a new branch '$name'..."
+    echo "-> Creating a new branch '$name'..."
     git checkout -b "$name"
 fi
 
 # Create and/or activate the virtual environment
 create_and_activate_venv
 
-echo "New branch '$name' is checked out, and virtual environment '$venv_name' is created."
+echo "-> New branch '$name' is checked out, and virtual environment '$venv_name' is created."
 
