@@ -386,7 +386,7 @@ pane_width=$((screen_width * 33 / 100))
 # Resize the pane
 tmux select-pane -t 3
 tmux resize-pane -x "$pane_width"
-tmux resize-pane -y "$pane_width"
+tmux resize-pane -y 25
 tmux select-pane -t 4
 tmux resize-pane -x "$pane_width"
 tmux select-pane -t 5
