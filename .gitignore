@@ -8,3 +8,4 @@ src/.console_history
 db_error.log
 dispatcher_error.log
 src/logs/db_error.log
+.pyenv/
