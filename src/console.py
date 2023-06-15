@@ -118,7 +118,8 @@ class Console(Portal):
        
         ret = await self.call('mc.post', cmd)
         
-        print(f"o> [{bcolors.OKGREEN}{ret}{bcolors.ENDC}]")
+        print(f"\no> Command: [/{bcolors.OKGREEN}{cmd}{bcolors.ENDC}]")
+        print(f"o> Return value: [{bcolors.OKGREEN}{ret}{bcolors.ENDC}]\n")
 
     async def reset_db(self, *args):
         if len(args) == 0:
