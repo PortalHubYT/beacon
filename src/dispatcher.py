@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import logging
 import time
+import os
 
 from TikTokLive.types.errors import FailedFetchRoomInfo
 from TikTokLive import TikTokLiveClient
@@ -12,8 +13,20 @@ from tools.database import db
 from tools.sanitize import get_profile
 from tools.pulsar import Portal
 
+# Get the absolute path of the current file
+current_file_path = os.path.abspath(__file__)
+
+# Get the directory containing the current file
+directory = os.path.dirname(current_file_path)
+
+# Construct the absolute file path by joining the directory and the desired file name
+log_file_path = os.path.join(directory, 'tools/logs/dispatcher_error.log')
+
+os.mkdir(os.path.join(directory, 'tools/logs/')) if not os.path.exists(os.path.join(directory, 'tools/logs/')) else None
+open(log_file_path, "w+")
+
 logging.basicConfig(
-    filename='logs/dispatcher_error.log',
+    filename=log_file_path,
     level=logging.ERROR,
     format='%(asctime)s [%(levelname)s]: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
