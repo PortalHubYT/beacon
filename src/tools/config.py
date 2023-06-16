@@ -1,5 +1,7 @@
 import os
 
+import shulker as mc
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -13,7 +15,9 @@ config_values = {
     "listen_to": ["comment", "follow", "join", "share", "like", "gift"],
     "crop_size": 50,
     "camera_name": "PortalHub",
-    "camera_pos": "-6.5 105 239.5 -90 0"
+    "camera_pos": mc.Coordinates(-153.5, 130, 24.5, 141, 13.6),
+    "npc_spawn_pos": mc.Coordinates(974, 62, 423),
+    "cleanup_threshold": 200
 }
 
 class Config:
