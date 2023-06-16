@@ -1,11 +1,21 @@
 import random
 import datetime
+import os
+
+# Get the absolute path of the current file
+current_file_path = os.path.abspath(__file__)
+
+# Get the directory containing the current file
+directory = os.path.dirname(current_file_path)
+
+# Construct the absolute file path by joining the directory and the desired file name
+file_path = os.path.join(directory, 'tools/')
 
 def gen_fake_profiles(amount):
-    with open('tools/random_comments.txt', 'r') as f:
+    with open(file_path + 'random_comments.txt', 'r') as f:
             random_comments = f.readlines()
             
-    with open('tools/random_pseudos.txt', 'r') as f:
+    with open(file_path + 'random_pseudos.txt', 'r') as f:
         random_pseudos = f.readlines()
     
     random_gift = ["Diamond", "Gold", "Silver", "Bronze"]
