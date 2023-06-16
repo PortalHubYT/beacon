@@ -32,6 +32,9 @@ directory = os.path.dirname(current_file_path)
 # Construct the absolute file path by joining the directory and the desired file name
 log_file_path = os.path.join(directory, 'tools/logs/console_history.log')
 
+os.mkdir(os.path.join(directory, 'tools/logs/')) if not os.path.exists(os.path.join(directory, 'tools/logs/')) else None
+open(log_file_path, "w+")
+
 class Console(Portal):
     
     async def on_join(self):

@@ -16,6 +16,9 @@ directory = os.path.dirname(current_file_path)
 # Construct the absolute file path by joining the directory and the desired file name
 log_file_path = os.path.join(directory, 'logs/db_error.log')
 
+os.mkdir(os.path.join(directory, 'logs/')) if not os.path.exists(os.path.join(directory, 'logs/')) else None
+open(log_file_path, "w+")
+
 # Configure the logger
 logging.basicConfig(
     filename=log_file_path,
