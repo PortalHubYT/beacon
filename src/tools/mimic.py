@@ -9,13 +9,13 @@ current_file_path = os.path.abspath(__file__)
 directory = os.path.dirname(current_file_path)
 
 # Construct the absolute file path by joining the directory and the desired file name
-file_path = os.path.join(directory, 'tools/')
+file_path = os.path.join(directory, 'random_')
 
 def gen_fake_profiles(amount):
-    with open(file_path + 'random_comments.txt', 'r') as f:
+    with open(file_path + 'comments.txt', 'r') as f:
             random_comments = f.readlines()
             
-    with open(file_path + 'random_pseudos.txt', 'r') as f:
+    with open(file_path + 'pseudos.txt', 'r') as f:
         random_pseudos = f.readlines()
     
     random_gift = ["Diamond", "Gold", "Silver", "Bronze"]
