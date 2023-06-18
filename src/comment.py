@@ -67,28 +67,24 @@ class Comment(Portal):
             print(f"-POPPING--> normal: {len(normal_queue)}, follower: {len(follower_queue)}, donator: {len(priority_queue)} forced: {len(bypass_queue)} total: {total}")
             if not profile: return
             
-            display = ""
-            
-            if profile["role"]:
-                colors = ["1", "2", "3", "4", "5", '6', '7', '8', '9', '0', 'a', 'b', 'c', 'd', 'e', 'f']
-                display += "&" + random.choice(colors) + "&l"
-            else:
-                display += "&l"
-            
-            def spawn_npc(name, message, display):
+            display = "&0" + "&l"
+
+            def spawn_npc(name, display):
                 
                 origin = config.npc_spawn_pos
+                
+                import random
                 
                 x_offset = random.randint(-2, 2)
                 z_offset = random.randint(-2, 2)
                 
-                shifted = origin.offset(x_offset, 30, z_offset)
+                shifted = origin.offset(x_offset, 20, z_offset)
                 
                 spawn_pos = str(shifted).replace(" ", ":")
                 
                 ret = mc.post(f"npc create {display}{name} --at {spawn_pos}:world")
                 
-                mc.post(f"effect give @e minecraft:slow_falling infinite 1 true")
+                #mc.post(f"effect give @e minecraft:slow_falling infinite 1 true")
                 
                 ret = ret.replace("\x1b[0m", "").replace("\x1b[32;1m", "").replace("\x1b[33;1m", "").replace("\n", "")
                 id = ret.split("ID ")[1].replace(").", "")
@@ -103,10 +99,12 @@ class Comment(Portal):
                 mc.post(f"npc health --set 1 --id {id}")
                 mc.post(f"npc speed 0.7 --id {id}")
                 mc.post(f"npc scoreboard --addtag alive")
+                mc.post(f"trait Sentinel --id {id}")
+                mc.post(f"sentinel addtarget npcs --id {id}")
+                mc.post(f"npc respawn -1 {id}")
+                mc.post(f"sentinel respawntime -1 --id {id}")
                 
-
-            comment = comment.replace("/", "")
-            f = lambda: spawn_npc(profile['display'], comment, display)
+            f = lambda: spawn_npc(profile['display'], display)
             await self.publish('mc.lambda', dumps(f))
                 
         await asyncio.sleep(1.5)
