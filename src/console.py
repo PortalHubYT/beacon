@@ -89,6 +89,7 @@ class Console(Portal):
             if use_db:
                 db.add_new_user(profile)
                 db.add_event(profile, action)
+                db.commit()
             
         print()
         
