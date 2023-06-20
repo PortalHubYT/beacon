@@ -93,7 +93,7 @@ class Console(Portal):
         print()
         
     async def mimic_db(self, action, amount, time_between=1):
-        self.mimic(action, amount, time_between, use_db=True)
+        await self.mimic(action, amount, time_between, use_db=True)
     
     async def sql(self, *args):
         
