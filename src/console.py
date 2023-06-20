@@ -73,7 +73,7 @@ class Console(Portal):
                 print(f"{bcolors.FAIL}Command {args[0]} not found.")
         print()
     
-    async def mimic(self, action, amount, time_between=1, db=False):
+    async def mimic(self, action, amount, time_between=1, use_db=False):
         amount = int(amount)
         time_between = float(time_between)
         
@@ -86,13 +86,14 @@ class Console(Portal):
             time_elapsed_seconds = (datetime.datetime.now() - start).total_seconds()
             print(f"{bcolors.ENDC}({datetime.datetime.now().strftime('%H:%M')})> {bcolors.OKCYAN}{i + 1}/{amount} [{action}] in {round(time_elapsed_seconds, 2)}s", end="\r")
             await self.publish(f"live.{action}", profile)
-            db.add_new_user(profile)
-            db.add_event(profile, action)
+            if use_db:
+                db.add_new_user(profile)
+                db.add_event(profile, action)
             
         print()
         
     async def mimic_db(self, action, amount, time_between=1):
-        self.mimic(action, amount, time_between, db=True)
+        self.mimic(action, amount, time_between, use_db=True)
     
     async def sql(self, *args):
         
