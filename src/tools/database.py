@@ -51,6 +51,7 @@ class PostgresDB:
             "avatar4": "text",
             "total_gifted_value": "integer NOT NULL DEFAULT(0)",
             "gifted_value_since_last_reset": "integer NOT NULL DEFAULT(0)",
+            "times_spawned": "integer NOT NULL DEFAULT(0)",
         },
         "comments": {
             "timestamp": "timestamp",
