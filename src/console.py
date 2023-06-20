@@ -43,6 +43,7 @@ class Console(Portal):
         self.commands = {}
         self.register_command("help", self.help, "Show this help message.")
         self.register_command("mimic", self.mimic, "Mimic n (live)-actions through pulsar", args=["action", "amount", "time_between (optional)"])
+        self.register_command("mimic_db", self.mimic_db, "Mimic n (live)-actions through pulsar and in the DB", args=["action", "amount", "time_between (optional)"])
         self.register_command("sql", self.sql, "Query the database", args=["query"])
         self.register_command("post", self.post, "Sends a minecraft commands and listen for return value", args=["cmd"])
         self.register_command("reset_db", self.reset_db, "Reset the database specified in tools/.env, requires 'confirm' as arg", args=["confirm"])
@@ -72,7 +73,7 @@ class Console(Portal):
                 print(f"{bcolors.FAIL}Command {args[0]} not found.")
         print()
     
-    async def mimic(self, action, amount, time_between=1):
+    async def mimic(self, action, amount, time_between=1, db=False):
         amount = int(amount)
         time_between = float(time_between)
         
@@ -85,8 +86,13 @@ class Console(Portal):
             time_elapsed_seconds = (datetime.datetime.now() - start).total_seconds()
             print(f"{bcolors.ENDC}({datetime.datetime.now().strftime('%H:%M')})> {bcolors.OKCYAN}{i + 1}/{amount} [{action}] in {round(time_elapsed_seconds, 2)}s", end="\r")
             await self.publish(f"live.{action}", profile)
+            db.add_new_user(profile)
+            db.add_event(profile, action)
             
         print()
+        
+    async def mimic_db(self, action, amount, time_between=1):
+        self.mimic(action, amount, time_between, db=True)
     
     async def sql(self, *args):
         
