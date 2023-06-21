@@ -73,10 +73,14 @@ class Console(Portal):
                 print(f"{bcolors.FAIL}Command {args[0]} not found.")
         print()
     
-    async def mimic(self, action, amount, time_between=1, use_db=False, overwrite={}):
+    async def mimic(self, action, amount, time_between=1, use_db=False, overwrite=None):
         amount = int(amount)
         time_between = float(time_between)
         
+        if overwrite:
+            overwrite = overwrite.split(",")
+            overwrite = {elem.split("=")[0]: elem.split("=")[1] for elem in overwrite}
+            
         profiles = gen_fake_profiles(amount, overwritten=overwrite)
         
         start = datetime.datetime.now()
@@ -93,7 +97,7 @@ class Console(Portal):
             
         print()
         
-    async def mimic_db(self, action, amount, time_between=1, overwrite={}):
+    async def mimic_db(self, action, amount, time_between=1, overwrite=None):
         await self.mimic(action, amount, time_between, use_db=True, overwrite=overwrite)
     
     async def sql(self, *args):
