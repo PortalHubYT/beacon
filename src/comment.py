@@ -65,11 +65,23 @@ class Comment(Portal):
             queues = [normal_queue, follower_queue, priority_queue, bypass_queue]
             profile = pick_from_queue(queues)
             print(f"-POPPING--> normal: {len(normal_queue)}, follower: {len(follower_queue)}, donator: {len(priority_queue)} forced: {len(bypass_queue)} total: {total}")
+            
             if not profile: return
             
             display = "&0" + "&l"
 
             def spawn_npc(name, display):
+                
+                npc_settings = [
+                    "npc vulnerable",
+                    "npc hurt 0",
+                    "npc speed 0.7",
+                    "npc scoreboard --addtag alive",
+                    "trait Sentinel",
+                    "sentinel addtarget npcs",
+                    "npc respawn -1",
+                    "sentinel respawntime -1",
+                ]
                 
                 origin = config.npc_spawn_pos
                 
@@ -83,9 +95,6 @@ class Comment(Portal):
                 spawn_pos = str(shifted).replace(" ", ":")
                 
                 ret = mc.post(f"npc create {display}{name} --at {spawn_pos}:world")
-                
-                #mc.post(f"effect give @e minecraft:slow_falling infinite 1 true")
-                
                 ret = ret.replace("\x1b[0m", "").replace("\x1b[32;1m", "").replace("\x1b[33;1m", "").replace("\n", "")
                 id = ret.split("ID ")[1].replace(").", "")
 
@@ -95,14 +104,8 @@ class Comment(Portal):
                     mc.post(f'execute as {config.camera_name} at @e[name=!PortalHub,name=!{config.camera_name}] run particle minecraft:poof ~ ~ ~ 0.7 1 0.7 0.01 500')
                     mc.post(f'npc remove all')
                 
-                mc.post(f"npc vulnerable --id {id}")
-                mc.post(f"npc health --set 1 --id {id}")
-                mc.post(f"npc speed 0.7 --id {id}")
-                mc.post(f"npc scoreboard --addtag alive")
-                mc.post(f"trait Sentinel --id {id}")
-                mc.post(f"sentinel addtarget npcs --id {id}")
-                mc.post(f"npc respawn -1 {id}")
-                mc.post(f"sentinel respawntime -1 --id {id}")
+                for setting in npc_settings:
+                    mc.post(f"{setting} --id {id}")
                 
             f = lambda: spawn_npc(profile['display'], display)
             await self.publish('mc.lambda', dumps(f))

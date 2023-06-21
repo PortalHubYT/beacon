@@ -19,6 +19,7 @@ class Setup(Portal):
             f"gamerule doDaylightCycle false",
             f"time set 6000",
             f"gamerule doWeatherCycle false",
+            f"gamerule fallDamage false",
             f"weather clear",
         ]
         
