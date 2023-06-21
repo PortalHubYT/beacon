@@ -11,7 +11,7 @@ directory = os.path.dirname(current_file_path)
 # Construct the absolute file path by joining the directory and the desired file name
 file_path = os.path.join(directory, 'random_')
 
-def gen_fake_profiles(amount):
+def gen_fake_profiles(amount, overwritten={}):
     with open(file_path + 'comments.txt', 'r') as f:
             random_comments = f.readlines()
             
@@ -38,6 +38,10 @@ def gen_fake_profiles(amount):
             "gift": random.choice(random_gift),
             "gift_value": random.randint(0, 100000),
         }
+        if overwritten:
+            for key, value in overwritten.items():
+                profile[key] = value
+                
         profiles.append(profile)
         
     return profiles

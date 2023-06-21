@@ -42,8 +42,8 @@ class Console(Portal):
     
         self.commands = {}
         self.register_command("help", self.help, "Show this help message.")
-        self.register_command("mimic", self.mimic, "Mimic n (live)-actions through pulsar", args=["action", "amount", "time_between (optional)"])
-        self.register_command("mimic_db", self.mimic_db, "Mimic n (live)-actions through pulsar and in the DB", args=["action", "amount", "time_between (optional)"])
+        self.register_command("mimic", self.mimic, "Mimic n (live)-actions through pulsar", args=["action", "amount", "time_between (optional)", "overwrite 'id=10000,gift_value=10,...' (optional)"])
+        self.register_command("mimic_db", self.mimic_db, "Mimic n (live)-actions through pulsar and in the DB", args=["action", "amount", "time_between (optional)", "overwrite 'id=10000,gift_value=10,...' (optional)"])
         self.register_command("sql", self.sql, "Query the database", args=["query"])
         self.register_command("post", self.post, "Sends a minecraft commands and listen for return value", args=["cmd"])
         self.register_command("reset_db", self.reset_db, "Reset the database specified in tools/.env, requires 'confirm' as arg", args=["confirm"])
@@ -73,11 +73,11 @@ class Console(Portal):
                 print(f"{bcolors.FAIL}Command {args[0]} not found.")
         print()
     
-    async def mimic(self, action, amount, time_between=1, use_db=False):
+    async def mimic(self, action, amount, time_between=1, use_db=False, overwrite={}):
         amount = int(amount)
         time_between = float(time_between)
         
-        profiles = gen_fake_profiles(amount)
+        profiles = gen_fake_profiles(amount, overwritten=overwrite)
         
         start = datetime.datetime.now()
         for i, profile in enumerate(profiles):
@@ -93,8 +93,8 @@ class Console(Portal):
             
         print()
         
-    async def mimic_db(self, action, amount, time_between=1):
-        await self.mimic(action, amount, time_between, use_db=True)
+    async def mimic_db(self, action, amount, time_between=1, overwrite={}):
+        await self.mimic(action, amount, time_between, use_db=True, overwrite=overwrite)
     
     async def sql(self, *args):
         
@@ -153,6 +153,9 @@ class Console(Portal):
         if command_name in self.commands:
             command = self.commands[command_name]
             required_args = len(command["args"])
+            for arg in command["args"]:
+                if "(optional)" in arg:
+                    required_args -= 1
             if len(args) >= required_args and not any('' == arg for arg in args):
                 await command["func"](*args)
             else:
