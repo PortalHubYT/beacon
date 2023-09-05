@@ -1,5 +1,6 @@
 import os
 
+import shulker as mc
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -11,7 +12,15 @@ config_values = {
     "stream_id": "tv_asahi_news",
     "verbose": True,
     "listen_to": ["comment", "follow", "join", "share", "like", "gift"],
-    "crop_size": 50
+    "crop_size": 50,
+    "camera_name": "PortalHub",
+    "round_time": 30,
+    "camera_pos": mc.Coordinates(0, 100, 0, 180, 0),
+    "hint_distance": 40,
+    "hint_height": 20,
+    "letters_to_reveal_in_percentage": 50,
+    "drawing_finished_at_percentage": 90,
+    "bench_size": 10,
 }
 
 class Config:
