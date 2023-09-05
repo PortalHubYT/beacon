@@ -392,6 +392,9 @@ tmux resize-pane -x "$pane_width"
 tmux select-pane -t 5
 tmux resize-pane -x "$pane_width"
 
+#to get command name in pane border
+tmux set -g pane-border-format '#(ps --no-headers -t #{pane_tty} -o args -O-c)'
+
 if [ "$answer_run" = "y" ] || [ "$answer_run" = "Y" ]; then
     tmux send-keys -t 6 'python3 src/console.py' C-m
     tmux send-keys -t 1 'python3 src/dispatcher.py' C-m
