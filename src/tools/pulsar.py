@@ -69,7 +69,7 @@ class Portal():
     async def subscribe(self, topic, callback, subscription_name=None):
         await self.pulsar.subscribe(topic, callback, subscription_name)
         
-    async def publish(self, topic, message):
+    async def publish(self, topic, message=None):
         await self.pulsar.publish(topic, message)
         
     async def call(self, function_name, *args, **kwargs):
@@ -171,9 +171,15 @@ class Hub:
 
                     else:
                         if asyncio.iscoroutinefunction(callback):
-                            await callback(data)
+                            if data == None:
+                                await callback()
+                            else:
+                                await callback(data)
                         else:
-                            callback(data)
+                            if data == None:
+                                callback()
+                            else:
+                                callback(data)
 
                     await consumer.acknowledge(msg)
                 except asyncio.CancelledError:
