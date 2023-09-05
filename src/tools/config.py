@@ -2,6 +2,7 @@ import os
 
 import shulker as mc
 from dotenv import load_dotenv
+
 load_dotenv()
 
 config_values = {
@@ -13,15 +14,18 @@ config_values = {
     "verbose": True,
     "listen_to": ["comment", "follow", "join", "share", "like", "gift"],
     "crop_size": 50,
-    "camera_name": "PortalHub",
-    "round_time": 30,
+    "camera_name": "funyrom",
+    "round_time": 10,
     "camera_pos": mc.Coordinates(0, 100, 0, 180, 0),
+    "width": 100,
+    "height": 100,
     "hint_distance": 40,
     "hint_height": 20,
-    "letters_to_reveal_in_percentage": 50,
-    "drawing_finished_at_percentage": 90,
+    "letters_to_reveal_in_percentage": 100,
+    "drawing_finished_at_percentage": 70,
     "bench_size": 10,
 }
+
 
 class Config:
     def __init__(self):
@@ -31,8 +35,8 @@ class Config:
     def __getitem__(self, key):
         return getattr(self, key)
 
+
 # Config can be accessed both as:
 # config["stream_ready"]
 # config.stream_ready
 config = Config()
-
