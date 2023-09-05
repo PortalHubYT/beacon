@@ -7,39 +7,31 @@ from dill import dumps
 from tools.config import config
 from tools.pulsar import Portal
 
+
 class Hint(Portal):
     async def on_join(self):
-        self.revealed = []
-        
-        # Clean up leftovers
-        cmd = f"sudo {config.camera_name} //replacenear 100 blackstone,blackstone_slab,blackstone_stairs,blackstone_wall air"
-        await self.publish('mc.post', cmd)
-        
-        await self.subscribe("gl.show_hint", self.show_hint)
+        await self.subscribe("gl.print_hint", self.print_hint)
         await self.subscribe("gl.clear_hint", self.clear_hint)
-        await self.subscribe("gl.reveal_random_letter", self.reveal_random_letter)
-    
-    async def show_hint(self, word, revealed):
-        """
-        Prints the hint on the screen, by replacing the letters of the chosen word with "_"
-        Offsets the printed text to be centered on the camera, stores the zone of the hint
-        in self.hint_zone
-        """
-        
-        hint_distance = config.hint_distance
-        hint_height = config.hint_height
-        camera_pos = config.camera_pos
-        
-        hint = ""
-        for i, char in enumerate(word):
-            if i in revealed or char == " ":
-                hint += char
-            else:
-                hint += "_"
-                    
+
+        # in case we cut this process and something remains
+        cmd = f"sudo {config.camera_name} //replacenear 100 blackstone,blackstone_slab,blackstone_stairs,blackstone_wall air"
+        await self.publish("mc.post", cmd)
+
+    async def clear_hint(self):
+        if hasattr(self, "hint_zone"):
+            print("-> Clearing hint zone")
+            await self.publish("mc.post", f"fill {self.hint_zone} air")
+        else:
+            print("-> No hint zone to clear")
+
+    async def print_hint(self, hint):
         def print_hint_get_zone():
-            hint_pos = mc.BlockCoordinates(camera_pos.x, camera_pos.y + hint_height, camera_pos.z - hint_distance)
-            
+            hint_pos = mc.BlockCoordinates(
+                config.camera_pos.x,
+                config.camera_pos.y + config.hint_height,
+                config.camera_pos.z - config.hint_distance,
+            )
+
             status = mc.meta_set_text(
                 hint,
                 mc.BlockCoordinates(0, 0, 0),
@@ -52,55 +44,22 @@ class Hint(Portal):
                 "minecraft",
             )
             zone = status["zone"]
-            hint_pos = hint_pos.offset(x = -((zone.pos2.x - zone.pos1.x) / 2))
-            
+            hint_pos = hint_pos.offset(x=-((zone.pos2.x - zone.pos1.x) / 2))
+
             status = mc.set_text(hint, hint_pos)
             return status["zone"]
-        
-        print(f"-> Showing hint for word '{word}'")
+
         f = lambda: print_hint_get_zone()
-        zone = await self.call('mc.lambda', dumps(f))
+        zone = await self.call("mc.lambda", dumps(f))
 
-        zone_tuples = zone.split(' ')
-        
-        corner_1_coords = zone_tuples[:len(zone_tuples)//2]
+        zone_tuples = zone.split(" ")
+        corner_1_coords = zone_tuples[: len(zone_tuples) // 2]
         corner_1 = mc.BlockCoordinates(*corner_1_coords)
-        
-        corner_2_coords = zone_tuples[len(zone_tuples)//2:]
+        corner_2_coords = zone_tuples[len(zone_tuples) // 2 :]
         corner_2 = mc.BlockCoordinates(*corner_2_coords)
-        
         self.hint_zone = mc.BlockZone(corner_1, corner_2)
-        self.hint_word = word
-    
-    async def clear_hint(self):
-        """
-        Clears the hint zone by filling it with air
-        """
-        if hasattr(self, 'hint_zone'):
-            print("-> Clearing hint zone")
-            
-            await self.publish('mc.post', f"fill {self.hint_zone} air")
-        else:
-            print("-> No hint zone to clear")
 
-    async def reveal_random_letter(self, word, revealed):
-        """
-        Reveals a random letter from the hint word
-        """
-        
-        word = self.hint_word
-        to_reveal = None
-        
-        while to_reveal is None:
-            index = random.randint(0, len(word) - 1)
-            if index not in revealed and word[index] != " ":
-                revealed.append(index)
-        
-        print(f"-> Revealing letter '{word[index]}' at index {index} of word '{word}'")
-        await self.show_hint(word, revealed)
-     
-        
+
 if __name__ == "__main__":
     action = Hint()
     asyncio.run(action.run())
-
