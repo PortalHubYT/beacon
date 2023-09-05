@@ -19,7 +19,7 @@ class Hint(Portal):
         await self.subscribe("gl.clear_hint", self.clear_hint)
         await self.subscribe("gl.reveal_random_letter", self.reveal_random_letter)
     
-    async def show_hint(self, word):
+    async def show_hint(self, word, revealed):
         """
         Prints the hint on the screen, by replacing the letters of the chosen word with "_"
         Offsets the printed text to be centered on the camera, stores the zone of the hint
@@ -32,7 +32,7 @@ class Hint(Portal):
         
         hint = ""
         for i, char in enumerate(word):
-            if i in self.revealed or char == " ":
+            if i in revealed or char == " ":
                 hint += char
             else:
                 hint += "_"
@@ -83,7 +83,7 @@ class Hint(Portal):
         else:
             print("-> No hint zone to clear")
 
-    async def reveal_random_letter(self):
+    async def reveal_random_letter(self, word, revealed):
         """
         Reveals a random letter from the hint word
         """
@@ -93,11 +93,11 @@ class Hint(Portal):
         
         while to_reveal is None:
             index = random.randint(0, len(word) - 1)
-            if index not in self.revealed and word[index] != " ":
-                to_reveal = (word[index], index)
-                
-        self.revealed.append(to_reveal[1])
-        await self.show_hint(word) 
+            if index not in revealed and word[index] != " ":
+                revealed.append(index)
+        
+        print(f"-> Revealing letter '{word[index]}' at index {index} of word '{word}'")
+        await self.show_hint(word, revealed)
      
         
 if __name__ == "__main__":

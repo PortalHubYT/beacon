@@ -40,33 +40,39 @@ class GameLoop(Portal):
         await self.publish('mc.post', f"tp {camera_name} {camera_pos}")
    
     async def new_round(self):
+        
+        self.word = random.choice(WORD_LIST).upper()
+        amount_to_reveal = int(len(self.word) * config.letters_to_reveal_in_percentage / 100)
+        self.reveal_interval = int((config.round_time * config.drawing_finished_at_percentage / 100) / amount_to_reveal)
+        
+        print(f"-> Starting new round, word is '{self.word}'")
+        
         await self.publish('gl.set_timer', config.round_time)
         await self.publish('gl.clear_hint')
-        self.word = random.choice(WORD_LIST).upper()
         await self.publish('gl.show_hint', self.word)
-        
-        # Reset timer
-        # Delete hint
-        # Pick new word
-        # Show hint
-        # Start drawing
+
         
     async def game_loop(self):
         time = datetime.now()
-        timer_value = config.round_time
+        timer_value = 0
+        self.word = random.choice(WORD_LIST).upper()
         
         while True:
             
             if timer_value == 0:
-                timer_value = config.round_time
                 await self.new_round()
+                timer_value = config.round_time
             
             one_second_elapsed = (datetime.now() - time).seconds >= 1
+            reveal_interval_elapsed = timer_value % self.reveal_interval == 0
             
             if one_second_elapsed:
                 time = datetime.now()
                 timer_value -= 1
                 await self.publish('gl.set_timer', timer_value)
+                
+                if reveal_interval_elapsed:
+                    await self.publish('gl.reveal_random_letter', self.word, self.revealed)
     
         
 if __name__ == "__main__":
