@@ -1,8 +1,8 @@
 import asyncio
-from dill import dumps
 import io
+import time
 from PIL import Image
-
+from dill import dumps
 
 import cairosvg
 import xml.etree.ElementTree as ET
@@ -22,7 +22,7 @@ def png_to_pixel_data(image):
             pixel = image.getpixel((x, y))
             if pixel[3] > 0:
                 pixel_data.append(
-                    {"x": -x, "y": -y, "block": mc.color_picker(pixel, palette)}
+                    {"x": x, "y": y, "block": mc.color_picker(pixel, palette)}
                 )
     return pixel_data
 
@@ -59,27 +59,56 @@ def generate_pixel_lists(word, random=False):
     return pixel_lists
 
 
+def get_interval(big_list):
+    total_blocks_to_place = len(big_list)
+
+    wait_time = config.drawing_finished_at_percentage / 100 * config.round_time
+    interval = (wait_time - (total_blocks_to_place / 1000)) / total_blocks_to_place
+    if interval < 0:
+        interval = 0
+
+    return interval if interval > 0 else 0
+
+
 class Painter(Portal):
     async def on_join(self):
-        await self.subscribe("gl.painter", self.paint)
-        await self.paint("banana")
+        await self.subscribe("gl.paint_svg", self.paint)
+        await self.subscribe("gl.clear_svg", self.remove_zone)
+
+        # await self.remove_zone()
+        # await self.paint("banana")
+
+    async def remove_zone(self):
+        pos1 = config.paint_start
+        pos2 = pos1.offset(x=config.width, y=config.height, z=0)
+        zone = mc.BlockZone(pos1, pos2)
+
+        f = lambda: mc.set_zone(zone, "air")
+        await self.publish("mc.lambda", dumps(f))
 
     async def paint(self, word):
-        def set_pixels(plists):
-            print("enter setpixels")
-            start_pos = config.camera_pos.offset(x=int(config.width / 2), y=10, z=-100)
-            for plist in plists:
-                for p in plist:
-                    print("putpixel?")
-                    pos = start_pos.offset(x=p["x"], y=p["y"], z=0)
+        def set_pixels(pixel_list, interval):
+            start_pos = config.paint_start
 
-                    print(mc.set_block(pos, p["block"]))
+            for p in pixel_list:
+                pos = start_pos.offset(x=p["x"], y=config.height - p["y"], z=0)
+                mc.set_block(pos, p["block"])
+                time.sleep(interval)
 
+        # get a list per path
         plists = generate_pixel_lists(word)
 
-        print("heu ouais go paint")
-        f = lambda: set_pixels(plists)
-        await self.publish("mc.lambda", dumps(f))
+        # flatten plists then turn it into a list of bite-sized chunks
+        big_list = sum(plists, [])
+        print(len(big_list))
+        n = max(1, config.paint_chunk_size)
+        chunks = [big_list[i : i + n] for i in range(0, len(big_list), n)]
+
+        interval = get_interval(big_list)
+
+        for chunk in chunks:
+            f = lambda: set_pixels(chunk, interval)
+            await self.publish("mc.lambda", dumps(f))
 
 
 if __name__ == "__main__":
