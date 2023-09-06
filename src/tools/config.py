@@ -17,16 +17,17 @@ config_values = {
     "camera_name": "funyrom",
     "round_time": 15,
     "camera_pos": mc.Coordinates(0, 135, 30, 180, 20),
-    "paint_start": mc.BlockCoordinates(x=-50, y=70, z=-130),
+    "paint_start": mc.BlockCoordinates(-50, 70, -130),
     "drawing_finished_at_percentage": 80,
     "width": 100,
     "height": 100,
     "paint_chunk_size": 100,
-    "hint_start": mc.BlockCoordinates(x=0, y=150, z=-40),
+    "hint_start": mc.BlockCoordinates(0, 150, -40),
     "hint_distance": 70,
     "hint_height": 10,
     "letters_to_reveal_in_percentage": 100,
-    "bench_size": 10,
+    "podium_size": 10,
+    "podium_pos": mc.BlockCoordinates(0, 135, 30),
 }
 
 
