@@ -60,11 +60,12 @@ def generate_pixel_lists(word, random=False):
     return pixel_lists
 
 
-def get_interval(big_list):
-    total_blocks_to_place = len(big_list)
+def get_interval(steps):
+    steps
 
     wait_time = config.drawing_finished_at_percentage / 100 * config.round_time
-    interval = (wait_time - (total_blocks_to_place / 1000)) / total_blocks_to_place
+    print(f"AFTER {steps} blocks, wait {(wait_time - (steps / 1000))}")
+    interval = (wait_time - (steps / 1000)) / steps
 
     return interval if interval > 0 else 0
 
@@ -83,7 +84,7 @@ class Painter(Portal):
         await self.publish("mc.lambda", dumps(f))
 
     async def paint(self, word):
-        def paint_chunk(pixel_list):
+        def paint_chunk(pixel_list, interval):
             start_pos = config.paint_start
 
             for p in pixel_list:
@@ -98,12 +99,13 @@ class Painter(Portal):
         n = max(1, config.paint_chunk_size)
         chunks = [big_list[i : i + n] for i in range(0, len(big_list), n)]
 
-        interval = get_interval(big_list)
+        interval = get_interval(len(chunks))
 
         print(f"{word} : {len(big_list)} blocks")
+        print("interval", interval)
         for chunk in chunks:
-            await asyncio.sleep(interval)
-            f = lambda: paint_chunk(chunk)
+            await asyncio.sleep(interval / 2)
+            f = lambda: paint_chunk(chunk, interval)
             await self.publish("mc.lambda", dumps(f))
 
 
