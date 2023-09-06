@@ -18,20 +18,16 @@ class Hint(Portal):
         await self.publish("mc.post", cmd)
 
     async def clear_hint(self):
-        if hasattr(self, "hint_zone"):
-            print("-> Clearing hint zone")
-            await self.publish("mc.post", f"fill {self.hint_zone} air")
-        else:
-            print("-> No hint zone to clear")
+        pos1 = config.hint_start.offset(x=-config.width, y=-5)
+        pos2 = config.hint_start.offset(x=config.width, y=5)
+        zone = mc.BlockZone(pos1, pos2)
+
+        f = lambda: mc.set_zone(zone, "air")
+        await self.publish("mc.lambda", dumps(f))
 
     async def print_hint(self, hint):
         def print_hint_get_zone():
-            hint_pos = mc.BlockCoordinates(
-                config.camera_pos.x,
-                config.camera_pos.y + config.hint_height,
-                config.camera_pos.z - config.hint_distance,
-            )
-
+            hint_pos = config.hint_start
             status = mc.meta_set_text(
                 hint,
                 mc.BlockCoordinates(0, 0, 0),
@@ -50,14 +46,7 @@ class Hint(Portal):
             return status["zone"]
 
         f = lambda: print_hint_get_zone()
-        zone = await self.call("mc.lambda", dumps(f))
-
-        zone_tuples = zone.split(" ")
-        corner_1_coords = zone_tuples[: len(zone_tuples) // 2]
-        corner_1 = mc.BlockCoordinates(*corner_1_coords)
-        corner_2_coords = zone_tuples[len(zone_tuples) // 2 :]
-        corner_2 = mc.BlockCoordinates(*corner_2_coords)
-        self.hint_zone = mc.BlockZone(corner_1, corner_2)
+        await self.publish("mc.lambda", dumps(f))
 
 
 if __name__ == "__main__":

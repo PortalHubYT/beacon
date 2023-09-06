@@ -31,6 +31,7 @@ def get_svg(word):
     with open(f"svg/{word}.svg", "r") as file:
         svg_data = file.read()
     svg_data = svg_data.replace('fill=""', 'fill="#000000"')
+    svg_data = svg_data.replace('fill="#004364"', 'fill="#000000"')
     return svg_data
 
 
@@ -64,8 +65,6 @@ def get_interval(big_list):
 
     wait_time = config.drawing_finished_at_percentage / 100 * config.round_time
     interval = (wait_time - (total_blocks_to_place / 1000)) / total_blocks_to_place
-    if interval < 0:
-        interval = 0
 
     return interval if interval > 0 else 0
 
@@ -74,9 +73,6 @@ class Painter(Portal):
     async def on_join(self):
         await self.subscribe("gl.paint_svg", self.paint)
         await self.subscribe("gl.clear_svg", self.remove_zone)
-
-        # await self.remove_zone()
-        # await self.paint("banana")
 
     async def remove_zone(self):
         pos1 = config.paint_start
@@ -87,27 +83,27 @@ class Painter(Portal):
         await self.publish("mc.lambda", dumps(f))
 
     async def paint(self, word):
-        def set_pixels(pixel_list, interval):
+        def paint_chunk(pixel_list):
             start_pos = config.paint_start
 
             for p in pixel_list:
                 pos = start_pos.offset(x=p["x"], y=config.height - p["y"], z=0)
                 mc.set_block(pos, p["block"])
-                time.sleep(interval)
 
         # get a list per path
         plists = generate_pixel_lists(word)
 
         # flatten plists then turn it into a list of bite-sized chunks
         big_list = sum(plists, [])
-        print(len(big_list))
         n = max(1, config.paint_chunk_size)
         chunks = [big_list[i : i + n] for i in range(0, len(big_list), n)]
 
         interval = get_interval(big_list)
 
+        print(f"{word} : {len(big_list)} blocks")
         for chunk in chunks:
-            f = lambda: set_pixels(chunk, interval)
+            await asyncio.sleep(interval)
+            f = lambda: paint_chunk(chunk)
             await self.publish("mc.lambda", dumps(f))
 
 

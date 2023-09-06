@@ -1,10 +1,12 @@
 import asyncio
-import datetime
+import time
 import shulker as mc
 from dill import loads
 
+
 from tools.config import config
 from tools.pulsar import Portal
+
 
 class Poster(Portal):
     async def on_join(self):
@@ -23,12 +25,12 @@ class Poster(Portal):
         await self.register("mc.lambda", self.lambda_post)
 
         print("-> Poster is ready and listening to pulsar")
-        
+
     def normal_post(self, cmd):
         if not isinstance(cmd, str):
             print(f"-> [ERROR] Command is not a string: {cmd}")
             return None
-        
+
         ret = mc.post(cmd)
         if config.verbose:
             print(f"===============")
@@ -46,7 +48,9 @@ class Poster(Portal):
             return str(ret)
 
     def rcon_connect(self):
-        server_status = f"{config.server_ip}:{config.rcon_port} (password: {config.rcon_password})"
+        server_status = (
+            f"{config.server_ip}:{config.rcon_port} (password: {config.rcon_password})"
+        )
         success = f"-> Connected to: {server_status}"
         fail = f"-> Failed to connect to: {server_status}"
 
@@ -56,6 +60,7 @@ class Poster(Portal):
         except Exception as e:
             print(fail)
             exit(f"Error: {e}")
+
 
 if __name__ == "__main__":
     poster = Poster()
