@@ -7,3 +7,4 @@ volumes/
 .pyenv/
 test.sh
 src/tools/logs/*.log
+*.log
