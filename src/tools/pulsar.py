@@ -127,7 +127,7 @@ class Hub:
 
     async def subscribe(self, topic, callback, subscription_name=None):
         if subscription_name is None:
-            subscription_name = topic + '-subscription'
+            subscription_name = topic + '-subscription' + str(uuid.uuid4())
             
         if topic not in self.subscription_ready_events:
               self.subscription_ready_events[topic] = asyncio.Event()
