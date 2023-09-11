@@ -125,7 +125,8 @@ class Console(Portal):
     async def call_publish(self, publish_name, *args):
         arg = "".join(args)
         print(f"\n-> Calling {publish_name} with args {arg}")
-        await self.publish(publish_name, arg)
+        print(arg if args != "" else None)
+        await self.publish(publish_name, arg if args != "" else None)
 
     async def mimic(self, action, amount, time_between=1, use_db=False, overwrite=None):
         amount = int(amount)
