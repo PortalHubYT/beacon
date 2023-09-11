@@ -101,8 +101,7 @@ class Painter(Portal):
 
         interval = get_interval(len(chunks))
 
-        print(f"{word} : {len(big_list)} blocks")
-        print("interval", interval)
+        print(f"Painting '{word}': {len(big_list)} blocks")
         for chunk in chunks:
             await asyncio.sleep(interval / 2)
             f = lambda: paint_chunk(chunk, interval)
