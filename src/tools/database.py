@@ -113,7 +113,7 @@ class PostgresDB:
         if self.tables:
             for table in self.get_tables():
                 print(f"-> Dropping table {table}...")
-                self.execute_commit(f"TRUNCATE TABLE {table} CASCADE")
+                self.execute_commit(f"DROP TABLE {table} CASCADE")
             
             self.initialize_tables()
             
