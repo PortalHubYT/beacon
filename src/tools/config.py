@@ -15,7 +15,7 @@ config_values = {
     "listen_to": ["comment", "follow", "join", "share", "like", "gift"],
     "crop_size": 50,
     "camera_name": "funyrom",
-    "round_time": 30,
+    "round_time": 60,
     "camera_pos": mc.Coordinates(0, 135, 30, 180, 20),
     "paint_start": mc.BlockCoordinates(-50, 60, -130),
     "drawing_finished_at_percentage": 80,

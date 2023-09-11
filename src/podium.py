@@ -10,6 +10,9 @@ class Podium(Portal):
         await self.subscribe("gl.spawn_winner", self.spawn_winner)
         await self.subscribe("gl.reset_podium", self.reset_podium)
 
+    async def on_win(self):
+        pass
+
     async def reset_podium(self):
         cmd = f"/npc remove all"
         await self.publish("mc.post", cmd)

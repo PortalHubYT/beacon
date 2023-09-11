@@ -37,6 +37,7 @@ class GameLoop(Portal):
     async def on_join(self):
         await self.place_camera()
         await self.game_loop()
+        await self.subscribe("live.join", self.on_comment)
 
     async def reset_arena(self):
         cmd = f"sudo {config.camera_name} //replacenear 1000 grass,grass_block,bedrock air"
@@ -53,6 +54,7 @@ class GameLoop(Portal):
         sys.exit(0)
 
     async def place_camera(self):
+        await self.publish("mc.post", f"gamemode spectator {config.camera_name}")
         await self.publish("mc.post", f"tp {config.camera_name} {config.camera_pos}")
 
     def get_current_hint(self, word, hint, progress):
@@ -85,6 +87,9 @@ class GameLoop(Portal):
 
         return hint
 
+    async def on_comment(self, comment_event):
+        print("comment_event", comment_event)
+
     async def before_round(self):
         await self.publish("gl.clear_hint")
         await self.publish("gl.clear_svg")
@@ -92,6 +97,7 @@ class GameLoop(Portal):
 
     async def round(self):
         word = self.new_word()
+        print("-> New round with:", word)
         hint = "".join(["_" if c.isalnum() else c for c in word])
 
         await self.publish("gl.paint_svg", word)
@@ -110,8 +116,6 @@ class GameLoop(Portal):
             )
 
             await self.publish("gl.print_hint", hint)
-
-            print("round_progress", round_progress, "%")
 
             await self.publish("gl.set_timer", 100 - round_progress)
 

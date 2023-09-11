@@ -145,6 +145,7 @@ class Console(Portal):
                 f"{bcolors.ENDC}({datetime.datetime.now().strftime('%H:%M')})> {bcolors.OKCYAN}{i + 1}/{amount} [{action}] in {round(time_elapsed_seconds, 2)}s",
                 end="\r",
             )
+            print("about to publish:", f"live.{action} {profile}")
             await self.publish(f"live.{action}", profile)
             if use_db:
                 db.add_new_user(profile)
