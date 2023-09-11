@@ -20,7 +20,7 @@ class Timer(Portal):
         round_time = config.round_time
         f = lambda: mc.create_bossbar(
             "timer",
-            "Guess the word",
+            "Guess the word in chat!",
             value=round_time,
             color="red",
             style="progress",
@@ -33,6 +33,7 @@ class Timer(Portal):
         """
         value: int between 0 and 100
         """
+        print("-> Setting timer to", value)
         f = lambda: mc.set_bossbar("timer", "value", value)
         ret = await self.publish("mc.lambda", dumps(f))
 
