@@ -25,7 +25,7 @@ log_file_path = os.path.join(directory, "tools/logs/dispatcher_error.log")
 os.mkdir(os.path.join(directory, "tools/logs/")) if not os.path.exists(
     os.path.join(directory, "tools/logs/")
 ) else None
-open(log_file_path, "w+")
+# open(log_file_path, "w+")
 
 logging.basicConfig(
     filename=log_file_path,
@@ -116,12 +116,14 @@ class Dispatch(Portal):
 
         db.add_new_user(user)
         db.add_event(user, listener)
-
+        db.commit()
+        
         if config.verbose and listener != "join":
             print(f"{datetime.datetime.now()} | {listener.upper()} | {user['display']}")
 
     def views_handler(self, event):
         db.store_views(event.viewer_count)
+        print("-> Storing viewer count in database")
         db.commit()
 
         if config.verbose:

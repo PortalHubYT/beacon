@@ -64,7 +64,9 @@ def get_interval(steps):
     steps
 
     wait_time = config.drawing_finished_at_percentage / 100 * config.round_time
-    print(f"AFTER {steps} blocks, wait {(wait_time - (steps / 1000))}")
+    print(
+        f"estimated draw time: {wait_time } -> AFTER {steps} blocks, wait {(wait_time - (steps / 1000))}"
+    )
     interval = (wait_time - (steps / 1000)) / steps
 
     return interval if interval > 0 else 0

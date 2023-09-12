@@ -27,7 +27,7 @@ WORD_LIST = ["pomme", "chat", "voiture", "flan"]
 
 def get_word_list():
     ls = os.listdir("svg/")
-    return [f.replace(".svg", "") for f in ls]
+    return [f.replace(".svg", "").lower() for f in ls]
 
 
 class GameLoop(Portal):

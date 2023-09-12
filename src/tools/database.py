@@ -7,6 +7,17 @@ from dotenv import load_dotenv
 
 from .config import config
 
+
+def function_logger(func):
+    def wrapper(*args, **kwargs):
+        print(f"{datetime.time()} {func.__name__} start ----------->")
+        result = func(*args, **kwargs)
+        print(f"{datetime.time()} {func.__name__} <------------")
+        return result
+
+    return wrapper
+
+
 # Get the absolute path of the current file
 current_file_path = os.path.abspath(__file__)
 
@@ -55,49 +66,9 @@ class PostgresDB:
             "gifted_value_since_last_reset": "integer NOT NULL DEFAULT(0)",
             "score": "integer NOT NULL DEFAULT(0)",
         },
-        "comments": {
-            "timestamp": "timestamp",
-            "user_id": "text",
-            "comment": "text",
-            "parsed": "boolean",
-        },
-        "gifts": {
-            "timestamp": "timestamp",
-            "user_id": "text",
-            "gift": "text",
-            "gift_value": "integer",
-            "parsed": "boolean",
-        },
-        "follows": {
-            "timestamp": "timestamp",
-            "user_id": "text",
-            "parsed": "boolean",
-        },
-        "joins": {
-            "timestamp": "timestamp",
-            "user_id": "text",
-            "parsed": "boolean",
-        },
-        "likes": {
-            "timestamp": "timestamp",
-            "user_id": "text",
-            "parsed": "boolean",
-        },
-        "shares": {
-            "timestamp": "timestamp",
-            "user_id": "text",
-            "parsed": "boolean",
-        },
-        "views": {
-            "timestamp": "timestamp",
-            "count": "integer",
-        },
-        "console_commands": {
-            "timestamp": "timestamp",
-            "command": "text",
-        },
     }
 
+    @function_logger
     def __init__(self, host, database, user, password, port):
         self.host = host
         self.database = database
@@ -108,6 +79,7 @@ class PostgresDB:
         self.connect()
         self.initialize_tables()
 
+    @function_logger
     def initialize_tables(self):
         for keys in self.tables:
             if keys in self.get_tables():
@@ -130,6 +102,7 @@ class PostgresDB:
                 f"CREATE INDEX IF NOT EXISTS {keys}_user_id_idx ON {keys} (user_id)"
             )
 
+    @function_logger
     def reset_database(self, confirm=False):
         if not confirm:
             return
@@ -144,6 +117,7 @@ class PostgresDB:
             print(f"-> Checking if tables are empty: {is_empty}")
             print(f"-> Database reset complete.")
 
+    @function_logger
     def connect(self):
         """Establishes a connection to the database."""
         self.conn = psycopg2.connect(
@@ -155,6 +129,7 @@ class PostgresDB:
         )
         self.cur = self.conn.cursor()
 
+    @function_logger
     def get(self, query, params=None, one=False):
         """Executes a SQL query and returns the result."""
         if config.stream_ready == False:
@@ -165,12 +140,14 @@ class PostgresDB:
         else:
             return self.cur.fetchall()
 
+    @function_logger
     def execute(self, query, params=None):
         """Executes a SQL query and returns the result."""
         if config.stream_ready == False:
             return
         self.cur.execute(query, params)
 
+    @function_logger
     def execute_commit(self, query, params=None):
         """Executes a SQL query and commits the transaction."""
         if config.stream_ready == False:
@@ -179,10 +156,12 @@ class PostgresDB:
             self.cur.execute(query, params)
             self.commit()
         except psycopg2.Error as e:
+            self.conn.rollback()
             error_msg = f"An error occurred: {e}"
             print(error_msg)
             logging.error(error_msg)
 
+    @function_logger
     def insert(self, table_name, columns, values):
         """Inserts a row into the given table."""
         columns_sql = ", ".join(columns)
@@ -190,31 +169,37 @@ class PostgresDB:
         query = f"INSERT INTO {table_name} ({columns_sql}) VALUES ({values_sql})"
         self.execute(query, values)
 
+    @function_logger
     def insert_commit(self, table_name, columns, values):
         """Inserts a row into the given table and commits."""
         try:
             self.insert(table_name, columns, values)
             self.commit()
         except psycopg2.Error as e:
+            self.conn.rollback()
             error_msg = f"An error occurred: {e}"
             print(error_msg)
             logging.error(error_msg)
 
+    @function_logger
     def commit(self):
         """Commits the transaction."""
         try:
-            self.conn.commit()
+            a = self.conn.commit()
+            print(f"-> Database     committed (db.py) return:", a)
         except psycopg2.Error as e:
             error_msg = f"An error occurred: {e}"
             print(error_msg)
             logging.error(error_msg)
             self.conn.rollback()
 
+    @function_logger
     def close(self):
         """Closes the cursor and connection."""
         self.cur.close()
         self.conn.close()
 
+    @function_logger
     def get_tables(self):
         """Returns a list of table names in the database."""
         query = "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'"
@@ -228,6 +213,7 @@ class PostgresDB:
 
         return [table[0] for table in parsed]
 
+    @function_logger
     def create_table(self, table_name, columns, constraints=None):
         """
         Creates a new table with the given name and columns.
@@ -247,9 +233,11 @@ class PostgresDB:
         self.cur.execute(query)
         self.conn.commit()
 
+    @function_logger
     def table_exists(self, table_name):
         return table_name in self.get_tables()
 
+    @function_logger
     def check_tables_empty(self):
         for table in self.tables:
             if self.get(f"SELECT * FROM {table} LIMIT 1", one=True) != None:
@@ -258,12 +246,14 @@ class PostgresDB:
 
 
 class StreamDB(PostgresDB):
+    @function_logger
     def check_user_exists(self, profile):
         """Checks if a user exists in the database, based on their user_id"""
         uid = profile["user_id"]
         query = f"SELECT * FROM users WHERE user_id = '{uid}'"
         return self.get(query, one=True) != None
 
+    @function_logger
     def add_new_user(self, profile):
         """Adds a new user to the database"""
         if not self.check_user_exists(profile):
@@ -305,6 +295,7 @@ class StreamDB(PostgresDB):
         else:
             return False
 
+    @function_logger
     def add_event(self, profile, event):
         """Adds an event to the database"""
         table_name = event + "s"
@@ -340,44 +331,54 @@ class StreamDB(PostgresDB):
                 [datetime.datetime.now(), profile["user_id"], False],
             )
 
+    @function_logger
     def store_views(self, count):
         """Stores the views in the database"""
         self.insert("views", ["timestamp", "count"], [datetime.datetime.now(), count])
 
+    @function_logger
     def update_value_for_id(self, table_name, column, value, user_id):
         sql = f"UPDATE {table_name} SET {column} = {value} WHERE user_id = '{user_id}'"
         self.execute_commit(sql)
 
+    @function_logger
     def increment_value_for_id(self, table_name, column, increment, user_id):
         sql = f"UPDATE {table_name} SET {column} = {column} + {increment} WHERE user_id = '{user_id}'"
         self.execute_commit(sql)
 
+    @function_logger
     def set_user_gifted(self, value, user_id):
         self.update_value_for_id("users", "total_gifted_value", value, user_id)
 
+    @function_logger
     def add_user_gifted(self, value, user_id):
         self.increment_value_for_id("users", "total_gifted_value", value, user_id)
         self.increment_value_for_id(
             "users", "gifted_value_since_last_reset", value, user_id
         )
 
+    @function_logger
     def reset_user_gifted_value_since_last_reset(self, user_id):
         self.update_value_for_id("users", "gifted_value_since_last_reset", 0, user_id)
 
+    @function_logger
     def get_user_gifted_value_since_last_reset(self, user_id):
         sql = f"SELECT gifted_value_since_last_reset, avatar3 FROM users WHERE user_id = '{user_id}'"
         ret = self.get(sql, (user_id,), one=True)
         return ret
 
+    @function_logger
     def get_user_score(self, user_id):
         print("ABOUT TO TRY WITH :", user_id)
         sql = f"SELECT score FROM users WHERE user_id = '{user_id}'"
         ret = self.get(sql, (user_id,), one=True)
         return ret[0]
 
+    @function_logger
     def add_user_score(self, value, user_id):
         self.increment_value_for_id("users", "score", value, user_id)
 
+    @function_logger
     def add_and_get_user_score(self, value, user_id):
         self.add_user_score(value, user_id)
         return self.get_user_score(user_id)
