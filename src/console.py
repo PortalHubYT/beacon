@@ -37,7 +37,7 @@ log_file_path = os.path.join(directory, "tools/logs/console_history.log")
 os.mkdir(os.path.join(directory, "tools/logs/")) if not os.path.exists(
     os.path.join(directory, "tools/logs/")
 ) else None
-open(log_file_path, "w+")
+# open(log_file_path, "w+")
 
 
 class Console(Portal):
@@ -125,8 +125,10 @@ class Console(Portal):
     async def call_publish(self, publish_name, *args):
         arg = "".join(args)
         print(f"\n-> Calling {publish_name} with args {arg}")
-        print(arg if args != "" else None)
-        await self.publish(publish_name, arg if args != "" else None)
+        if len(args) > 0:
+            await self.publish(publish_name, arg)
+        else:
+            await self.publish(publish_name)
 
     async def mimic(self, action, amount, time_between=1, use_db=False, overwrite=None):
         amount = int(amount)
