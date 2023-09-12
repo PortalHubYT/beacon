@@ -98,10 +98,10 @@ class GameLoop(Portal):
         guess = event["comment"].strip().lower()
         print("guess:", guess, "word:", self.word)
 
-        if guess == self.word:
+        if guess == self.word and event["user_id"] not in self.winners:
             self.winners += [event["user_id"]]
 
-            scores_template = [10, 5, 2]
+            scores_template = config.scores_template
             if len(self.winners) - 1 < len(scores_template):
                 points_won = scores_template[len(self.winners) - 1]
             else:
