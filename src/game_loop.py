@@ -11,6 +11,7 @@ from dill import dumps
 
 from tools.pulsar import Portal
 from tools.config import config
+from tools.database import db
 
 """
 Step 0: Start the timer set to 30s
@@ -30,18 +31,23 @@ def get_word_list():
 
 
 class GameLoop(Portal):
-    def __init__(self):
-        super().__init__()
-        self.word_list = get_word_list()
-
     async def on_join(self):
+        self.word_list = get_word_list()
         await self.place_camera()
+        await self.subscribe("live.comment", self.on_comment)
+        await self.subscribe("gl.reset_camera", self.place_camera)
+        await self.subscribe("gl.reset_arena", self.reset_arena)
+        await self.subscribe("gl.reset_database", self.reset_database)
         await self.game_loop()
-        await self.subscribe("live.join", self.on_comment)
 
     async def reset_arena(self):
+        await self.publish("gl.clear_hint")
+        await self.publish("gl.clear_svg")
         cmd = f"sudo {config.camera_name} //replacenear 1000 grass,grass_block,bedrock air"
         await self.publish("mc.post", cmd)
+
+    async def reset_database(self):
+        db.reset_database(confirm=True)
 
     def new_word(self):
         if len(self.word_list) == 0:
@@ -57,8 +63,8 @@ class GameLoop(Portal):
         await self.publish("mc.post", f"gamemode spectator {config.camera_name}")
         await self.publish("mc.post", f"tp {config.camera_name} {config.camera_pos}")
 
-    def get_current_hint(self, word, hint, progress):
-        word_letters = sum(c.isalnum() for c in word)
+    def get_current_hint(self, hint, progress):
+        word_letters = sum(c.isalnum() for c in self.word)
         if progress > 100:
             progress = 100
 
@@ -81,14 +87,32 @@ class GameLoop(Portal):
 
             # str are immutables need to pass as a list before going back to str
             hint = list(hint)
-            hint[idx] = word[idx]
+            hint[idx] = self.word[idx]
             hint = "".join(hint)
             revealed += 1
 
         return hint
 
-    async def on_comment(self, comment_event):
-        print("comment_event", comment_event)
+    # score : 10  5
+    async def on_comment(self, event):
+        guess = event["comment"].strip().lower()
+        print("guess:", guess, "word:", self.word)
+
+        if guess == self.word:
+            self.winners += [event["user_id"]]
+
+            scores_template = [10, 5, 2]
+            if len(self.winners) - 1 < len(scores_template):
+                points_won = scores_template[len(self.winners) - 1]
+            else:
+                points_won = 1
+
+            score = db.add_and_get_user_score(points_won, event["user_id"])
+
+            print(event["nickname"], "won", points_won, "points", "score = :", score)
+            await self.publish(
+                "gl.spawn_winner", (len(self.winners), event["nickname"], score)
+            )
 
     async def before_round(self):
         await self.publish("gl.clear_hint")
@@ -96,11 +120,12 @@ class GameLoop(Portal):
         pass
 
     async def round(self):
-        word = self.new_word()
-        print("-> New round with:", word)
-        hint = "".join(["_" if c.isalnum() else c for c in word])
+        self.word = self.new_word()
+        self.winners = []
+        print("-> New round with:", self.word)
+        hint = "".join(["_" if c.isalnum() else c for c in self.word])
 
-        await self.publish("gl.paint_svg", word)
+        await self.publish("gl.paint_svg", self.word)
 
         start_round = time.time()
         while start_round + config.round_time > time.time():
@@ -108,7 +133,6 @@ class GameLoop(Portal):
             round_progress = int(delta / config.round_time * 100)
 
             hint = self.get_current_hint(
-                word,
                 hint,
                 (round_progress / 100)
                 / (config.drawing_finished_at_percentage / 100)
