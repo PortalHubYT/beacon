@@ -93,7 +93,6 @@ class GameLoop(Portal):
 
         return hint
 
-    # score : 10  5
     async def on_comment(self, event):
         guess = event["comment"].strip().lower()
         print("guess:", guess, "word:", self.word)
