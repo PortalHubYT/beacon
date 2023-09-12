@@ -25,9 +25,11 @@ config_values = {
     "hint_start": mc.BlockCoordinates(0, 150, -40),
     "hint_distance": 70,
     "hint_height": 10,
-    "letters_to_reveal_in_percentage": 100,
-    "podium_size": 10,
-    "podium_pos": mc.BlockCoordinates(0, 135, 30),
+    "letters_to_reveal_in_percentage": 70,
+    "podium_pos": mc.BlockCoordinates(0, 133, 25),
+    "podium_size": 5,
+    "scores_template": [10, 5, 3],
+    "gift_trigger": 10,
 }
 
 
