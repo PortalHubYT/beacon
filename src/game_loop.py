@@ -148,6 +148,7 @@ class GameLoop(Portal):
     async def after_round(self):
         await self.publish("gl.clear_hint")
         await self.publish("gl.clear_svg")
+        await self.publish("gl.reset_podium")
         time.sleep(3)
 
     async def game_loop(self):
