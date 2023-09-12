@@ -14,17 +14,19 @@ current_file_path = os.path.abspath(__file__)
 directory = os.path.dirname(current_file_path)
 
 # Construct the absolute file path by joining the directory and the desired file name
-log_file_path = os.path.join(directory, 'logs/db_error.log')
+log_file_path = os.path.join(directory, "logs/db_error.log")
 
-os.mkdir(os.path.join(directory, 'logs/')) if not os.path.exists(os.path.join(directory, 'logs/')) else None
+os.mkdir(os.path.join(directory, "logs/")) if not os.path.exists(
+    os.path.join(directory, "logs/")
+) else None
 open(log_file_path, "w+")
 
 # Configure the logger
 logging.basicConfig(
     filename=log_file_path,
     level=logging.ERROR,
-    format='%(asctime)s [%(levelname)s]: %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    format="%(asctime)s [%(levelname)s]: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 load_dotenv()
@@ -35,8 +37,8 @@ POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 POSTGRES_HOST = os.getenv("POSTGRES_HOST")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT")
 
-class PostgresDB:
 
+class PostgresDB:
     database_definition = {
         "users": {
             "nickname": "text",
@@ -51,6 +53,7 @@ class PostgresDB:
             "avatar4": "text",
             "total_gifted_value": "integer NOT NULL DEFAULT(0)",
             "gifted_value_since_last_reset": "integer NOT NULL DEFAULT(0)",
+            "score": "integer NOT NULL DEFAULT(0)",
         },
         "comments": {
             "timestamp": "timestamp",
@@ -65,12 +68,34 @@ class PostgresDB:
             "gift_value": "integer",
             "parsed": "boolean",
         },
-        "follows": {"timestamp": "timestamp", "user_id": "text", "parsed": "boolean",},
-        "joins": {"timestamp": "timestamp", "user_id": "text", "parsed": "boolean",},
-        "likes": {"timestamp": "timestamp", "user_id": "text", "parsed": "boolean",},
-        "shares": {"timestamp": "timestamp", "user_id": "text", "parsed": "boolean",},
-        "views": {"timestamp": "timestamp", "count": "integer",},
-        "console_commands": {"timestamp": "timestamp", "command": "text",},
+        "follows": {
+            "timestamp": "timestamp",
+            "user_id": "text",
+            "parsed": "boolean",
+        },
+        "joins": {
+            "timestamp": "timestamp",
+            "user_id": "text",
+            "parsed": "boolean",
+        },
+        "likes": {
+            "timestamp": "timestamp",
+            "user_id": "text",
+            "parsed": "boolean",
+        },
+        "shares": {
+            "timestamp": "timestamp",
+            "user_id": "text",
+            "parsed": "boolean",
+        },
+        "views": {
+            "timestamp": "timestamp",
+            "count": "integer",
+        },
+        "console_commands": {
+            "timestamp": "timestamp",
+            "command": "text",
+        },
     }
 
     def __init__(self, host, database, user, password, port):
@@ -85,14 +110,12 @@ class PostgresDB:
 
     def initialize_tables(self):
         for keys in self.tables:
-            
             if keys in self.get_tables():
                 continue
-            
-            print(f"-> Initializing (empty) table {keys}...")
-            
-            if keys == "views" or keys == "console_commands":
 
+            print(f"-> Initializing (empty) table {keys}...")
+
+            if keys == "views" or keys == "console_commands":
                 self.create_table(keys, self.tables[keys])
                 continue
 
@@ -113,12 +136,12 @@ class PostgresDB:
         if self.tables:
             for table in self.get_tables():
                 print(f"-> Dropping table {table}...")
-                self.execute_commit(f"TRUNCATE TABLE {table} CASCADE")
-            
+                self.execute_commit(f"DROP TABLE {table} CASCADE")
+
             self.initialize_tables()
-            
+
             is_empty = self.check_tables_empty()
-            print(f'-> Checking if tables are empty: {is_empty}')
+            print(f"-> Checking if tables are empty: {is_empty}")
             print(f"-> Database reset complete.")
 
     def connect(self):
@@ -147,7 +170,7 @@ class PostgresDB:
         if config.stream_ready == False:
             return
         self.cur.execute(query, params)
-        
+
     def execute_commit(self, query, params=None):
         """Executes a SQL query and commits the transaction."""
         if config.stream_ready == False:
@@ -233,6 +256,7 @@ class PostgresDB:
                 return False
         return True
 
+
 class StreamDB(PostgresDB):
     def check_user_exists(self, profile):
         """Checks if a user exists in the database, based on their user_id"""
@@ -285,9 +309,18 @@ class StreamDB(PostgresDB):
         """Adds an event to the database"""
         table_name = event + "s"
         if event == "gift":
-            self.insert(table_name, ["timestamp", "user_id", "gift", "parsed", "gift_value"], [
-            datetime.datetime.now(), profile["user_id"], profile["gift"], False, profile["gift_value"]])
-            
+            self.insert(
+                table_name,
+                ["timestamp", "user_id", "gift", "parsed", "gift_value"],
+                [
+                    datetime.datetime.now(),
+                    profile["user_id"],
+                    profile["gift"],
+                    False,
+                    profile["gift_value"],
+                ],
+            )
+
             db.add_user_gifted(profile["gift_value"], str(profile["user_id"]))
         elif event == "comment":
             self.insert(
@@ -324,7 +357,9 @@ class StreamDB(PostgresDB):
 
     def add_user_gifted(self, value, user_id):
         self.increment_value_for_id("users", "total_gifted_value", value, user_id)
-        self.increment_value_for_id("users", "gifted_value_since_last_reset", value, user_id)
+        self.increment_value_for_id(
+            "users", "gifted_value_since_last_reset", value, user_id
+        )
 
     def reset_user_gifted_value_since_last_reset(self, user_id):
         self.update_value_for_id("users", "gifted_value_since_last_reset", 0, user_id)
@@ -334,8 +369,20 @@ class StreamDB(PostgresDB):
         ret = self.get(sql, (user_id,), one=True)
         return ret
 
+    def get_user_score(self, user_id):
+        print("ABOUT TO TRY WITH :", user_id)
+        sql = f"SELECT score FROM users WHERE user_id = '{user_id}'"
+        ret = self.get(sql, (user_id,), one=True)
+        return ret[0]
+
+    def add_user_score(self, value, user_id):
+        self.increment_value_for_id("users", "score", value, user_id)
+
+    def add_and_get_user_score(self, value, user_id):
+        self.add_user_score(value, user_id)
+        return self.get_user_score(user_id)
+
 
 db = StreamDB(
     POSTGRES_HOST, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_PORT
 )
-
