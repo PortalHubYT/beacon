@@ -13,10 +13,6 @@ class Hint(Portal):
         await self.subscribe("gl.print_hint", self.print_hint)
         await self.subscribe("gl.clear_hint", self.clear_hint)
 
-        # in case we cut this process and something remains
-        cmd = f"sudo {config.camera_name} //replacenear 100 blackstone,blackstone_slab,blackstone_stairs,blackstone_wall air"
-        await self.publish("mc.post", cmd)
-
     async def clear_hint(self):
         pos1 = config.hint_start.offset(x=-config.width, y=-5)
         pos2 = config.hint_start.offset(x=config.width, y=5)
@@ -44,7 +40,7 @@ class Hint(Portal):
             zone = status["zone"]
             hint_pos = hint_pos.offset(x=-((zone.pos2.x - zone.pos1.x) / 2))
 
-            status = mc.set_text(hint, hint_pos)
+            status = mc.set_text(hint, hint_pos, palette=[config.hint_palette])
             return status["zone"]
 
         f = lambda: print_hint_get_zone()
