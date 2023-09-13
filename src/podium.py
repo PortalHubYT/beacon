@@ -10,6 +10,7 @@ from tools.pulsar import Portal
 def get_sign_data(messages, pos):
     top_colors = ["yellow", "white", "gold", "black", "black"]
 
+    print("SIGN DATA WITH POS", pos)
     a = f"""{{front_text:{{color:"white",has_glowing_text:1b,messages:['{{"text":"{messages[0]}", "color":"{top_colors[pos - 1]}"}}','{{"text":"{messages[1]}", "color":"{top_colors[pos - 1]}"}}','{{"text":"{messages[2]}", "color":"{top_colors[pos - 1]}"}}','{{"text":"{messages[3]}", "color":"{top_colors[pos - 1]}"}}']}}}} """
     return a
 
@@ -74,6 +75,7 @@ class Podium(Portal):
         ]
 
         data = get_sign_data(sign_message, pos)
+
         await self.publish(
             "mc.post", f"data merge block {sign_start.offset(x=pos)} {data}"
         )
@@ -131,16 +133,21 @@ class Podium(Portal):
             await self.publish(
                 "mc.post", f"setblock {sign_start.offset(x=x_offset)} {block}"
             )
-            sign_message = [
-                f"#{x_offset}",
-                "",
-                "",
-                "",
-            ]
-            data = get_sign_data(sign_message)
-            await self.publish(
-                "mc.post", f"data merge block {sign_start.offset(x=x_offset)} {data}"
-            )
+
+            if block.id == mc.Block("oak_wall_hanging_sign").id:
+                sign_message = [
+                    f"#{x_offset}",
+                    "",
+                    "",
+                    "",
+                ]
+                data = get_sign_data(sign_message, x_offset)
+
+                cmd = f"data merge block {sign_start.offset(x=x_offset)} {data}"
+                await self.publish(
+                    "mc.post",
+                    cmd,
+                )
 
         #### FENCES
         fence = mc.Block("stone_brick_wall")
