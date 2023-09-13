@@ -117,6 +117,8 @@ class GameLoop(Portal):
                 print(
                     f"Error: user_id {event['user_id']} nickname: {event['nickname']}  NOT FOUND IN DATABASE"
                 )
+                self.winners.pop()
+                return
 
             print(event["nickname"], "won", points_won, "points", "score = :", score)
             await self.publish(
@@ -124,9 +126,13 @@ class GameLoop(Portal):
             )
 
     async def before_round(self):
+        await self.publish("painter.stop")
         await self.publish("gl.clear_hint")
         await self.publish("gl.clear_svg")
-        pass
+
+        await self.publish("gl.set_timer", 100)
+        cmd = f"bossbar set minecraft:timer visible true"
+        await self.publish("mc.post", cmd)
 
     async def round(self):
         self.word = self.new_word()
@@ -158,15 +164,22 @@ class GameLoop(Portal):
 
     async def after_round(self):
         self.force_next_round = False
-
-        await self.publish("gl.clear_hint")
-        await self.publish("gl.clear_svg")
-        await self.publish("gl.reset_podium")
-
-        # cacher top bar
+        await self.publish("painter.stop")
+        await self.publish("gl.print_hint", self.word)
         # display full hint
         # display title with winner
-        time.sleep(3)
+        cmd = f"bossbar set minecraft:timer visible false"
+        await self.publish("mc.post", cmd)
+
+        cmd = f'title {config.camera_name} title {{"text":"Round over","color":"red"}}'
+        await self.publish("mc.post", cmd)
+
+        cmd = f'title {config.camera_name} subtitle "The word was {self.word}"'
+        await self.publish("mc.post", cmd)
+
+        await asyncio.sleep(3)
+        await self.publish("gl.clear_svg")
+        await self.publish("gl.reset_podium")
 
     async def game_loop(self):
         signal.signal(signal.SIGINT, self.signal_handler)
