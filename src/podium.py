@@ -47,6 +47,8 @@ class Podium(Portal):
 
         pos, name, score = args
         if pos > config.podium_size:
+            cmd = f'title {config.camera_name} actionbar {{"text":"{name} found the word #{pos}"}}'
+            await self.publish("mc.post", cmd)
             return
 
         print("spawn winner", pos, name, score)
@@ -55,6 +57,13 @@ class Podium(Portal):
 
         f = lambda: spawn_npc(name, coords)
         await self.publish("mc.lambda", dumps(f))
+
+        cmd = f"particle wax_on {coords[0]} 0 0 0 6 100 normal"
+        print(cmd)
+        await self.publish("mc.post", cmd)
+        cmd = f"particle wax_off {coords[0]} 0 0 0 6 100 normal"
+        print(cmd)
+        await self.publish("mc.post", cmd)
 
         sign_start = config.podium_pos.offset(x=math.floor(-config.podium_size / 2))
         sign_message = [
@@ -68,6 +77,10 @@ class Podium(Portal):
         await self.publish(
             "mc.post", f"data merge block {sign_start.offset(x=pos)} {data}"
         )
+
+        cmd = f'title {config.camera_name} actionbar {{"text":"{name} found the word #{pos}"}}'
+        print(cmd)
+        await self.publish("mc.post", cmd)
 
     async def remove_podium(self):
         origin = config.podium_pos
