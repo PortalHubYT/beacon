@@ -26,6 +26,8 @@ class Hint(Portal):
         await self.publish("mc.lambda", dumps(f))
 
     async def print_hint(self, hint):
+        print("-> Printing hint :", hint)
+
         def print_hint_get_zone():
             hint_pos = config.hint_start
             status = mc.meta_set_text(
