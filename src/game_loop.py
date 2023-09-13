@@ -33,12 +33,18 @@ def get_word_list():
 class GameLoop(Portal):
     async def on_join(self):
         self.word_list = get_word_list()
+        self.force_next_round = False
         await self.place_camera()
         await self.subscribe("live.comment", self.on_comment)
         await self.subscribe("gl.reset_camera", self.place_camera)
         await self.subscribe("gl.reset_arena", self.reset_arena)
         await self.subscribe("gl.reset_database", self.reset_database)
+        await self.subscribe("gl.next_round", self.next_round)
         await self.game_loop()
+
+    async def next_round(self):
+        print("-> Skipped to next round")
+        self.force_next_round = True
 
     async def reset_arena(self):
         await self.publish("gl.clear_hint")
@@ -107,6 +113,10 @@ class GameLoop(Portal):
                 points_won = 1
 
             score = db.add_and_get_user_score(points_won, event["user_id"])
+            if not score:
+                print(
+                    f"Error: user_id {event['user_id']} nickname: {event['nickname']}  NOT FOUND IN DATABASE"
+                )
 
             print(event["nickname"], "won", points_won, "points", "score = :", score)
             await self.publish(
@@ -139,15 +149,23 @@ class GameLoop(Portal):
             )
 
             await self.publish("gl.print_hint", hint)
-
             await self.publish("gl.set_timer", 100 - round_progress)
 
+            if self.force_next_round:
+                await self.publish("painter.stop")
+                break
             await asyncio.sleep(0.3)
 
     async def after_round(self):
+        self.force_next_round = False
+
         await self.publish("gl.clear_hint")
         await self.publish("gl.clear_svg")
         await self.publish("gl.reset_podium")
+
+        # cacher top bar
+        # display full hint
+        # display title with winner
         time.sleep(3)
 
     async def game_loop(self):

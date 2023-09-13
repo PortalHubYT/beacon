@@ -61,21 +61,29 @@ def generate_pixel_lists(word, random=False):
 
 
 def get_interval(steps):
-    steps
-
     wait_time = config.drawing_finished_at_percentage / 100 * config.round_time
     print(
         f"estimated draw time: {wait_time } -> AFTER {steps} blocks, wait {(wait_time - (steps / 1000))}"
     )
-    interval = (wait_time - (steps / 1000)) / steps
-
+    interval = (wait_time - (steps / 10)) / steps
+    print(
+        f"for {steps} steps " "we will wait ",
+        (steps / 10),
+        f"before addind cooldown {interval * steps}",
+    )
     return interval if interval > 0 else 0
 
 
 class Painter(Portal):
     async def on_join(self):
+        self.stop_painting = False
         await self.subscribe("gl.paint_svg", self.paint)
         await self.subscribe("gl.clear_svg", self.remove_zone)
+        await self.subscribe("painter.stop", self.stop_painter)
+
+    async def stop_painter(self):
+        print("stopped painting")
+        self.stop_painting = True
 
     async def remove_zone(self):
         pos1 = config.paint_start
@@ -86,7 +94,9 @@ class Painter(Portal):
         await self.publish("mc.lambda", dumps(f))
 
     async def paint(self, word):
-        def paint_chunk(pixel_list, interval):
+        self.stop_painting = False
+
+        def paint_chunk(pixel_list):
             start_pos = config.paint_start
 
             for p in pixel_list:
@@ -104,10 +114,14 @@ class Painter(Portal):
         interval = get_interval(len(chunks))
 
         print(f"Painting '{word}': {len(big_list)} blocks")
+        start = time.time()
         for chunk in chunks:
             await asyncio.sleep(interval / 2)
-            f = lambda: paint_chunk(chunk, interval)
+            f = lambda: paint_chunk(chunk)
             await self.publish("mc.lambda", dumps(f))
+            if self.stop_painting:
+                break
+        print(f"Finished in {time.time() - start} seconds")
 
 
 if __name__ == "__main__":
