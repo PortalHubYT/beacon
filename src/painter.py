@@ -121,7 +121,7 @@ class Painter(Portal):
             await self.publish("mc.lambda", dumps(f))
             if self.stop_painting:
                 break
-        print(f"Finished in {time.time() - start} seconds")
+        print(f"Finished in {str(time.time() - start)[:2]} seconds\n")
 
 
 if __name__ == "__main__":
