@@ -124,10 +124,12 @@ class Console(Portal):
 
     async def call_publish(self, publish_name, *args):
         arg = "".join(args)
-        print(f"\n-> Calling {publish_name} with args {arg}")
+
         if len(args) > 0:
+            print(f"\n-> Publish {publish_name} with args {arg}")
             await self.publish(publish_name, arg)
         else:
+            print(f"\n-> Publish {publish_name}")
             await self.publish(publish_name)
 
     async def mimic(self, action, amount, time_between=1, use_db=False, overwrite=None):
@@ -148,12 +150,13 @@ class Console(Portal):
                 f"{bcolors.ENDC}({datetime.datetime.now().strftime('%H:%M')})> {bcolors.OKCYAN}{i + 1}/{amount} [{action}] in {round(time_elapsed_seconds, 2)}s",
                 end="\r",
             )
-            print("about to publish:", f"live.{action} {profile}")
             await self.publish(f"live.{action}", profile)
             if use_db:
                 db.add_new_user(profile)
                 db.add_event(profile, action)
-                db.commit()
+
+        if use_db:
+            db.commit()
 
         print()
 
