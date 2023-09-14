@@ -10,7 +10,7 @@ config_values = {
     "rcon_port": os.getenv("MINECRAFT_RCON_PORT"),
     "rcon_password": os.getenv("MINECRAFT_RCON_PASSWORD"),
     "stream_ready": True,
-    "stream_id": "portalhub",
+    "stream_id": "tv_asahi_news",
     "verbose": True,
     "crop_size": 50,
     "camera_name": "funyrom",

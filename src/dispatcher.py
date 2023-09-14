@@ -55,9 +55,15 @@ class Dispatch(Portal):
         await self.subscribe("gl.new_word", self.new_word)
         await self.publish("dispatcher.get_word")
 
-        print("-> Starting dispatcher...")
-        loop = asyncio.get_running_loop()
-        loop.create_task(self.client._connect())
+        try:
+            await self.client.start()
+        except Exception as e:
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            logging.error(error_msg)
+            
+        print("-> Dispatcher stopped?")
+        await asyncio.sleep(15)
 
     def connect(self, stream_id):
         if stream_id == "":
@@ -117,4 +123,12 @@ class Dispatch(Portal):
 
 if __name__ == "__main__":
     dispatch = Dispatch()
-    asyncio.run(dispatch.run(), debug=True)
+    while True:
+        try:
+            asyncio.run(dispatch.run(), debug=True)
+        except Exception as e:
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            logging.error(error_msg)
+            print("-> Restarting in 5 seconds...")
+            time.sleep(5)
