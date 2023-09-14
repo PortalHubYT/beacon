@@ -9,7 +9,6 @@ from TikTokLive import TikTokLiveClient
 from TikTokLive.types.events import DisconnectEvent, ConnectEvent
 
 from tools.config import config
-from tools.database import db
 from tools.sanitize import get_profile
 from tools.pulsar import Portal
 
@@ -34,14 +33,13 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-listeners = ["comment", "follow", "join", "share", "like", "gift"]
+listeners = ["comment", "follow", "share", "like", "gift"]
 topic_prefix = "live."
 # This means that the topic will be live.comment, live.follow, etc.
 
 
 class Dispatch(Portal):
-    async def loop(self):
-        print("-> Connecting TikTok client")
+    async def on_join(self):
         self.client = self.connect(config.stream_id)
 
         print("-> Adding all the listeners...")
@@ -56,18 +54,9 @@ class Dispatch(Portal):
         self.client.add_listener(
             "viewer_update", lambda event: self.views_handler(event)
         )
-        print("-> Done!")
-
         print("-> Starting dispatcher...")
-        try:
-            await self.client._start()
-        except Exception as e:
-            error_msg = f"An error occurred: {e}"
-            print(error_msg)
-            logging.error(error_msg)
-
-        print("-> Dispatcher stopped?")
-        await asyncio.sleep(15)
+        loop = asyncio.get_running_loop()
+        loop.create_task(self.client._connect())
 
     def connect(self, stream_id):
         if stream_id == "":
@@ -90,7 +79,7 @@ class Dispatch(Portal):
 
         @client.on("error")
         async def on_error(event):
-            error_msg = f"An error occurred: {event}"
+            error_msg = f"(in dispatcher.py) An error occurred: {event}"
             print(error_msg)
             logging.error(error_msg)
 
@@ -106,6 +95,7 @@ class Dispatch(Portal):
         user = get_profile(event)
 
         try:
+            pass
             await self.publish(topic_prefix + listener, user)
         except Exception as e:
             if config.verbose:
@@ -114,17 +104,22 @@ class Dispatch(Portal):
                 )
             print(e)
 
-        db.add_new_user(user)
-        db.add_event(user, listener)
-        db.commit()
-        
+        print("event:", listener)
+        await self.publish("dispatcher.alive")
+        # await self.publish("db", ("add_new_user", user))
+        # print("after publish add new_user")
+
+        # print("\nbefore publish add add_event")
+        # await self.publish("db", ("add_event", user, listener))
+        # print("after publish add add_event")
+
         if config.verbose and listener != "join":
             print(f"{datetime.datetime.now()} | {listener.upper()} | {user['display']}")
 
-    def views_handler(self, event):
-        db.store_views(event.viewer_count)
+    async def views_handler(self, event):
+        # await self.publish("db", ("store_views", event.viewer_count))
+        # await self.publish("db", ("commit",))
         print("-> Storing viewer count in database")
-        db.commit()
 
         if config.verbose:
             print("--------------------------------------")
@@ -134,12 +129,4 @@ class Dispatch(Portal):
 
 if __name__ == "__main__":
     dispatch = Dispatch()
-    while True:
-        try:
-            asyncio.run(dispatch.run(), debug=True)
-        except Exception as e:
-            error_msg = f"An error occurred: {e}"
-            print(error_msg)
-            logging.error(error_msg)
-            print("-> Restarting in 5 seconds...")
-            time.sleep(5)
+    asyncio.run(dispatch.run(), debug=True)

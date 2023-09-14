@@ -7,7 +7,7 @@ import shulker as mc
 
 from tools.pulsar import Portal
 from tools.config import config
-from tools.database import db
+from tools.postgres import db
 
 
 class Gift(Portal):
@@ -16,13 +16,13 @@ class Gift(Portal):
 
         async def on_gift(profile):
             print(f"{profile['gift_value']} gifted by {profile['display']}")
-            db.add_user_gifted(profile["gift_value"], profile["user_id"])
+            await self.publish("db", ("add_user_gifted", profile["gift_value"], profile["user_id"]))
 
             name = profile["display"]
             if not name:
                 return
 
-            result = db.get_user_gifted_value_since_last_reset(profile["user_id"])
+            result = await self.call("db", ("get_user_gifted_value_since_last_reset", profile["user_id"]))
             print("RESULT GOT::", result)
             if result:
                 print("result:", result)
@@ -40,7 +40,7 @@ class Gift(Portal):
                     f"{name} reached {gifted_since_action} coins, drawing their picture"
                 )
 
-                db.reset_user_gifted_value_since_last_reset(profile["user_id"])
+                await self.publish("db", ("reset_user_gifted_value_since_last_reset", profile["user_id"]))
 
         await self.subscribe("live.gift", on_gift)
 

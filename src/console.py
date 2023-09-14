@@ -9,7 +9,7 @@ from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.auto_suggest import AutoSuggest, Suggestion
 
 from tools.pulsar import Portal
-from tools.database import db
+from tools.postgres import db
 from tools.mimic import gen_fake_profiles
 
 
@@ -152,11 +152,11 @@ class Console(Portal):
             )
             await self.publish(f"live.{action}", profile)
             if use_db:
-                db.add_new_user(profile)
-                db.add_event(profile, action)
+                await self.publish("db", ("add_new_user", profile))
+                await self.publish("db", ("add_event", profile, action))
 
         if use_db:
-            db.commit()
+            await self.publish("db", ("commit",))
 
         print()
 
@@ -172,7 +172,8 @@ class Console(Portal):
 
         print()
 
-        ret = db.get(query)
+        ret = await self.call("db", (query,))
+        
         for unique in ret:
             text = ""
 
@@ -206,7 +207,7 @@ class Console(Portal):
             )
         elif len(args) == 1 and args[0] == "confirm":
             print("\n-> Resetting database...")
-            db.reset_database(confirm=True)
+            await self.publish("db", ("reset_database", True))
             print("Database reset.\n")
 
     async def loop(self):

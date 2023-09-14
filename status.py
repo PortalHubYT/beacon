@@ -4,7 +4,7 @@ import signal
 
 import shulker as mc
 
-from src.tools.database import db
+from tools.postgres import db
 from src.tools.pulsar import Portal
 from src.tools.config import config
 

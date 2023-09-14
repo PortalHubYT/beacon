@@ -10,7 +10,6 @@ from tools.pulsar import Portal
 def get_sign_data(messages, pos):
     top_colors = ["yellow", "white", "gold", "black", "black"]
 
-    print("SIGN DATA WITH POS", pos)
     a = f"""{{front_text:{{color:"white",has_glowing_text:1b,messages:['{{"text":"{messages[0]}", "color":"{top_colors[pos - 1]}"}}','{{"text":"{messages[1]}", "color":"{top_colors[pos - 1]}"}}','{{"text":"{messages[2]}", "color":"{top_colors[pos - 1]}"}}','{{"text":"{messages[3]}", "color":"{top_colors[pos - 1]}"}}']}}}} """
     return a
 

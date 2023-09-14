@@ -62,16 +62,13 @@ def generate_pixel_lists(word, random=False):
 
 def get_interval(steps):
     wait_time = config.drawing_finished_at_percentage / 100 * config.round_time
+    interval = (wait_time - (steps / 5)) / steps
+    interval = interval if interval > 0 else 0
+
     print(
-        f"estimated draw time: {wait_time } -> AFTER {steps} blocks, wait {(wait_time - (steps / 1000))}"
+        f"Try {wait_time}: ({(steps / 5)}s to build) + ({steps} steps x {interval:.2f} = {steps*interval}s)"
     )
-    interval = (wait_time - (steps / 10)) / steps
-    print(
-        f"for {steps} steps " "we will wait ",
-        (steps / 10),
-        f"before addind cooldown {interval * steps}",
-    )
-    return interval if interval > 0 else 0
+    return interval / 3
 
 
 class Painter(Portal):
@@ -80,10 +77,63 @@ class Painter(Portal):
         await self.subscribe("gl.paint_svg", self.paint)
         await self.subscribe("gl.clear_svg", self.remove_zone)
         await self.subscribe("painter.stop", self.stop_painter)
+        await self.subscribe("painter.create_backboard", self.create_backboard)
+        await self.subscribe("painter.remove_backboard", self.remove_backboard)
 
     async def stop_painter(self):
-        print("stopped painting")
+        print("-> Stop painting")
         self.stop_painting = True
+
+    async def create_corner(self):
+        # remove 4x4
+        # place 2x4 horiz
+        # place 2x4 vert
+        # place last block
+        pass
+
+    async def create_backboard(self):
+        print("-> Create backboard")
+        origin = config.paint_start.offset(z=-2)
+
+        # black backboard
+        pos1 = origin.offset(x=-8, y=-3)
+        pos2 = origin.offset(x=config.width + 8, y=config.height + 3)
+        zone = mc.BlockZone(pos1, pos2)
+        f = lambda: mc.set_zone(zone, "black_concrete")
+        await self.publish("mc.lambda", dumps(f))
+
+        # white canvas
+        canvas_pos1 = pos1.offset(x=2, y=2)
+        canvas_pos2 = pos2.offset(x=-2, y=-2)
+        zone = mc.BlockZone(canvas_pos1, canvas_pos2)
+        f = lambda: mc.set_zone(zone, "snow_block")
+        await self.publish("mc.lambda", dumps(f))
+
+        # corners
+
+        # lights
+        light_pos1 = pos1.offset(z=3)
+        light_pos2 = pos2.offset(z=3)
+        zone = mc.BlockZone(light_pos1, light_pos2)
+        f = lambda: mc.set_zone(zone, "light")
+        await self.publish("mc.lambda", dumps(f))
+
+    async def remove_backboard(self):
+        print("-> Remove backboard")
+        origin = config.paint_start.offset(z=-2)
+        pos1 = origin.offset(x=-8, y=-3)
+        pos2 = origin.offset(x=config.width + 8, y=config.height + 3)
+
+        zone = mc.BlockZone(pos1, pos2)
+        f = lambda: mc.set_zone(zone, "air")
+        await self.publish("mc.lambda", dumps(f))
+
+        light_pos1 = pos1.offset(z=3)
+        light_pos2 = pos2.offset(z=3)
+
+        zone = mc.BlockZone(light_pos1, light_pos2)
+        f = lambda: mc.set_zone(zone, "air")
+        await self.publish("mc.lambda", dumps(f))
 
     async def remove_zone(self):
         pos1 = config.paint_start
@@ -116,7 +166,7 @@ class Painter(Portal):
         print(f"Painting '{word}': {len(big_list)} blocks")
         start = time.time()
         for chunk in chunks:
-            await asyncio.sleep(interval / 2)
+            await asyncio.sleep(interval)
             f = lambda: paint_chunk(chunk)
             await self.publish("mc.lambda", dumps(f))
             if self.stop_painting:

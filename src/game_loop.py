@@ -11,7 +11,6 @@ from dill import dumps
 
 from tools.pulsar import Portal
 from tools.config import config
-from tools.database import db
 
 """
 Step 0: Start the timer set to 30s
@@ -38,7 +37,6 @@ class GameLoop(Portal):
         await self.subscribe("live.comment", self.on_comment)
         await self.subscribe("gl.reset_camera", self.place_camera)
         await self.subscribe("gl.reset_arena", self.reset_arena)
-        await self.subscribe("gl.reset_database", self.reset_database)
         await self.subscribe("gl.next_round", self.next_round)
         await self.game_loop()
 
@@ -51,9 +49,6 @@ class GameLoop(Portal):
         await self.publish("gl.clear_svg")
         cmd = f"sudo {config.camera_name} //replacenear 1000 grass,grass_block,bedrock air"
         await self.publish("mc.post", cmd)
-
-    async def reset_database(self):
-        db.reset_database(confirm=True)
 
     def new_word(self):
         if len(self.word_list) == 0:
@@ -112,7 +107,9 @@ class GameLoop(Portal):
             else:
                 points_won = 1
 
-            score = db.add_and_get_user_score(points_won, event["user_id"])
+            score = await self.call(
+                "db", ("add_and_get_user_score", points_won, event["user_id"])
+            )
             if not score:
                 print(
                     f"Error: user_id {event['user_id']} nickname: {event['nickname']}  NOT FOUND IN DATABASE"
@@ -177,7 +174,7 @@ class GameLoop(Portal):
         cmd = f'title {config.camera_name} subtitle "The word was {self.word}"'
         await self.publish("mc.post", cmd)
 
-        await asyncio.sleep(3)
+        await asyncio.sleep(3.5)
         await self.publish("gl.clear_svg")
         await self.publish("gl.reset_podium")
 

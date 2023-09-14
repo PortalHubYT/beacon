@@ -30,6 +30,7 @@ config_values = {
     "podium_size": 5,
     "scores_template": [10, 5, 3],
     "gift_trigger": 10,
+    "hint_palette": "quartz",
 }
 
 
