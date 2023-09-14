@@ -1,3 +1,591 @@
 
-# 2023-09-04 21:13:37.315923
+# 2023-09-11 21:10:42.466375
++gl.reset_camera
+
+# 2023-09-11 21:17:56.083276
++mimic comment 10
+
+# 2023-09-11 21:19:00.372298
++(20:48)>gl.arena_reset
+
+# 2023-09-11 21:19:56.852928
++mimic comment 10
+
+# 2023-09-11 22:09:23.078619
++mimic comment 50
+
+# 2023-09-11 22:10:20.319357
++mimic comment 10
+
+# 2023-09-11 22:10:36.686402
++mimic comment 20
+
+# 2023-09-11 22:12:57.022578
++gl.reset_database
+
+# 2023-09-11 22:14:39.335007
++mimic score 100
+
+# 2023-09-11 22:14:59.743283
++mimic comment 40
+
+# 2023-09-11 22:15:51.894334
++mimic comment 1000 0.1
+
+# 2023-09-11 22:20:24.785285
++mimic comment 1000 
+
+# 2023-09-11 22:20:35.355369
++mimic comment 1--
+
+# 2023-09-11 22:20:40.481337
++mimic comment 100
+
+# 2023-09-11 22:21:00.131022
++mimic comment 100 0.1
+
+# 2023-09-11 22:24:58.298306
++gl.reset_database
+
+# 2023-09-11 22:29:07.715294
++reset_db
+
+# 2023-09-11 22:29:10.803174
++reset_db true
+
+# 2023-09-11 22:29:18.185708
++reset_db confirm
+
+# 2023-09-11 22:30:00.827764
++reset_db
+
+# 2023-09-11 22:30:09.227401
++reset_db confirm
+
+# 2023-09-11 22:30:37.778439
++gl.reset_database
+
+# 2023-09-11 22:32:44.492416
++reset_db
+
+# 2023-09-11 22:32:46.827200
++reset_db confirm
+
+# 2023-09-11 22:35:11.141209
++gl.reset_database
+
+# 2023-09-11 22:36:12.044824
++mimic comment 100 0.1
+
+# 2023-09-11 22:39:11.709698
++mimic_db comment 100 0.1
+
+# 2023-09-11 22:40:46.366159
++mimic_db comment 1 0.1 user_id=309629701
+
+# 2023-09-11 22:41:22.366270
++mimic_db comment 20 0.1 user_id=309629701
+
+# 2023-09-11 22:52:30.294390
++mimic_db comment 20 0.1 user_id=309629701,comment=banana
+
+# 2023-09-11 22:52:45.440261
++mimic_db comment 1 0.1 user_id=309629701,comment=pizza
+
+# 2023-09-11 22:57:31.772146
 +help
+
+# 2023-09-11 23:09:47.403686
++gl.reset_camera
+
+# 2023-09-11 23:45:38.218883
++gl.reset_podium
+
+# 2023-09-12 00:08:55.983192
++gl.reset_camera
+
+# 2023-09-12 00:08:57.535444
++gl.reset_podium
+
+# 2023-09-12 00:39:20.207534
++gl.reset_camera
+
+# 2023-09-12 00:40:33.149461
++gl.reset_podium
+
+# 2023-09-12 02:06:37.214571
++mimic gift 10
+
+# 2023-09-12 02:07:09.102363
++mimic_db comment 1 0.1 user_id=309629701,comment=fish
+
+# 2023-09-12 02:08:42.357950
++mimic_db comment 1 0.1 user_id=309629701,comment=ice-cream
+
+# 2023-09-12 02:09:31.510759
++mimic_db comment 1 0.1 user_id=309629701,comment=carrot
+
+# 2023-09-12 02:09:56.030914
++mimic_db comment 1 0.1 user_id=309629701,comment=cheese
+
+# 2023-09-12 02:11:16.615849
++mimic_db comment 1 0.1 user_id=309629701,comment=hamburger
+
+# 2023-09-12 02:11:46.102772
++mimic_db comment 1 0.1 user_id=309629701,comment=pizza
+
+# 2023-09-12 02:12:08.035567
++gl.spawnwinner
+
+# 2023-09-12 02:12:34.952118
++mimic_db comment 1 0.1 user_id=309629701,comment=pizza
+
+# 2023-09-12 02:13:27.542486
++mimic_db comment 1 0.1 user_id=309629701,comment=strawberry
+
+# 2023-09-12 02:16:18.787855
++gl.reset_camera
+
+# 2023-09-12 02:57:49.999944
++gl.spawn_winner
+
+# 2023-09-12 02:57:54.678738
++gl.spawn_winner truc
+
+# 2023-09-12 02:58:07.704665
++gl.spawn_winner (1,2,3)
+
+# 2023-09-12 02:58:21.640243
++gl.spawn_winner 123
+
+# 2023-09-12 02:58:27.751807
++gl.spawn_winner 1 2 3
+
+# 2023-09-12 02:58:31.079555
++gl.spawn_winner 11 2 3
+
+# 2023-09-12 02:58:35.584820
++gl.spawn_winner "11" 2 3
+
+# 2023-09-12 02:58:40.752504
++gl.spawn_winner "spawn"
+
+# 2023-09-12 02:59:43.513436
++mimic_db comment 1 0.1 user_id=309629701,comment=grape
+
+# 2023-09-12 03:03:15.785954
++mimic_db comment 1 0.1 user_id=309629701,comment=bread
+
+# 2023-09-12 03:04:21.705483
++mimic_db comment 1 0.1 user_id=309629701,comment=hot-dog
+
+# 2023-09-12 03:05:34.176281
++mimic_db comment 1 0.1 user_id=309629701,comment=pizza
+
+# 2023-09-12 03:06:16.250243
++mimic_db comment 1 0.1 user_id=309629701,comment=corn
+
+# 2023-09-12 03:11:49.794529
++mimic_db comment 1 0.1 user_id=309629701,comment=chicken
+
+# 2023-09-12 03:24:56.388142
++mimic_db comment 1 0.1 user_id=309629701,comment=carrot
+
+# 2023-09-12 03:25:03.117552
++gl.reset_podium
+
+# 2023-09-12 03:25:06.823102
++mimic_db comment 1 0.1 user_id=309629701,comment=carrot
+
+# 2023-09-12 03:26:06.388809
++mimic_db comment 1 0.1 user_id=309629701,comment=hamburger
+
+# 2023-09-12 03:26:58.757468
++mimic_db comment 1 0.1 user_id=309629701,comment=fish
+
+# 2023-09-12 03:27:24.677423
++mimic_db comment 1 0.1 user_id=309629701,comment=pizza
+
+# 2023-09-12 03:29:40.110757
++mimic_db comment 1 0.1 user_id=309629701,comment=corn
+
+# 2023-09-12 03:32:39.286436
++mimic_db comment 1 0.1 user_id=309629701,comment=ice-cream
+
+# 2023-09-12 03:32:48.294258
++mimic_db comment 1 0.1 user_id=309629701,comment=chicken
+
+# 2023-09-12 03:33:54.326779
++mimic_db comment 1 0.1 user_id=309629701,comment=apple
+
+# 2023-09-12 03:34:52.173122
++mimic_db comment 1 0.1 user_id=309629701,comment=banana
+
+# 2023-09-12 03:36:30.110758
++mimic_db comment 1 0.1 user_id=309629701,comment=fish
+
+# 2023-09-12 03:37:50.663516
++gl.reset_podium
+
+# 2023-09-12 03:38:34.255649
++mimic_db comment 1 0.1 user_id=309629701,comment=hot-dog
+
+# 2023-09-12 03:42:29.784451
++mimic_db comment 1 0.1 user_id=309629701,comment=corn
+
+# 2023-09-12 03:42:34.632250
++mimic_db comment 1 0.1 user_id=309629701,comment=apple
+
+# 2023-09-12 03:47:04.001712
++gl.reset_podium
+
+# 2023-09-12 03:47:10.809023
++gl.rebuild_podium
+
+# 2023-09-12 03:47:22.961247
++mimic_db comment 1 0.1 user_id=309629701,comment=carrot
+
+# 2023-09-12 03:47:30.497924
++gl.reset_podium
+
+# 2023-09-12 03:47:37.953504
++mimic_db comment 1 0.1 user_id=309629701,comment=carrot
+
+# 2023-09-12 03:48:57.385650
++mimic_db comment 1 0.1 user_id=309629701,comment=pizza
+
+# 2023-09-12 03:50:08.210255
++mimic_db comment 1 0.1 user_id=309629701,comment=ice-cream
+
+# 2023-09-12 03:50:15.961846
++gl.reset_podium
+
+# 2023-09-12 03:50:18.321299
++mimic_db comment 1 0.1 user_id=309629701,comment=ice-cream
+
+# 2023-09-12 03:50:39.841850
++gl.reset_podium
+
+# 2023-09-12 03:50:41.764172
++mimic_db comment 1 0.1 user_id=309629701,comment=ice-cream
+
+# 2023-09-12 03:51:02.401450
++mimic_db comment 1 0.1 user_id=309629701,comment=beeef
+
+# 2023-09-12 03:51:04.826686
++mimic_db comment 1 0.1 user_id=309629701,comment=beef
+
+# 2023-09-12 03:55:35.235025
++gl.reset_podium
+
+# 2023-09-12 03:55:38.090330
++mimic_db comment 1 0.1 user_id=309629701,comment=apple
+
+# 2023-09-12 03:55:44.980186
++mimic_db comment 1 0.1 user_id=309629701,comment=strawberry
+
+# 2023-09-12 04:02:05.091626
++mimic_db comment 1 0.1 user_id=309629701,comment=ice-cream
+
+# 2023-09-12 04:03:02.787293
++mimic_db comment 1 0.1 user_id=309629701,comment=pizza
+
+# 2023-09-12 04:03:58.909906
++mimic_db comment 1 0.1 user_id=309629701,comment=cheese
+
+# 2023-09-12 04:09:03.541110
++mimic_db comment 1 0.1 user_id=309629701,comment=beer
+
+# 2023-09-12 04:10:07.268460
++mimic_db comment 1 0.1 user_id=309629701,comment=apple
+
+# 2023-09-12 04:14:45.550390
++mimic_db comment 1 0.1 user_id=309629701,comment=grape
+
+# 2023-09-12 04:15:54.558898
++mimic_db comment 1 0.1 user_id=309629701,comment=carrot
+
+# 2023-09-12 04:17:06.158638
++mimic_db comment 1 0.1 user_id=309629701,comment=apple
+
+# 2023-09-12 04:21:07.977861
++mimic_db comment 1 0.1 user_id=309629701,comment=chicken
+
+# 2023-09-12 04:21:16.333997
++gl.reset_podium
+
+# 2023-09-12 04:24:25.320784
++mimic_db comment 1 0.1 user_id=309629701,comment=hamburger
+
+# 2023-09-12 04:40:26.658054
++mimic_db comment 1 0.1 user_id=309629701,comment=beer
+
+# 2023-09-12 04:45:44.148365
++mimic_db comment 1 0.1 user_id=309629701,comment=strawberry
+
+# 2023-09-12 04:48:42.970327
++mimic_db comment 1 0.1 user_id=309629701,comment=banana
+
+# 2023-09-12 04:50:29.293172
++mimic_db comment 1 0.1 user_id=309629701,comment=ice-cream
+
+# 2023-09-12 16:27:19.570192
++mimic_db join 500 0.1
+
+# 2023-09-12 16:29:16.552283
++mimic_db join 500 0.01
+
+# 2023-09-12 19:16:54.404752
++mimic_db join 500 0.001
+
+# 2023-09-13 01:41:02.464857
++mimic_db comment 1 0.1 user_id=309629701,comment=laptop
+
+# 2023-09-13 01:43:43.263912
++mimic_db comment 1 0.1 user_id=309629701,comment=lips
+
+# 2023-09-13 01:44:33.199652
++mimic_db comment 1 0.1 user_id=309629701,comment=rice
+
+# 2023-09-13 01:45:52.416501
++mimic_db comment 1 0.1 user_id=309629701,comment=toaster
+
+# 2023-09-13 01:47:36.064812
++mimic_db comment 1 0.1 user_id=309629701,comment=anti bug
+
+# 2023-09-13 01:47:45.737000
++mimic_db comment 1 0.1 user_id=309629701,comment="anti bug"
+
+# 2023-09-13 01:48:05.681470
++mimic_db comment 1 0.1 user_id=309629701,'comment=anti bug'
+
+# 2023-09-13 01:52:24.034447
++mimic_db comment 1 0.1 user_id=309629701,comment=flower
+
+# 2023-09-13 01:52:58.752661
++mimic_db comment 1 0.1 user_id=30,comment=flower
+
+# 2023-09-13 01:53:48.090341
++mimic_db comment 1 0.1 user_id=309629701,comment=bladder
+
+# 2023-09-13 01:58:05.441945
++mimic_db comment 10 0.1 user_id=309629701,comment=tan
+
+# 2023-09-13 01:58:19.099283
++mimic_db comment 10 0.1 comment=tan
+
+# 2023-09-13 01:58:29.979297
++mimic_db comment 10 0.001 comment=tan
+
+# 2023-09-13 01:58:45.299519
++mimic_db comment 10 0.001 comment=butterfly
+
+# 2023-09-13 02:05:25.668455
++gl.next_round
+
+# 2023-09-13 02:10:11.189814
++painter.stop
+
+# 2023-09-13 02:10:58.494098
++gl.next_round
+
+# 2023-09-13 02:18:20.320604
++mimic_db comment 10 0.001 comment=earphones
+
+# 2023-09-13 02:18:47.977398
++mimic_db comment 1 0.001 comment=noodles
+
+# 2023-09-13 02:19:49.222898
++mimic_db comment 1 0.001 comment=catfish
+
+# 2023-09-13 02:21:50.943107
++gl.next_round
+
+# 2023-09-13 02:23:26.319805
++mimic_db comment 1 0.001 comment=mango
+
+# 2023-09-13 02:23:41.552978
++mimic_db comment 10 0.1 user_id=309629701,comment=mango
+
+# 2023-09-13 02:25:53.225280
++mimic_db comment 10 0.1 user_id=309629701,comment=computer
+
+# 2023-09-13 02:26:23.192489
++mimic_db comment 10 0.1 user_id=309629701,comment=cupcake
+
+# 2023-09-13 02:27:25.522915
++mimic_db comment 10 0.1 user_id=309629701,comment=hat
+
+# 2023-09-13 02:28:28.441387
++mimic_db comment 1 0.1 user_id=309629701,comment=
+
+# 2023-09-13 02:28:32.777574
++gl.next_round
+
+# 2023-09-13 02:28:42.073189
++mimic_db comment 1 0.1 user_id=309629701,comment=wasabi
+
+# 2023-09-13 02:29:51.650147
++mimic_db comment 1 0.1 user_id=particle wax_off (<shulker.components.Coordinates.Coordinates object at 0x7f60e1870fa0>, -30, -10) 0 0 0 6 100 normal309629701,comment=wasabi
+
+# 2023-09-13 02:30:11.335486
++mimic_db comment 1 0.1 user_id=743105457,comment=toffee
+
+# 2023-09-13 02:30:20.897627
++mimic_db comment 1 0.1 user_id=309629701,comment=toffee
+
+# 2023-09-13 02:38:34.026915
++gl.next_round
+
+# 2023-09-13 02:58:47.551979
++mimic_db comment 1 0.1 user_id=309629701,comment=toxic
+
+# 2023-09-13 03:05:01.358396
++gl.reset_camera
+
+# 2023-09-13 03:59:28.956824
++gl.podium_reset
+
+# 2023-09-13 03:59:35.406695
++gl.podium_rebuild
+
+# 2023-09-13 04:00:03.190228
++gl.rebuild_podium
+
+# 2023-09-13 04:30:56.147630
++gl.create_backboard
+
+# 2023-09-13 04:31:10.068281
++gl.remove_backboard
+
+# 2023-09-13 04:33:23.133359
++gl.create_backboard
+
+# 2023-09-13 04:33:32.211551
++gl.remove_backboard
+
+# 2023-09-13 04:33:55.493682
++painter.remove_backboard
+
+# 2023-09-13 04:38:20.606751
++painter.create_backboard
+
+# 2023-09-13 04:58:39.468442
++gl.next_round
+
+# 2023-09-13 05:37:53.544809
++$db
+
+# 2023-09-13 05:48:56.340124
++post say hi
+
+# 2023-09-13 05:49:00.020288
++post "say hi"
+
+# 2023-09-13 05:49:12.684462
++post "gamerule doDaylightCycle"
+
+# 2023-09-13 23:27:28.968821
++gl.next_round
+
+# 2023-09-14 03:19:18.537048
++can someone say the word cocktail, i need to test smth
+
+# 2023-09-14 04:34:09.991684
++gl.next_round
+
+# 2023-09-14 04:43:20.823599
++gl.reset_camera
+
+# 2023-09-14 05:23:09.211722
++gl.reset_podium
+
+# 2023-09-14 05:32:32.603252
++gl.next_round
+
+# 2023-09-14 06:06:09.170700
++gl.reset_podium
+
+# 2023-09-14 06:39:24.345834
++gl.next_round
+
+# 2023-09-14 06:47:20.250668
++gl.rebuild_podium
+
+# 2023-09-14 06:58:42.161122
++gl.reset_podium
+
+# 2023-09-14 07:03:02.209507
++gl.next_round
+
+# 2023-09-14 07:14:49.178782
++gl.reset_podium
+
+# 2023-09-14 07:15:03.793180
++gl.next_round
+
+# 2023-09-14 07:18:03.448835
++gl.reset_podium
+
+# 2023-09-14 07:18:24.137945
++gl.next_round
+
+# 2023-09-14 07:20:53.657560
++gl.reset_podium
+
+# 2023-09-14 07:21:47.553128
++gl.next_round
+
+# 2023-09-14 07:22:07.777078
++gl.rebuild_podium
+
+# 2023-09-14 07:22:44.537593
++gl.next_round
+
+# 2023-09-14 07:27:33.433311
++mimic_db comment 1 1 overwrite 'user_id=332813584','comment=banana"
+
+# 2023-09-14 07:27:48.817908
++mimic_db comment 1 1 overwrite 'user_id=332813584,comment=banana'
+
+# 2023-09-14 07:28:02.889294
++mimic_db comment 1 1 'user_id=332813584,comment=hat'
+
+# 2023-09-14 07:30:18.713881
++mimic_db comment 1 1 'user_id=332813584,comment=french press'
+
+# 2023-09-14 07:32:43.433764
++gl.next_round
+
+# 2023-09-14 08:01:05.688256
++gl.reset_podium
+
+# 2023-09-14 08:01:13.128413
++gl.next_round
+
+# 2023-09-14 08:01:45.206156
++gl.reset_podium
+
+# 2023-09-14 08:01:50.560433
++gl.next_round
+
+# 2023-09-14 08:05:33.000875
++gl.reset_podium
+
+# 2023-09-14 08:05:38.119728
++gl.next_round
+
+# 2023-09-14 08:34:29.520684
++gl.reset_podium
+
+# 2023-09-14 08:35:46.552055
++gl.next_round
+
+# 2023-09-14 08:41:06.446373
++gl.reset_podium
+
+# 2023-09-14 08:41:07.599175
++gl.next_round
+
+# 2023-09-14 08:55:44.942909
++gl.reset_camera

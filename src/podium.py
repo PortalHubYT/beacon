@@ -35,8 +35,8 @@ class Podium(Portal):
         await self.reset_podium()
 
     async def spawn_winner(self, args):
-        def spawn_npc(name, pos):
-            cmd = f'sudo {config.camera_name} /npc create --at {pos[0].x}:{pos[0].y}:{pos[0].z} --nameplate true "+10"'
+        def spawn_npc(name, pos, podium_pos):
+            cmd = f'sudo {config.camera_name} /npc create --at {pos[0].x}:{pos[0].y}:{pos[0].z} --nameplate true "+{config.scores_template[podium_pos - 1]}"'
             mc.post(cmd)
 
             mc.post(
@@ -55,7 +55,7 @@ class Podium(Portal):
         spawn_start = config.podium_pos.offset(y=-3, z=-0.2)
         coords = coords_from_pos(spawn_start, pos - 1)
 
-        f = lambda: spawn_npc(name, coords)
+        f = lambda: spawn_npc(name, coords, pos)
         await self.publish("mc.lambda", dumps(f))
 
         cmd = f"particle wax_on {coords[0]} 0 0 0 6 100 normal"

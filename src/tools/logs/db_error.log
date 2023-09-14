@@ -1,0 +1,119 @@
+2023-09-12 18:57:44 [ERROR]: Task exception was never retrieved
+future: <Task finished name='Task-6' coro=<WebcastPushConnection.__websocket_connect() done, defined at /home/rom3/.local/lib/python3.10/site-packages/TikTokLive/client/base.py:174> exception=AttributeError("'list' object has no attribute 'manually_closed'") created at /home/rom3/.local/lib/python3.10/site-packages/TikTokLive/client/base.py:327>
+source_traceback: Object created at (most recent call last):
+  File "/home/rom3/skribbletok/src/dispatcher.py", line 140, in <module>
+    asyncio.run(dispatch.run(), debug=True)
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 633, in run_until_complete
+    self.run_forever()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 600, in run_forever
+    self._run_once()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 1888, in _run_once
+    handle._run()
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/rom3/skribbletok/src/tools/pulsar.py", line 60, in run
+    await self.execute()
+  File "/home/rom3/skribbletok/src/tools/pulsar.py", line 49, in execute
+    await self.loop()
+  File "/home/rom3/skribbletok/src/dispatcher.py", line 63, in loop
+    await self.client._start()
+  File "/home/rom3/.local/lib/python3.10/site-packages/TikTokLive/client/base.py", line 368, in _start
+    await self.start()
+  File "/home/rom3/.local/lib/python3.10/site-packages/TikTokLive/client/base.py", line 359, in start
+    await self._connect()
+  File "/home/rom3/.local/lib/python3.10/site-packages/TikTokLive/client/base.py", line 327, in _connect
+    self._ws_connection_task = self.loop.create_task(self.__websocket_connect(webcast_response))
+Traceback (most recent call last):
+  File "/home/rom3/.local/lib/python3.10/site-packages/TikTokLive/client/base.py", line 220, in __websocket_connect
+    if websocket.manually_closed:
+AttributeError: 'list' object has no attribute 'manually_closed'
+2023-09-13 01:40:08 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-6' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 01:44:23 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-6' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 01:47:18 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-6' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 01:51:51 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-6' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:00:20 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-6' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:00:55 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-6' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:03:21 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-6' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:10:01 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:10:47 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:18:55 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:19:35 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:20:16 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:21:11 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:21:11 [ERROR]: exception calling callback for <Future at 0x7f31977f7460 state=finished returned NoneType>
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 342, in _invoke_callbacks
+    callback(self)
+  File "/usr/lib/python3.10/asyncio/futures.py", line 399, in _call_set_state
+    dest_loop.call_soon_threadsafe(_set_state, destination, source)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 795, in call_soon_threadsafe
+    self._check_closed()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 515, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+2023-09-13 02:21:21 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:22:36 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:38:16 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:38:16 [ERROR]: exception calling callback for <Future at 0x7f5c97d40e80 state=finished returned NoneType>
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 342, in _invoke_callbacks
+    callback(self)
+  File "/usr/lib/python3.10/asyncio/futures.py", line 399, in _call_set_state
+    dest_loop.call_soon_threadsafe(_set_state, destination, source)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 795, in call_soon_threadsafe
+    self._check_closed()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 515, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+2023-09-13 02:41:16 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:42:52 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 02:42:52 [ERROR]: exception calling callback for <Future at 0x7fa92f574610 state=finished returned NoneType>
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 342, in _invoke_callbacks
+    callback(self)
+  File "/usr/lib/python3.10/asyncio/futures.py", line 399, in _call_set_state
+    dest_loop.call_soon_threadsafe(_set_state, destination, source)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 795, in call_soon_threadsafe
+    self._check_closed()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 515, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+2023-09-13 04:20:08 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 04:20:08 [ERROR]: exception calling callback for <Future at 0x7fddd0e9d330 state=finished returned NoneType>
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 342, in _invoke_callbacks
+    callback(self)
+  File "/usr/lib/python3.10/asyncio/futures.py", line 399, in _call_set_state
+    dest_loop.call_soon_threadsafe(_set_state, destination, source)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 795, in call_soon_threadsafe
+    self._check_closed()
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 515, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+2023-09-13 04:21:15 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 04:21:23 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
+2023-09-13 04:21:31 [ERROR]: Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<Hub.graceful_exit() running at /home/rom3/skribbletok/src/tools/pulsar.py:108>>
