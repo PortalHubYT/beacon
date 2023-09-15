@@ -29,7 +29,7 @@ class Hint(Portal):
             status = mc.meta_set_text(
                 hint,
                 mc.BlockCoordinates(0, 0, 0),
-                ["quartz"],
+                [config.hint_palette],
                 "mixed",
                 "east",
                 mc.BlockHandler("replace"),
