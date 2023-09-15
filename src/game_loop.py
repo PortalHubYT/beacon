@@ -15,7 +15,17 @@ from tools.pulsar import Portal
 from tools.config import config
 from tools.mimic import gen_fake_profiles
 
-BANNED_WORDS = ["pig", "gorilla", "cow", "monkey", "banana", "penis", "donkey", "joint", "hamburguer"]
+BANNED_WORDS = [
+    "pig",
+    "gorilla",
+    "cow",
+    "monkey",
+    "banana",
+    "penis",
+    "donkey",
+    "joint",
+    "hamburguer",
+]
 
 
 def get_word_list():
@@ -139,6 +149,12 @@ class GameLoop(Portal):
         score = await self.call(
             "db", ("add_and_get_user_score", points_won, user["user_id"])
         )
+        if (score % 100) - points_won < 0:
+            cmd = f'title {config.camera_name} subtitle {{"text":"For reaching {score} points","color":"green"}}'
+            await self.publish("mc.post", cmd)
+
+            cmd = f'title {config.camera_name} title {{"text":"GG {user["display"]}","color":"green"}}'
+            await self.publish("mc.post", cmd)
 
         if not score:
             print(
