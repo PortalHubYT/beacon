@@ -33,7 +33,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-listeners = ["comment", "gift"]
+listeners = ["comment", "follow", "join", "share", "like", "gift"]
 topic_prefix = "live."
 # This means that the topic will be live.comment, live.follow, etc.
 
@@ -52,18 +52,19 @@ class Dispatch(Portal):
                 ),
             )
 
-        await self.subscribe("gl.new_word", self.new_word)
-        await self.publish("dispatcher.get_word")
+        self.client.add_listener(
+            "viewer_update", lambda event: self.views_handler(event)
+        )
+        print("-> Done!")
 
+        print("-> Starting dispatcher...")
         try:
             await self.client.start()
         except Exception as e:
             error_msg = f"An error occurred: {e}"
             print(error_msg)
             logging.error(error_msg)
-            
-        print("-> Dispatcher stopped?")
-        await asyncio.sleep(15)
+
 
     def connect(self, stream_id):
         if stream_id == "":
@@ -97,28 +98,39 @@ class Dispatch(Portal):
         print("-> New word:", self.word)
 
     async def parse_and_publish(self, event, listener: str):
-        if not event.user or not self.word:
-            print("no user or no word", event.user, self.word)
-            print("too early for parse_and_pulish")
+        if not event.user:
             return
 
+        if listener not in config.listen_to:
+            return
+
+        start = time.time()
+        
         user = get_profile(event)
-        print("comment")
-        guess = user["comment"].strip().lower()
-        if guess == self.word and listener == "comment":
-            print("comment is good")
-            await self.publish("db", ("add_new_user", user))
-            await self.publish("db", ("commit",))
 
-            await self.publish(topic_prefix + "win", user)
-        elif listener == "gift":
+        await self.publish("db", ("add_new_user", user))
+        await self.publish("db", ("add_event", user, listener))
+        
+        try:
             await self.publish(topic_prefix + listener, user)
+        except Exception as e:
+            if config.verbose:
+                print(
+                    f"-> Message was not delivered to any consumer and has been discarded"
+                )
+            print(e)
 
-        print("event:", listener)
-        await self.publish("dispatcher.alive")
+        if config.verbose:
+            print(f"{datetime.datetime.now().strftime('%H:%M:%S')} (took {time.time() - start:.2f}) | {listener.upper().ljust(7)} | {user['display']}")
 
-        if config.verbose and listener != "join":
-            print(f"{datetime.datetime.now()} | {listener.upper()} | {user['display']}")
+    async def views_handler(self, event):
+        await self.publish("db", ("store_views", event.viewer_count))
+        await self.publish("db", ("commit",))
+
+        if config.verbose:
+            print("--------------------------------------")
+            print("Database committed, new viewer count: ", event.viewer_count)
+            print("--------------------------------------")
 
 
 if __name__ == "__main__":
