@@ -6,10 +6,11 @@ def pick_display(nickname, unique_id):
   if nickname:
     name = sanitize(nickname)
     if len(name) < len(nickname) / 4:
-      name = unique_id
+      name = "@" + unique_id
       
   elif unique_id:
     name = sanitize(unique_id)
+    name = "@" + name
     
   else:
     return None

@@ -6,6 +6,8 @@ import sys
 import math
 import os
 
+random.seed()
+
 import shulker as mc
 from dill import dumps
 
@@ -13,7 +15,7 @@ from tools.pulsar import Portal
 from tools.config import config
 from tools.mimic import gen_fake_profiles
 
-BANNED_WORDS = ["pig", "gorilla", "cow", "monkey", "banana", "penis", "donkey"]
+BANNED_WORDS = ["pig", "gorilla", "cow", "monkey", "banana", "penis", "donkey", "joint", "hamburguer"]
 
 
 def get_word_list():
@@ -44,7 +46,6 @@ class GameLoop(Portal):
         await self.game_loop()
 
     async def on_painting_finished(self):
-        print("Painting finished")
         self.painting_finished = True
         if len(self.winners) >= 5:
             self.rush_round = True
@@ -113,10 +114,10 @@ class GameLoop(Portal):
 
     async def on_comment(self, user):
         if user["comment"].lower() != self.word:
-            # print(f"[{self.word}] {user['display']}: {user['comment']}")
+            print(f"[{self.word}] {user['display']}: {user['comment']}")
             return
         else:
-            print(f"[{self.word}]-> Correct guess from [{user['display']}]")
+            print(f"[{self.word}]----> Correct guess from [{user['display']}]")
 
         if user["user_id"] in self.winners:
             print(f"-> [{user['display']}] already won")
@@ -140,16 +141,13 @@ class GameLoop(Portal):
         )
 
         if not score:
-            # print(
-            #     f"-> Error: user_id [{user['user_id']}] nickname: [{user['display']}] was NOT FOUND in db, adding it now"
-            # )
+            print(
+                f"-> Error: user_id [{user['user_id']}] nickname: [{user['display']}] was NOT FOUND in db, adding it now"
+            )
 
             await self.publish("db", ("add_user", user))
             score = points_won + random.randint(0, 100)
 
-        # print(
-        #     f"[{self.word}] [{user['display']}] won {points_won} points | total: {score}"
-        # )
         await self.publish(
             "gl.spawn_winner", (len(self.winners), user["display"], score)
         )
@@ -185,7 +183,6 @@ class GameLoop(Portal):
 
             if self.rush_round == True:
                 start_round -= 2
-                print("about to remove time 2")
 
             hint = self.get_current_hint(
                 hint,

@@ -11,15 +11,20 @@ from .config import config
 def function_logger(func):
     def wrapper(*args, **kwargs):
 
-        if len(args) == 1 and isinstance(args[0], tuple):
-            print(f"-> {func.__name__} called with args: {args[0]}")
-            result = func(*args[0])  # Unpack the inner tuple into multiple arguments
-            return result
+        # if len(args) == 1 and isinstance(args[0], tuple):
+        #     print(f"-> {func.__name__} called here with args: {args[0]}")
+        #     result = func(*args[0])  # Unpack the inner tuple into multiple arguments
+        #     return result
 
+        # else:
+        
+        if args[1:] != ():
+            print(f"-> {func.__name__} called with args: {args[1:]}")
         else:
-            print(f"-> {func.__name__} called with args: {args}")
-            result = func(*args, **kwargs)
-            return result
+            print(f"-> {func.__name__} called")
+            
+        result = func(*args, **kwargs)
+        return result
 
     return wrapper
 
