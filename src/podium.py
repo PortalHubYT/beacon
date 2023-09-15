@@ -47,7 +47,7 @@ class Podium(Portal):
 
         pos, name, score = args
         if pos > config.podium_size:
-            cmd = f'title {config.camera_name} actionbar {{"text":"{name} found the word #{pos}"}}'
+            cmd = f'title {config.camera_name} actionbar {{"text":"#{pos} | {name[:14].center(14, " ")} | +1pt | Score: {score}"}}'
             await self.publish("mc.post", cmd)
             return
 
@@ -79,7 +79,7 @@ class Podium(Portal):
             "mc.post", f"data merge block {sign_start.offset(x=pos)} {data}"
         )
 
-        cmd = f'title {config.camera_name} actionbar {{"text":"{name} found the word #{pos}"}}'
+        cmd = f'title {config.camera_name} actionbar {{"text":"#{pos} | {name[:14].center(14, " ")} | +1pt | Score: {score}"}}'
         print(cmd)
         await self.publish("mc.post", cmd)
 

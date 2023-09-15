@@ -60,25 +60,20 @@ def generate_pixel_lists(word, random=False):
     return pixel_lists
 
 
-def get_interval(steps):
-    wait_time = config.drawing_finished_at_percentage / 100 * config.round_time
-    interval = (wait_time - (steps / 5)) / steps
-    interval = interval if interval > 0 else 0
-
-    print(
-        f"Try {wait_time}: ({(steps / 5)}s to build) + ({steps} steps x {interval:.2f} = {steps*interval}s)"
-    )
-    return interval / 3
-
-
 class Painter(Portal):
     async def on_join(self):
         self.stop_painting = False
+        self.rush_paint = False
         await self.subscribe("gl.paint_svg", self.paint)
         await self.subscribe("gl.clear_svg", self.remove_zone)
         await self.subscribe("painter.stop", self.stop_painter)
         await self.subscribe("painter.create_backboard", self.create_backboard)
         await self.subscribe("painter.remove_backboard", self.remove_backboard)
+        await self.subscribe("gl.rush_paint", self.on_rush)
+
+    async def on_rush(self):
+        print("-> Rush painting")
+        self.rush_paint = True
 
     async def stop_painter(self):
         print("-> Stop painting")
@@ -90,6 +85,18 @@ class Painter(Portal):
         # place 2x4 vert
         # place last block
         pass
+
+    async def get_interval(self, steps):
+        wait_time = config.drawing_finished_at_percentage / 100 * config.round_time
+        interval = (wait_time - (steps / 10)) / steps
+        interval = interval if interval > 0 else 0
+        if interval > 0.75:
+            interval = 0.75
+
+        print(
+            f"Try {wait_time}: ({(steps / 10)}s to build) + ({steps} steps x {interval:.2f} = {steps*interval}s)"
+        )
+        return interval
 
     async def create_backboard(self):
         print("-> Create backboard")
@@ -145,6 +152,7 @@ class Painter(Portal):
 
     async def paint(self, word):
         self.stop_painting = False
+        self.rush_paint = False
 
         def paint_chunk(pixel_list):
             start_pos = config.paint_start
@@ -161,16 +169,21 @@ class Painter(Portal):
         n = max(1, config.paint_chunk_size)
         chunks = [big_list[i : i + n] for i in range(0, len(big_list), n)]
 
-        interval = get_interval(len(chunks))
+        interval = await self.get_interval(len(chunks))
 
         print(f"Painting '{word}': {len(big_list)} blocks")
         start = time.time()
         for chunk in chunks:
-            await asyncio.sleep(interval)
+            if not self.rush_paint:
+                await asyncio.sleep(interval)
+
             f = lambda: paint_chunk(chunk)
             await self.publish("mc.lambda", dumps(f))
             if self.stop_painting:
                 break
+
+        self.rush_paint = False
+        await self.publish("painter.finished")
         print(f"Finished in {str(time.time() - start)[:2]} seconds\n")
 
 
