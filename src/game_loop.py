@@ -222,10 +222,10 @@ class GameLoop(Portal):
             score = points_won + random.randint(0, 100)
 
         if (score % 100) - points_won < 0:
-            cmd = f'title {self.config.camera_name} subtitle {{"text":"For reaching {score} points","color":"green"}}'
+            cmd = f'title {self.config.camera_name} subtitle {{"text":"For reaching {score} points","color":"gold"}}'
             await self.publish("mc.post", cmd)
 
-            cmd = f'title {self.config.camera_name} title {{"text":"GG {user["display"]}","color":"green"}}'
+            cmd = f'title {self.config.camera_name} title {{"text":"GG {user["display"]}","color":"gold"}}'
             await self.publish("mc.post", cmd)
 
         await self.publish(
