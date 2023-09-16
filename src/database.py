@@ -1,4 +1,5 @@
 import asyncio
+import time
 import shulker as mc
 from dill import dumps
 from tools.postgres import db
@@ -46,5 +47,12 @@ class Database(Portal):
 
 if __name__ == "__main__":
     action = Database()
-    asyncio.run(action.run())
+    while True:
+        try:
+            asyncio.run(action.run(), debug=True)
+        except Exception as e:
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            print("-> Restarting in 1 seconds...")
+            time.sleep(1)
 
