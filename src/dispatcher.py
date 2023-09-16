@@ -93,10 +93,6 @@ class Dispatch(Portal):
 
         return client
 
-    async def new_word(self, word):
-        self.word = word
-        print("-> New word:", self.word)
-
     async def parse_and_publish(self, event, listener: str):
         if not event.user:
             return
