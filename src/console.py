@@ -169,19 +169,23 @@ class Console(Portal):
             query = query[1:-1]
         else:
             print(f"\n{bcolors.WARNING}The query must be typed between " " or ''.\n")
+            return
 
         print()
 
         ret = await self.call("db", (query,))
         
-        for unique in ret:
-            text = ""
+        if ret:
+            for unique in ret:
+                text = ""
 
-            for value in unique:
-                text += str(value) + f" {bcolors.ENDC}|{bcolors.OKBLUE} "
+                for value in unique:
+                    text += str(value) + f" {bcolors.ENDC}|{bcolors.OKBLUE} "
 
-            print(f"{bcolors.ENDC}-> {bcolors.OKBLUE}{text[:-7]}")
-
+                print(f"{bcolors.ENDC}-> {bcolors.OKBLUE}{text[:-7]}")
+        else:
+            print(f"{bcolors.WARNING}No results found.{bcolors.ENDC}")
+            
         print()
 
     async def post(self, *args):

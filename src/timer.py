@@ -1,23 +1,33 @@
 import asyncio
+import time
+import importlib
 import shulker as mc
 from dill import dumps
 
-from tools.config import config
+import tools.config
 from tools.pulsar import Portal
 
 
 class Timer(Portal):
     async def on_join(self):
+        
+        await self.reload_config()
+        
+        await self.subscribe("gl.reload_config", self.reload_config)
         await self.subscribe("gl.timer", self.initialize_timer)
         await self.subscribe("gl.set_timer", self.set_timer)
         await self.initialize_timer()
 
+    async def reload_config(self):
+        importlib.reload(tools.config)
+        self.config = tools.config.config
+        
     async def initialize_timer(self):
         print("-> Initializing timer")
         f = lambda: mc.remove_bossbar("timer")
         await self.publish("mc.lambda", dumps(f))
 
-        round_time = config.round_time
+        round_time = self.config.round_time
         f = lambda: mc.create_bossbar(
             "timer",
             "Guess the word in chat!",
@@ -40,4 +50,11 @@ class Timer(Portal):
 
 if __name__ == "__main__":
     action = Timer()
-    asyncio.run(action.run())
+    while True:
+        try:
+            asyncio.run(action.run(), debug=True)
+        except Exception as e:
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            print("-> Restarting in 1 seconds...")
+            time.sleep(1)

@@ -1,9 +1,11 @@
 import asyncio
 import math
 from dill import dumps
+import time
+import importlib
 
 import shulker as mc
-from tools.config import config
+import tools.config
 from tools.pulsar import Portal
 
 
@@ -14,48 +16,57 @@ def get_sign_data(messages, pos):
     return a
 
 
-def coords_from_pos(start, pos):
-    # this code breaks for config.podium_size > 5
-    # https://discord.com/channels/@me/678579998847926273/1150958377745256578
-    if config.podium_size > 5:
-        raise ValueError("config.podium_size > 5 not supported")
-
-    pitch_delta = [-10, -5, 0, 5, 10]
-    coords = mc.Coordinates(start.x, start.y, start.z, yaw=-30, pitch=pitch_delta[pos])
-    deltas = [-1.85, -0.7, 0.5, 1.7, 2.85]
-
-    return coords.offset(x=deltas[pos]), coords.yaw, coords.pitch
-
-
 class Podium(Portal):
     async def on_join(self):
+        await self.reload_config()
+
         await self.subscribe("gl.spawn_winner", self.spawn_winner)
         await self.subscribe("gl.reset_podium", self.reset_podium)
         await self.subscribe("gl.rebuild_podium", self.rebuild_podium)
+        await self.subscribe("gl.reload_config", self.reload_config)
         await self.reset_podium()
 
+    async def reload_config(self):
+        importlib.reload(tools.config)
+        self.config = tools.config.config
+
+    def coords_from_pos(self, start, pos):
+        # this code breaks for config.podium_size > 5
+        # https://discord.com/channels/@me/678579998847926273/1150958377745256578
+        if self.config.podium_size > 5:
+            raise ValueError("config.podium_size > 5 not supported")
+
+        pitch_delta = [-10, -5, 0, 5, 10]
+        coords = mc.Coordinates(
+            start.x, start.y, start.z, yaw=-30, pitch=pitch_delta[pos]
+        )
+        deltas = [-1.85, -0.7, 0.5, 1.7, 2.85]
+
+        return coords.offset(x=deltas[pos]), coords.yaw, coords.pitch
+
     async def spawn_winner(self, args):
-        def spawn_npc(name, pos, podium_pos):
-            cmd = f'sudo {config.camera_name} /npc create --at {pos[0].x}:{pos[0].y}:{pos[0].z} --nameplate true "+{config.scores_template[podium_pos - 1]}"'
+        def spawn_npc(score_template, camera_name, name, pos, podium_pos):
+            cmd = f'sudo {camera_name} /npc create --at {pos[0].x}:{pos[0].y}:{pos[0].z} --nameplate true "+{score_template[podium_pos -1]}"'
             mc.post(cmd)
 
-            mc.post(
-                f"sudo {config.camera_name} /npc moveto --pitch {pos[1]} --yaw {pos[2]}"
-            )
+            mc.post(f"sudo {camera_name} /npc moveto --pitch {pos[1]} --yaw {pos[2]}")
 
-            mc.post(f"sudo {config.camera_name} /npc skin -s {name}")
+            mc.post(f"sudo {camera_name} /npc skin -s {name}")
 
         pos, name, score = args
-        if pos > config.podium_size:
-            cmd = f'title {config.camera_name} actionbar {{"text":"#{pos} | {name[:14].center(14, " ")} | +1pt | Score: {score}"}}'
+        if pos > self.config.podium_size:
+            cmd = f'title {self.config.camera_name} actionbar {{"text":"#{pos} | {name[:14].center(14, " ")} | +1pt | Score: {score}"}}'
             await self.publish("mc.post", cmd)
             return
 
         print("spawn winner", pos, name, score)
-        spawn_start = config.podium_pos.offset(y=-3, z=-0.2)
-        coords = coords_from_pos(spawn_start, pos - 1)
+        spawn_start = self.config.podium_pos.offset(y=-3, z=-0.2)
+        coords = self.coords_from_pos(spawn_start, pos - 1)
 
-        f = lambda: spawn_npc(name, coords, pos)
+        camera_name = self.config.camera_name
+        score_template = self.config.scores_template
+
+        f = lambda: spawn_npc(score_template, camera_name, name, coords, pos)
         await self.publish("mc.lambda", dumps(f))
 
         cmd = f"particle wax_on {coords[0]} 0 0 0 6 100 normal"
@@ -65,7 +76,9 @@ class Podium(Portal):
         print(cmd)
         await self.publish("mc.post", cmd)
 
-        sign_start = config.podium_pos.offset(x=math.floor(-config.podium_size / 2))
+        sign_start = self.config.podium_pos.offset(
+            x=math.floor(-self.config.podium_size / 2)
+        )
         sign_message = [
             f"#{pos}",
             "",
@@ -79,12 +92,12 @@ class Podium(Portal):
             "mc.post", f"data merge block {sign_start.offset(x=pos)} {data}"
         )
 
-        cmd = f'title {config.camera_name} actionbar {{"text":"#{pos} | {name[:14].center(14, " ")} | +1pt | Score: {score}"}}'
+        cmd = f'title {self.config.camera_name} actionbar {{"text":"#{pos} | {name[:14].center(14, " ")} | +1pt | Score: {score}"}}'
         print(cmd)
         await self.publish("mc.post", cmd)
 
     async def remove_podium(self):
-        origin = config.podium_pos
+        origin = self.config.podium_pos
         pos1 = origin.offset(x=-10, y=-10, z=-10)
         pos2 = origin.offset(x=10, y=10, z=10)
         zone = mc.BlockZone(pos1, pos2)
@@ -96,8 +109,10 @@ class Podium(Portal):
         await self.publish("mc.post", cmd)
 
     async def reset_signs(self):
-        sign_start = config.podium_pos.offset(x=math.floor(-config.podium_size / 2))
-        for x_offset, _ in enumerate(range(config.podium_size + 1)):
+        sign_start = self.config.podium_pos.offset(
+            x=math.floor(-self.config.podium_size / 2)
+        )
+        for x_offset, _ in enumerate(range(self.config.podium_size + 1)):
             sign_message = [
                 f"#{x_offset}",
                 "",
@@ -110,7 +125,7 @@ class Podium(Portal):
             )
 
     async def build_podium(self):
-        origin = config.podium_pos
+        origin = self.config.podium_pos
 
         ###### SIGN LINE
         sign_line = []
@@ -122,12 +137,12 @@ class Podium(Portal):
         sign.blockstate = mc.BlockState({"facing": "south"})
 
         sign_line.append(wood)
-        for _ in range(config.podium_size):
+        for _ in range(self.config.podium_size):
             sign_line.append(sign)
 
         sign_line.append(wood)
 
-        sign_start = origin.offset(x=math.floor(-config.podium_size / 2))
+        sign_start = origin.offset(x=math.floor(-self.config.podium_size / 2))
         for x_offset, block in enumerate(sign_line):
             await self.publish(
                 "mc.post", f"setblock {sign_start.offset(x=x_offset)} {block}"
@@ -154,44 +169,44 @@ class Podium(Portal):
         await self.publish("mc.post", f"setblock {sign_start.offset(y=-2)} {fence}")
         await self.publish(
             "mc.post",
-            f"setblock {sign_start.offset(x = config.podium_size + 1, y=-1)} {fence}",
+            f"setblock {sign_start.offset(x = self.config.podium_size + 1, y=-1)} {fence}",
         )
         await self.publish(
             "mc.post",
-            f"setblock {sign_start.offset(x = config.podium_size + 1, y=-2)} {fence}",
+            f"setblock {sign_start.offset(x = self.config.podium_size + 1, y=-2)} {fence}",
         )
 
         #### BENCH
-        bench_start = origin.offset(x=-config.podium_size, y=-4, z=-1)
+        bench_start = origin.offset(x=-self.config.podium_size, y=-4, z=-1)
         bench_block = mc.Block("stripped_oak_wood")
         bench_block.blockstate = mc.BlockState({"axis": "x"})
 
         await self.publish(
             "mc.post",
-            f"fill {bench_start} {bench_start.offset(x = config.podium_size * 2)} {bench_block}",
+            f"fill {bench_start} {bench_start.offset(x = self.config.podium_size * 2)} {bench_block}",
         )
 
         #### GRASS
-        grass_start = origin.offset(x=-config.podium_size, y=-5)
+        grass_start = origin.offset(x=-self.config.podium_size, y=-5)
         grass_block = mc.Block("grass_block")
 
         await self.publish(
             "mc.post",
-            f"fill {grass_start} {grass_start.offset(x = config.podium_size * 2)} {grass_block}",
+            f"fill {grass_start} {grass_start.offset(x = self.config.podium_size * 2)} {grass_block}",
         )
 
         ### BACKGROUND
-        background_start = origin.offset(x=-config.podium_size * 2, y=-5, z=-9)
+        background_start = origin.offset(x=-self.config.podium_size * 2, y=-5, z=-9)
         background_block = mc.Block("end_portal")
         await self.publish(
             "mc.post",
-            f"fill {background_start} {background_start.offset(x = config.podium_size * 4, z=7)} {background_block}",
+            f"fill {background_start} {background_start.offset(x = self.config.podium_size * 4, z=7)} {background_block}",
         )
 
         barrier_block = mc.Block("barrier")
         await self.publish(
             "mc.post",
-            f"fill {background_start.offset(y=1)} {background_start.offset(x = config.podium_size * 4, y=1, z=7)} {barrier_block}",
+            f"fill {background_start.offset(y=1)} {background_start.offset(x = self.config.podium_size * 4, y=1, z=7)} {barrier_block}",
         )
 
     async def reset_podium(self):
@@ -206,4 +221,11 @@ class Podium(Portal):
 
 if __name__ == "__main__":
     action = Podium()
-    asyncio.run(action.run())
+    while True:
+        try:
+            asyncio.run(action.run(), debug=True)
+        except Exception as e:
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            print("-> Restarting in 1 seconds...")
+            time.sleep(1)
