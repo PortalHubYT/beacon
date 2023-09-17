@@ -589,3 +589,855 @@
 
 # 2023-09-14 08:55:44.942909
 +gl.reset_camera
+
+# 2023-09-15 04:26:50.329134
++gl.rebuild_podium
+
+# 2023-09-15 04:27:25.695162
++gl.reset_podium
+
+# 2023-09-15 04:27:45.080351
++gl.draw_backboard
+
+# 2023-09-15 04:29:42.485071
++painter.create_backboard
+
+# 2023-09-15 04:30:35.053681
++gl.reset_camera
+
+# 2023-09-15 05:06:47.960624
++gl.next_round
+
+# 2023-09-15 06:19:48.419989
++post "say hi\"
+
+# 2023-09-15 06:22:47.861581
++gl.next_round
+
+# 2023-09-15 07:05:41.690964
++gl.reset_camera
+
+# 2023-09-15 07:45:51.371734
++gl.next_round
+
+# 2023-09-15 19:48:27.690763
++gl.reset_camera
+
+# 2023-09-15 20:07:05.217857
++help
+
+# 2023-09-15 20:07:11.665659
++sql "DELETE FROM views WHERE timestamp < NOW() - INTERVAL '1 day';"
+
+# 2023-09-15 20:11:31.360528
++sql 
+
+# 2023-09-15 20:11:33.216265
++sql test
+
+# 2023-09-15 20:14:28.906330
++sql
+
+# 2023-09-15 20:14:32.017372
++sql test
+
+# 2023-09-15 20:14:46.736934
++sql "test"
+
+# 2023-09-15 20:15:00.336286
++sql "DELETE FROM views WHERE timestamp < NOW() - INTERVAL '1 day';"
+
+# 2023-09-15 20:49:31.702341
++gl.change_next_word chili
+
+# 2023-09-15 20:50:55.866291
++gl.next_round
+
+# 2023-09-15 21:26:06.350386
++gl.fake_winner
+
+# 2023-09-15 21:26:15.479046
++gl.fake_win
+
+# 2023-09-15 21:34:02.340305
++gl.reset_podium
+
+# 2023-09-15 21:34:06.948177
++gl.rebuild_podium
+
+# 2023-09-15 21:34:15.259584
++gl.spawn_winner
+
+# 2023-09-15 21:34:18.717273
++gl.spawn_winner ka
+
+# 2023-09-15 21:34:23.723677
++gl.spawn_winner kala
+
+# 2023-09-15 21:37:12.854377
++gl.fake_win
+
+# 2023-09-15 22:13:27.031295
++gl.next_round
+
+# 2023-09-15 23:33:49.131070
++gl.change_next_word chili
+
+# 2023-09-15 23:34:03.602338
++gl.change_next_word disqualified
+
+# 2023-09-15 23:34:06.689347
++gl.next_round
+
+# 2023-09-15 23:37:35.554214
++gl.change_next_word disqualified
+
+# 2023-09-15 23:37:36.946852
++gl.next_round
+
+# 2023-09-15 23:41:25.537626
++gl.change_next_word leader
+
+# 2023-09-15 23:47:51.227812
++gl.next_round
+
+# 2023-09-15 23:52:13.018604
++gl.change_next_word leader
+
+# 2023-09-15 23:52:17.106581
++gl.next_round
+
+# 2023-09-16 00:54:03.365764
++gl.reset_camera
+
+# 2023-09-16 01:00:38.583107
++gl.next_round
+
+# 2023-09-16 01:01:57.236025
++gl.remove_backboard
+
+# 2023-09-16 01:02:28.115424
++painter.remove_backboard
+
+# 2023-09-16 01:06:26.890845
++painter.create_backboard
+
+# 2023-09-16 01:19:13.303665
++painter.move_backboard
+
+# 2023-09-16 01:22:41.791749
++gl.next_round
+
+# 2023-09-16 01:22:43.639393
++painter.move_backboard
+
+# 2023-09-16 01:23:43.757520
++gl.reset_camera
+
+# 2023-09-16 01:28:54.890636
++painter.move_backboard
+
+# 2023-09-16 02:53:24.808012
++painter.create_backboard
+
+# 2023-09-16 02:53:30.710231
++painter.remove_backboard
+
+# 2023-09-16 02:53:56.227720
++gl.reset_camera
+
+# 2023-09-16 02:54:32.358868
++painter.create_backboard
+
+# 2023-09-16 02:54:40.444101
++painter.create_podium
+
+# 2023-09-16 02:54:56.451300
++painter.build_podium
+
+# 2023-09-16 02:55:36.377523
++gl.rebuild_podium
+
+# 2023-09-16 02:56:06.105557
++gl.reset_camera
+
+# 2023-09-16 03:03:20.193476
++gl.next_round
+
+# 2023-09-16 05:39:53.636710
++follow.build_pipe
+
+# 2023-09-16 05:41:16.008511
++gl.next_round
+
+# 2023-09-16 05:44:19.006397
++mimic follow 1 
+
+# 2023-09-16 05:44:22.788911
++mimic follow 1 1
+
+# 2023-09-16 05:49:10.431208
++gl.next_round
+
+# 2023-09-16 05:50:15.539801
++mimic follow 1 1
+
+# 2023-09-16 06:16:11.948707
++gl.next_round
+
+# 2023-09-16 06:17:27.607880
++like.build_pipe
+
+# 2023-09-16 06:38:42.244029
++gl.next_round
+
+# 2023-09-16 06:43:37.928552
++mimic gift 1 1 
+
+# 2023-09-16 06:44:06.054121
++mimic gift 1 1
+
+# 2023-09-16 07:05:25.330338
++gl.next_round
+
+# 2023-09-16 07:12:26.691373
++mimic gift 1 1
+
+# 2023-09-16 07:13:39.056094
++mimic follow 2 3
+
+# 2023-09-16 07:17:39.024074
++mimic follow 10 0.5
+
+# 2023-09-16 07:18:42.021154
++mimic gift 4 2 'display=PaulAmploi'
+
+# 2023-09-16 08:04:32.386132
++gl.next_round
+
+# 2023-09-16 08:14:15.100295
++gl.next_roundg
+
+# 2023-09-16 08:14:18.036426
++gl.next_round
+
+# 2023-09-16 08:55:21.780174
++mimic gift 1 1
+
+# 2023-09-16 09:42:11.704078
++gl.next_round
+
+# 2023-09-16 09:44:29.146109
++mimic gift 1 1
+
+# 2023-09-16 10:29:21.532783
++gl.next_round
+
+# 2023-09-16 10:29:59.474246
++mimic gift 1 1
+
+# 2023-09-16 10:36:56.131587
++mimic gift 20 60
+
+# 2023-09-16 10:57:26.424237
++mimic gift 9000 60
+
+# 2023-09-16 11:13:11.751010
++gl.next_round
+
+# 2023-09-16 11:19:32.040512
++mimic gift 9000 60
+
+# 2023-09-16 11:33:34.172001
++gl.next_round
+
+# 2023-09-16 11:33:36.423686
++mimic gift 9000 60
+
+# 2023-09-16 11:39:25.246240
++gl.next_round
+
+# 2023-09-16 11:46:30.950567
++mimic gift 9000 60
+
+# 2023-09-16 11:58:32.796479
++gl.next_round
+
+# 2023-09-16 11:58:34.163782
++mimic gift 9000 60
+
+# 2023-09-16 12:25:53.537959
++gl.reset_camera
+
+# 2023-09-16 12:28:30.187888
++mimic gift 9000 30
+
+# 2023-09-16 12:35:28.478973
++mimic gift 9000 60
+
+# 2023-09-16 23:02:05.237836
++gl.reset_camera
+
+# 2023-09-16 23:33:48.457819
++gl.next_round
+
+# 2023-09-16 23:38:39.407116
++gl.change_next_word sunglasses
+
+# 2023-09-16 23:39:42.124365
++gl.next_round
+
+# 2023-09-16 23:51:01.468012
++gl.change_next_word sunglasses
+
+# 2023-09-16 23:51:02.515757
++gl.next_round
+
+# 2023-09-16 23:51:25.851353
++gl.change_next_word sunglasses
+
+# 2023-09-16 23:51:26.731641
++gl.next_round
+
+# 2023-09-16 23:53:13.991860
++gl.change_next_word sunglasses
+
+# 2023-09-16 23:53:16.615389
++gl.next_round
+
+# 2023-09-16 23:53:49.534146
++gl.change_next_word sunglasses
+
+# 2023-09-16 23:53:50.942174
++gl.next_round
+
+# 2023-09-16 23:54:29.525847
++gl.change_next_word sunglasses
+
+# 2023-09-16 23:54:30.316596
++gl.next_round
+
+# 2023-09-17 00:32:16.979981
++gl.change_next_word sunglasses
+
+# 2023-09-17 00:32:18.396757
++gl.next_round
+
+# 2023-09-17 00:40:31.982252
++gl.rush_paint
+
+# 2023-09-17 00:40:38.877200
++gl.next_round
+
+# 2023-09-17 00:41:07.186461
++gl.rush_paint
+
+# 2023-09-17 00:41:18.157248
++gl.next_round
+
+# 2023-09-17 00:41:51.507491
++gl.rush_paint
+
+# 2023-09-17 00:41:59.234415
++gl.next_round
+
+# 2023-09-17 00:43:30.833585
++gl.rush_paint
+
+# 2023-09-17 00:43:34.866415
++gl.next_round
+
+# 2023-09-17 00:43:39.905282
++gl.rush_paint
+
+# 2023-09-17 00:43:56.642020
++gl.next_round
+
+# 2023-09-17 00:44:01.535886
++gl.rush_paint
+
+# 2023-09-17 00:48:03.258397
++gl.next_round
+
+# 2023-09-17 00:59:39.265502
++gl.fast_mode
+
+# 2023-09-17 00:59:41.273166
++gl.next_round
+
+# 2023-09-17 01:01:05.230481
++gl.fast_mode
+
+# 2023-09-17 01:01:07.214191
++gl.next_round
+
+# 2023-09-17 01:01:35.236903
++painter.fast_mode
+
+# 2023-09-17 01:01:37.669463
++gl.next_round
+
+# 2023-09-17 02:07:32.157219
++painter.fast_mode
+
+# 2023-09-17 03:00:58.593398
++gl.next_round
+
+# 2023-09-17 03:11:05.249716
++painter.fast_mode
+
+# 2023-09-17 03:15:42.878775
++gl.change_next_word sunglasses
+
+# 2023-09-17 03:19:06.421995
++gl.next_round
+
+# 2023-09-17 03:20:17.843575
++painter.fast_mode
+
+# 2023-09-17 03:20:23.003277
++gl.next_round
+
+# 2023-09-17 04:02:03.395536
++gl.change_next_word waterfall
+
+# 2023-09-17 04:24:40.633565
++gl.next_round
+
+# 2023-09-17 04:25:23.592058
++painter.fast_mode
+
+# 2023-09-17 04:25:25.248067
++gl.next_round
+
+# 2023-09-17 04:27:54.050574
++painter.fast_mode
+
+# 2023-09-17 04:28:03.778647
++gl.change_next_word waffle
+
+# 2023-09-17 04:28:59.015877
++gl.change_next_word apple_$1
+
+# 2023-09-17 04:29:01.031943
++painter.fast_mode
+
+# 2023-09-17 04:29:06.088097
++gl.next_round
+
+# 2023-09-17 04:29:29.903042
++gl.change_next_word apple_$2
+
+# 2023-09-17 04:29:31.582805
++gl.next_round
+
+# 2023-09-17 04:35:43.900562
++gl.change_next_word apple_$2
+
+# 2023-09-17 04:35:46.508711
++gl.next_round
+
+# 2023-09-17 04:36:08.180045
++gl.change_next_word apple_$2.svg
+
+# 2023-09-17 04:36:10.316428
++gl.next_round
+
+# 2023-09-17 04:36:37.835737
++gl.change_next_word apple_$2.svg
+
+# 2023-09-17 04:37:01.482436
++gl.next_round
+
+# 2023-09-17 04:37:09.859258
++gl.change_next_word apple_$2.svg
+
+# 2023-09-17 04:38:06.232672
++gl.change_next_word appl
+
+# 2023-09-17 04:38:21.607338
++painter.fast_mode
+
+# 2023-09-17 04:38:26.240340
++gl.next_round
+
+# 2023-09-17 04:39:08.302591
++gl.change_next_word pomme
+
+# 2023-09-17 04:39:51.668525
++gl.change_next_word
+
+# 2023-09-17 04:39:59.421545
++gl.change_next_word a
+
+# 2023-09-17 04:40:04.710291
++gl.change_next_word
+
+# 2023-09-17 04:40:10.517158
++gl.change_next_word a
+
+# 2023-09-17 04:40:18.733445
++gl.change_next_word pomme
+
+# 2023-09-17 04:40:22.525182
++gl.change_next_word a
+
+# 2023-09-17 04:40:23.733299
++gl.change_next_word 
+
+# 2023-09-17 04:40:25.724861
++gl.change_next_word
+
+# 2023-09-17 04:41:03.118259
++gl.change_next_word apple
+
+# 2023-09-17 04:41:50.737393
++gl.change_next_word apple.svg
+
+# 2023-09-17 04:45:42.459888
++gl.next_round
+
+# 2023-09-17 04:46:01.434890
++gl.change_next_word knife_$1
+
+# 2023-09-17 04:46:02.979237
++gl.next_round
+
+# 2023-09-17 04:48:41.197105
++painter.fast_mode
+
+# 2023-09-17 05:01:56.153308
++gl.change_next_word flippers
+
+# 2023-09-17 05:26:21.452629
++painter.fast_mode
+
+# 2023-09-17 05:26:50.164005
++gl.change_next_word flippers
+
+# 2023-09-17 05:27:08.732027
++gl.change_next_word turntable
+
+# 2023-09-17 05:46:18.298510
++gl.change_next_word buffalo_2
+
+# 2023-09-17 05:46:20.737370
++gl.change_next_word buffalo_$2
+
+# 2023-09-17 06:38:34.573160
++gl.change_next_word "coffee cup"
+
+# 2023-09-17 07:02:37.264654
++mimic gift 9000 60
+
+# 2023-09-17 08:25:21.752102
++gl.camera_reset
+
+# 2023-09-17 08:30:23.269103
++post say hi
+
+# 2023-09-17 08:30:27.860402
++post "say hi"
+
+# 2023-09-17 08:37:24.598399
++gl.camera_reset
+
+# 2023-09-17 08:38:17.260328
++gl.reset_camera
+
+# 2023-09-17 09:01:37.395238
++gl.next_round
+
+# 2023-09-17 09:03:02.711064
++gl.rebuild_podium
+
+# 2023-09-17 13:13:59.558879
++gl.next_round
+
+# 2023-09-17 13:56:39.715194
++gl.rebuild_podium
+
+# 2023-09-17 14:55:34.562078
++gl.fake_win
+
+# 2023-09-17 15:05:30.988257
++post "npc remove all"
+
+# 2023-09-17 15:15:56.022347
++mimic gift 1 1
+
+# 2023-09-17 15:21:46.825915
++post "npc remove all"
+
+# 2023-09-17 15:22:51.072023
++mimic gift 1 1
+
+# 2023-09-17 15:23:09.119348
++post "npc remove all"
+
+# 2023-09-17 15:23:14.007324
++mimic gift 1 1
+
+# 2023-09-17 15:29:56.993075
++mimic gift 5 0.5
+
+# 2023-09-17 15:31:04.950934
++post "npc remove all"
+
+# 2023-09-17 15:31:09.469237
++mimic gift 5 0.5
+
+# 2023-09-17 15:32:57.482075
++post gamemode funyrom creative
+
+# 2023-09-17 15:33:01.378439
++post "gamemode funyrom creative"
+
+# 2023-09-17 15:33:11.305643
++post "gamemode creative funyrom"
+
+# 2023-09-17 15:33:26.856959
++mimic gift 5 0.5
+
+# 2023-09-17 16:03:34.440476
++post "npc remove all"
+
+# 2023-09-17 16:03:48.327541
++mimic gift 5 0.5
+
+# 2023-09-17 16:04:12.135054
++post "npc remove all"
+
+# 2023-09-17 16:04:14.182598
++mimic gift 5 0.5
+
+# 2023-09-17 16:06:02.210600
++mimic gift 5 2
+
+# 2023-09-17 16:19:51.088288
++post "npc remove all"
+
+# 2023-09-17 16:40:18.801569
++mimic gift 1 0
+
+# 2023-09-17 16:41:34.807111
++mimic gift 1 0 user_id=SELECT user_id from users w
+
+# 2023-09-17 16:41:52.918479
++mimic gift 1 0 user_id=6803642843387921414
+
+# 2023-09-17 16:56:33.935055
++mimic gift 1 0 'used_id=6803642843387921414'
+
+# 2023-09-17 17:01:13.252869
++mimic gift 1 0 'user_id=6803642843387921414,nickname=Maris'
+
+# 2023-09-17 17:13:04.443691
++gift.remove_gift_info
+
+# 2023-09-17 17:16:37.427935
++gift.init_info
+
+# 2023-09-17 17:18:08.528953
++gift.remove_gift_info
+
+# 2023-09-17 17:18:09.800756
++gift.init_info
+
+# 2023-09-17 17:18:24.192350
++gift.remove_gift_info
+
+# 2023-09-17 17:18:25.384189
++gift.init_info
+
+# 2023-09-17 17:18:42.866347
++gift.remove_gift_info
+
+# 2023-09-17 17:18:43.879384
++gift.init_info
+
+# 2023-09-17 18:05:49.324587
++gl.toggle_infobar
+
+# 2023-09-17 18:23:48.613038
++gl.next_round
+
+# 2023-09-17 18:57:47.301571
++gl.infobar text="salut"
+
+# 2023-09-17 18:59:55.839571
++gl.infobar text="salut",color="blue"
+
+# 2023-09-17 19:00:37.287220
++gl.infobar reset
+
+# 2023-09-17 19:36:09.524049
++gl.reset_camera
+
+# 2023-09-17 19:51:44.120930
++gl.infobar reset
+
+# 2023-09-17 20:00:47.594069
++post npc remove all
+
+# 2023-09-17 20:00:51.247378
++post "npc remove all"
+
+# 2023-09-17 20:38:21.844942
++gl.next_round
+
+# 2023-09-17 20:52:59.661896
++post "npc remove all"
+
+# 2023-09-17 22:57:39.525705
++tts
+
+# 2023-09-17 23:19:12.927021
++tts "I can finally speak"
+
+# 2023-09-17 23:24:07.372319
++tts "eeh eeh"
+
+# 2023-09-17 23:26:04.777185
++tts "well played everyone"
+
+# 2023-09-17 23:32:17.580620
++tts "eeh eeh"
+
+# 2023-09-17 23:32:51.707727
++tts "well played everyone"
+
+# 2023-09-17 23:34:29.102350
++tts "eeh eeh"
+
+# 2023-09-17 23:35:50.268129
++tts "ooh"
+
+# 2023-09-17 23:38:18.254519
++tts "hee hee"
+
+# 2023-09-17 23:41:19.392357
++tts "eeh eeh"
+
+# 2023-09-17 23:41:31.768752
++tts "eeh ooh"
+
+# 2023-09-17 23:42:19.670214
++tts "congratulations everyone, you are a bunch of little pogchamps"
+
+# 2023-09-17 23:43:53.986964
++tts "can anyone hear me?"
+
+# 2023-09-17 23:44:11.185729
++tts "nice"
+
+# 2023-09-18 00:04:07.968157
++voice.query_gpt "salut tout le monde"
+
+# 2023-09-18 00:07:01.105672
++tts "congrats Ana on the streak"
+
+# 2023-09-18 00:08:28.414387
++voice.query_gpt "salut tout le monde"
+
+# 2023-09-18 00:11:09.648985
++voice.query_gpt "wait I already answered"
+
+# 2023-09-18 00:16:21.559083
++tts "hello everyon"
+
+# 2023-09-18 00:16:29.749642
++tts "good luck lm ao"
+
+# 2023-09-18 00:16:57.748911
++tts "oh no please don't donate it will crash the stream"
+
+# 2023-09-18 00:17:14.597798
++tts "l mao"
+
+# 2023-09-18 00:17:27.580476
++tts "that's a dog"
+
+# 2023-09-18 00:17:59.474443
++tts "if it's not obvious, you have to guess the word that's being drawn"
+
+# 2023-09-18 00:18:18.323093
++tts "but don't donate okay?"
+
+# 2023-09-18 00:18:36.731068
++tts "ana still on top"
+
+# 2023-09-18 00:19:03.236883
++tts "fuck bread"
+
+# 2023-09-18 00:19:29.639347
++tts "chokbar"
+
+# 2023-09-18 00:19:45.520369
++tts "croissant"
+
+# 2023-09-18 00:20:29.952707
++tts "ouai c michel euuuh tu viens plus aux soirées"
+
+# 2023-09-18 00:20:56.588525
++tts "chiahuahua"
+
+# 2023-09-18 00:22:43.033702
++tts "if it's not obvious, you have to guess the word that's being drawn"
+
+# 2023-09-18 00:30:21.545048
++tts
+
+# 2023-09-18 00:32:03.630987
++tts "Hi everyone"
+
+# 2023-09-18 00:32:57.197371
++tts list
+
+# 2023-09-18 00:35:06.847097
++tts "list"
+
+# 2023-09-18 00:35:49.901942
++tts list
+
+# 2023-09-18 00:38:07.368711
++tts "Salut tout le monde" fr_001
+
+# 2023-09-18 00:47:11.357534
++tts "Congratulation my little pogchamp" en_female_f08_salut_damour
+
+# 2023-09-18 00:48:11.076745
++tts "i think it's a dog" en_male_funny
+
+# 2023-09-18 01:32:27.135868
++tts nice streak Inez
+
+# 2023-09-18 01:32:36.192183
++tts "nice streak Inez"
+
+# 2023-09-18 01:35:19.008286
++tts "R.I.P your streak Inez"
+
+# 2023-09-18 01:36:51.613745
++tts "that was an easy one"
+
+# 2023-09-18 01:38:05.018664
++tts "maybe kite?"
+
+# 2023-09-18 01:39:55.671408
++tts "coooookies yay"
+
+# 2023-09-18 01:40:12.319011
++tts "l mao"
+
+# 2023-09-18 01:40:25.871115
++tts "sorry Thomski"
+
+# 2023-09-18 01:44:06.374880
++query_gpt "What would you do in this situation?"
+
+# 2023-09-18 01:44:19.726019
++voice.query_gpt "What would you do in this situation?"
+
+# 2023-09-18 01:44:44.910241
++voice.query_gpt "What would you do in this situation? If the game was beginning again?"

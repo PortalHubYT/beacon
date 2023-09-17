@@ -1,0 +1,1 @@
+SELECT score,nickname FROM users ORDER BY score DESC LIMIT 10
