@@ -2,9 +2,12 @@ import asyncio
 import io
 import time
 import importlib
-
+import random
+from scipy.spatial.distance import euclidean
 from PIL import Image
 from dill import dumps
+from sklearn.neighbors import KDTree
+import numpy as np
 
 import cairosvg
 import xml.etree.ElementTree as ET
@@ -29,17 +32,12 @@ def png_to_pixel_data(image):
     return pixel_data
 
 
-def get_svg(word, word_variant):
-    if not word_variant:
-        filename = f"svg/{word}.svg"
-    else:
-        filename = f"svg/{word}_${word_variant}.svg"
+def get_svg(filename):
+    filename = f"svg/{filename}"
 
     with open(filename, "r") as file:
         svg_data = file.read()
 
-    # svg_data = svg_data.replace('fill=""', 'fill="#000000"')
-    # svg_data = svg_data.replace('fill="#004364"', 'fill="#000000"')
     return svg_data
 
 
@@ -48,6 +46,8 @@ class Painter(Portal):
         await self.reload_config()
         self.stop_painting = False
         self.rush_paint = False
+        self.fast_mode = False
+        self.computed_svg = None
         await self.subscribe("gl.paint_svg", self.paint)
         await self.subscribe("gl.clear_svg", self.remove_zone)
         await self.subscribe("painter.stop", self.stop_painter)
@@ -56,6 +56,9 @@ class Painter(Portal):
         await self.subscribe("painter.move_backboard", self.move_backboard)
         await self.subscribe("gl.rush_paint", self.on_rush)
         await self.subscribe("gl.reload_config", self.reload_config)
+        await self.subscribe("painter.fast_mode", self.toggle_fast_mode)
+        await self.subscribe("painter.compute_svg", self.compute_svg)
+        await self.publish("painter.joined")
 
         if not hasattr(self, "backboard_origin"):
             # await self.create_backboard()
@@ -65,9 +68,16 @@ class Painter(Portal):
         importlib.reload(tools.config)
         self.config = tools.config.config
 
-    def generate_pixel_lists(self, word, word_variant, random=False):
+    async def toggle_fast_mode(self):
+        if self.fast_mode:
+            self.fast_mode = False
+        else:
+            self.fast_mode = True
+        await self.on_rush()
+
+    def generate_pixel_lists(self, filename, random=False):
         pixel_lists = []
-        root = ET.fromstring(get_svg(word, word_variant))
+        root = ET.fromstring(get_svg(filename))
 
         for idx, element in enumerate(root.iter()):
             if element.tag == "{http://www.w3.org/2000/svg}path":
@@ -184,19 +194,68 @@ class Painter(Portal):
         f = lambda: mc.set_zone(zone, "air")
         await self.publish("mc.lambda", dumps(f))
 
-    async def paint(self, data):
-        word, word_variant = data
+    def greedy_sort(self, pixel_list):
+        if not pixel_list:
+            return []
+
+        def distance(p1, p2):
+            return abs(p1["x"] - p2["x"]) + abs(p1["y"] - p2["y"])
+
+        visited = set()
+        path = []
+
+        # Initialize with the first point
+        current_point = pixel_list[0]
+        path.append(current_point)
+        visited.add((current_point["x"], current_point["y"]))
+
+        while len(path) < len(pixel_list):
+            closest_distance = float("inf")
+            closest_point = None
+
+            for point in pixel_list:
+                point_tuple = (point["x"], point["y"])
+                if point_tuple in visited:
+                    continue
+
+                dist = distance(current_point, point)
+                if dist < closest_distance:
+                    closest_distance = dist
+                    closest_point = point
+
+            current_point = closest_point
+            path.append(current_point)
+            visited.add((current_point["x"], current_point["y"]))
+
+        return path
+
+    async def compute_svg(self, filename):
+        print(f"Computing {filename}...")
+        # get a list per path
+        plists = self.generate_pixel_lists(filename)
+
+        big_start = time.time()
+        for i in range(len(plists)):
+            plists[i] = self.greedy_sort(plists[i])
+        print(f"Sorted points in: {str(time.time() - big_start)[:4]}s")
+        self.computed_svg = plists
+        await self.publish("painter.svg_ready")
+
+    async def paint(self, word):
+        if not self.computed_svg:
+            print("-> No computed svg paint returned")
+            return
 
         self.stop_painting = False
-        self.rush_paint = False
+
+        self.rush_paint = self.fast_mode
 
         def paint_chunk(height, start_pos, pixel_list):
             for p in pixel_list:
                 pos = start_pos.offset(x=p["x"], y=height - p["y"], z=0)
                 mc.set_block(pos, p["block"])
 
-        # get a list per path
-        plists = self.generate_pixel_lists(word, word_variant)
+        plists = self.computed_svg
 
         # flatten plists then turn it into a list of bite-sized chunks
         big_list = sum(plists, [])

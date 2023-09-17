@@ -55,7 +55,10 @@ class Podium(Portal):
 
         pos, name, score = args
         if pos > self.config.podium_size:
-            cmd = f'title {self.config.camera_name} actionbar {{"text":"#{pos} | {name[:14].center(14, " ")} | +1pt | Score: {score}"}}'
+            cmd = (
+                f'title {self.config.camera_name} actionbar {{"text":'
+                + f'"#{pos} | {name[:14].center(14)} | +1pt | Score: {score}"}}'
+            )
             await self.publish("mc.post", cmd)
             return
 
@@ -92,7 +95,7 @@ class Podium(Portal):
             "mc.post", f"data merge block {sign_start.offset(x=pos)} {data}"
         )
 
-        cmd = f'title {self.config.camera_name} actionbar {{"text":"#{pos} | {name[:14].center(14, " ")} | +1pt | Score: {score}"}}'
+        cmd = f'title {self.config.camera_name} actionbar {{"text":"#{pos} | {name[:14].center(14)} | +{self.config["scores_template"][pos - 1]}pt | Score: {score}"}}'
         print(cmd)
         await self.publish("mc.post", cmd)
 

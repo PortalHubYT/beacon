@@ -16,6 +16,20 @@ from tools.pulsar import Portal
 from tools.mimic import gen_fake_profiles
 
 BANNED_WORDS = [
+    "snowflake",
+    "pigeon",
+    "hand grenade",
+    "worm",
+    "banana",
+    "pinwheel",
+    "dumptruck",
+    "beaver",
+    "elephant",
+    "mushroom",
+    "milk tank" "dinosaur",
+    "pig",
+    "torpedo",
+    "whale",
     "mushroom",
     "cow",
     "uterus",
@@ -66,12 +80,15 @@ class GameLoop(Portal):
         self.amount_of_words = len(self.total_word_list)
         self.word_list = self.total_word_list.copy()
 
+        self.word_filename = None
+        self.round_word = None
+        self.upcoming_word = await self.next_word()
+
         self.force_next_round = False
         self.rush_round = False
-        self.word = None
-        self.word_variant = None
         self.painting_finished = False
         self.winners = []
+        self.svg_ready = False
 
         await self.place_camera()
         await self.subscribe("live.comment", self.on_comment)
@@ -81,6 +98,8 @@ class GameLoop(Portal):
         await self.subscribe("gl.fake_win", self.fake_win)
         await self.subscribe("painter.finished", self.on_painting_finished)
         await self.subscribe("gl.change_next_word", self.change_next_word)
+        await self.subscribe("painter.svg_ready", self.on_svg_ready)
+        await self.subscribe("painter.joined", self.on_painter_joined)
         await self.game_loop()
 
     async def reload_config(self):
@@ -102,23 +121,36 @@ class GameLoop(Portal):
             for f in strip_file_ext
             if len(remove_special_suffix(f)) < self.config.word_len_limit
         ]
-        strip_banned = [f for f in strip_too_long if f not in BANNED_WORDS]
+        strip_banned = [
+            f for f in strip_too_long if remove_special_suffix(f) not in BANNED_WORDS
+        ]
 
         random.seed()
         random.shuffle(strip_banned)
 
         return strip_banned
 
+    async def on_painter_joined(self):
+        print(
+            f"Oh, painter ? YOu here ? what a surprise take this file to compute{self.word_filename}"
+        )
+        await self.publish("painter.compute_svg", self.word_filename)
+
     async def on_painting_finished(self):
         self.painting_finished = True
+        self.upcoming_word = await self.next_word()
         if len(self.winners) >= 5:
             self.rush_round = True
 
+    async def on_svg_ready(self):
+        print("-> SVG is ready")
+        self.svg_ready = True
+
     async def fake_win(self):
         fake_winner = gen_fake_profiles(1)[0]
-        fake_winner["comment"] = self.word
+        fake_winner["comment"] = self.round_word
         fake_winner["display"] = fake_winner["display"][2:]
-        print(f"[{self.word}]----> Correct guess from [{fake_winner['display']}]")
+        print(f"[{self.round_word}]----> Correct guess from [{fake_winner['display']}]")
         await self.on_comment(fake_winner)
 
     async def next_round(self):
@@ -137,11 +169,12 @@ class GameLoop(Portal):
 
         new_word = self.word_list.pop(0)
         if "_$" in new_word:
-            self.word_variant = new_word.split("_$")[1]
+            self.word_filename = new_word + ".svg"
             new_word = new_word.split("_$")[0]
         else:
-            self.word_variant = None
+            self.word_filename = new_word + ".svg"
 
+        await self.publish("painter.compute_svg", self.word_filename)
         return new_word
 
     def signal_handler(self, sig, frame):
@@ -155,8 +188,8 @@ class GameLoop(Portal):
             "mc.post", f"tp {self.config.camera_name} {self.config.camera_pos}"
         )
 
-    def get_current_hint(self, hint, progress):
-        word_letters = sum(c.isalnum() for c in self.word)
+    def get_current_hint(self, word, hint, progress):
+        word_letters = sum(c.isalnum() for c in word)
         if progress > 100:
             progress = 100
 
@@ -179,18 +212,18 @@ class GameLoop(Portal):
 
             # str are immutables need to pass as a list before going back to str
             hint = list(hint)
-            hint[idx] = self.word[idx]
+            hint[idx] = word[idx]
             hint = "".join(hint)
             revealed += 1
 
         return hint
 
     async def on_comment(self, user):
-        if user["comment"].lower() != self.word:
-            print(f"[{self.word}] {user['display']}: {user['comment']}")
+        if user["comment"].lower() != self.round_word:
+            print(f"[{self.round_word}] {user['display']}: {user['comment']}")
             return
         else:
-            print(f"[{self.word}]----> Correct guess from [{user['display']}]")
+            print(f"[{self.round_word}]----> Correct guess from [{user['display']}]")
 
         if user["user_id"] in self.winners:
             print(f"-> [{user['display']}] already won")
@@ -236,20 +269,32 @@ class GameLoop(Portal):
         await self.publish("painter.stop")
         await self.publish("gl.clear_hint")
         await self.publish("gl.clear_svg")
-        await self.publish("gl.reset_podium")
+        print("-> Before round svg_ready?", self.svg_ready)
 
+        if self.round_word == self.upcoming_word:
+            self.upcoming_word = await self.next_word()
+
+        wait_time = 0
+        while not self.svg_ready:
+            await asyncio.sleep(0.1)
+            wait_time += 0.1
+            if wait_time > 10:
+                print(
+                    "|!!!!!!!| Waited too long for svg_ready, probably painter wasn't listening"
+                )
+                sys.exit()
+
+        self.svg_ready = False
+
+        await self.publish("gl.reset_podium")
         await self.publish("gl.set_timer", 100)
         cmd = f"bossbar set minecraft:timer visible true"
         await self.publish("mc.post", cmd)
 
     def print_word(self):
-        current_word = (
-            self.word + f"_${self.word_variant}" if self.word_variant else self.word
-        )
-
         print("--------------------------------------")
         print(
-            f"-> New round with: {current_word} [{self.amount_of_words - len(self.word_list)}/{self.amount_of_words}]"
+            f"-> New round with: {self.word_filename} [{self.amount_of_words - len(self.word_list)}/{self.amount_of_words}]"
         )
 
         # Get next 3 words from the list.
@@ -266,19 +311,19 @@ class GameLoop(Portal):
     async def change_next_word(self, word):
         if word in self.total_word_list:
             print("-> Changing next word to: ", word)
+            # this actually changes the next + 1 word, we need to re-trigger lo
             self.word_list.insert(0, word)
             self.amount_of_words += 1
 
     async def round(self):
-        self.word = await self.next_word()
-
         await asyncio.sleep(1)
         self.winners = []
         self.print_word()
-        hint = "".join(["_" if c.isalnum() else c for c in self.word])
+        self.round_word = self.upcoming_word
+        hint = "".join(["_" if c.isalnum() else c for c in self.round_word])
 
         self.painting_finished = False
-        await self.publish("gl.paint_svg", (self.word, self.word_variant))
+        await self.publish("gl.paint_svg", self.round_word)
 
         self.rush_round = False
         start_round = time.time()
@@ -290,6 +335,7 @@ class GameLoop(Portal):
                 start_round -= 2
 
             hint = self.get_current_hint(
+                self.round_word,
                 hint,
                 (round_progress / 100)
                 / (self.config.drawing_finished_at_percentage / 100)
@@ -309,7 +355,7 @@ class GameLoop(Portal):
     async def after_round(self):
         self.force_next_round = False
         await self.publish("painter.stop")
-        await self.publish("gl.print_hint", self.word)
+        await self.publish("gl.print_hint", self.round_word)
 
         cmd = f"bossbar set minecraft:timer visible false"
         await self.publish("mc.post", cmd)
@@ -321,6 +367,7 @@ class GameLoop(Portal):
         await self.publish("mc.post", cmd)
 
         await asyncio.sleep(3.5)
+
         await self.publish("gl.clear_svg")
         await self.publish("gl.reset_podium")
 
@@ -337,11 +384,11 @@ class GameLoop(Portal):
 
 if __name__ == "__main__":
     action = GameLoop()
-    while True:
-        try:
-            asyncio.run(action.run(), debug=True)
-        except Exception as e:
-            error_msg = f"An error occurred: {e}"
-            print(error_msg)
-            print("-> Restarting in 1 seconds...")
-            time.sleep(1)
+    # while True:
+    # try:
+    asyncio.run(action.run(), debug=True)
+    # except Exception as e:
+    #     error_msg = f"An error occurred: {e}"
+    #     print(error_msg)
+    #     print("-> Restarting in 1 seconds...")
+    #     time.sleep(1)
