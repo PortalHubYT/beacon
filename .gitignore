@@ -8,3 +8,6 @@ volumes/
 test.sh
 src/tools/logs/*.log
 *.log
+src/tools/logs/console_history.log
+src/tools/logs/console_history.log
+src/tools/logs/db_error.log
