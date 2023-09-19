@@ -11,3 +11,5 @@ src/tools/logs/*.log
 src/tools/logs/console_history.log
 src/tools/logs/console_history.log
 src/tools/logs/db_error.log
+src/tools/palette_cache/*
+src/tools/png/*
