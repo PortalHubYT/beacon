@@ -16,13 +16,15 @@ from tools.pulsar import Portal
 from tools.mimic import gen_fake_profiles
 
 BANNED_WORDS = [
+    "alien",
+    "penguin",
     "snowflake",
     "pigeon",
     "hand grenade",
     "worm",
     "banana",
     "pinwheel",
-    "dumptruck",
+    "dump truck",
     "beaver",
     "elephant",
     "mushroom",
@@ -69,12 +71,20 @@ BANNED_WORDS = [
     "pinwheel",
     "beach",
     "grooming",
+    "sloth",
+    "walrus",
+    "prawn",
+    "stand",
+    "underwear",
+    "balloon",
 ]
 
 
 class GameLoop(Portal):
     async def on_join(self):
         await self.reload_config()
+        self.pause = False
+        self.should_stop = False
 
         self.total_word_list = self.get_word_list()
         self.amount_of_words = len(self.total_word_list)
@@ -90,7 +100,16 @@ class GameLoop(Portal):
         self.winners = []
         self.svg_ready = False
 
+        self.previous_winners = []
+        self.winstreakers = []
+        self.winstreak_enabled = False
+
         await self.place_camera()
+
+        self.infobar = self.config.infobar_default
+
+        await self.init_infobar()
+
         await self.subscribe("live.comment", self.on_comment)
         await self.subscribe("gl.reset_camera", self.place_camera)
         await self.subscribe("gl.reset_arena", self.reset_arena)
@@ -100,12 +119,116 @@ class GameLoop(Portal):
         await self.subscribe("gl.change_next_word", self.change_next_word)
         await self.subscribe("painter.svg_ready", self.on_svg_ready)
         await self.subscribe("painter.joined", self.on_painter_joined)
+        await self.subscribe("gl.infobar", self.infobar_handler)
+        await self.subscribe("live.viewer_update", self.toggle_winstreak)
+        await self.subscribe("gl.pause", self.toggle_pause)
+        await self.subscribe("gl.get_word_list", lambda: self.word_list)
+
+        await self.subscribe("gl.clear_map", self.clear_map)
+        await self.subscribe("gl.reload_map", self.reload_map)
+
         await self.game_loop()
 
     async def reload_config(self):
         importlib.reload(tools.config)
         self.config = tools.config.config
         await self.publish("gl.reload_config")
+
+    async def reload_map(self):
+        await self.publish("gl.pause")
+        await self.place_camera()
+        await self.publish("hint.reload")
+        await self.publish("painter.reload_backboard")
+
+    async def clear_map(self):
+        pos_1 = self.config.camera_pos.offset(x=-50, z=-50)
+        pos_2 = self.config.camera_pos.offset(x=50, z=50)
+        for i in range(0, 255):
+            pos_1.y = i
+            pos_2.y = i
+            await self.publish("mc.post", f"fill {pos_1} {pos_2} air")
+            await self.publish(
+                "mc.post", f"fill {pos_1.offset(x=-50)} {pos_2.offset(x=-50)} air"
+            )
+            await self.publish(
+                "mc.post", f"fill {pos_1.offset(z=-50)} {pos_2.offset(z=-50)} air"
+            )
+            await self.publish(
+                "mc.post", f"fill {pos_1.offset(x=50)} {pos_2.offset(x=50)} air"
+            )
+            await self.publish(
+                "mc.post", f"fill {pos_1.offset(z=50)} {pos_2.offset(z=50)} air"
+            )
+            await self.publish(
+                "mc.post",
+                f"fill {pos_1.offset(x=-50, z=-50)} {pos_2.offset(x=-50, z=-50)} air",
+            )
+            await self.publish(
+                "mc.post",
+                f"fill {pos_1.offset(x=50, z=-50)} {pos_2.offset(x=50, z=-50)} air",
+            )
+            await self.publish(
+                "mc.post",
+                f"fill {pos_1.offset(x=-50, z=50)} {pos_2.offset(x=-50, z=50)} air",
+            )
+            await self.publish(
+                "mc.post",
+                f"fill {pos_1.offset(x=50, z=50)} {pos_2.offset(x=50, z=50)} air",
+            )
+
+    async def infobar_handler(self, action):
+        if action == "on":
+            await self.init_infobar()
+        elif action == "off":
+            await self.remove_infobar()
+        elif action == "toggle":
+            await self.toggle_infobar()
+        elif action == "reset":
+            self.infobar = self.config.infobar_default
+            await self.remove_infobar()
+            await self.init_infobar()
+        else:
+            color = self.infobar["color"]
+            text = self.infobar["text"]
+
+            if "text=" in action:
+                text = action.split(",")[0].split("=")[1].replace('"', "")
+            if ",color=" in action:
+                color = action.split(",")[1].split("=")[1].replace('"', "")
+
+            await self.edit_infobar(text, color)
+
+    async def toggle_infobar(self):
+        if self.infobar["shown"]:
+            await self.remove_infobar()
+        else:
+            await self.init_infobar()
+
+    async def remove_infobar(self):
+        cmd = """kill @e[tag=infobar]"""
+        await self.publish("mc.post", cmd)
+        self.infobar["shown"] = False
+
+    async def edit_infobar(self, text=None, color=None):
+        if color is None:
+            color = self.infobar["color"]
+        if text is None:
+            text = self.infobar["text"]
+
+        cmd = """execute if entity @e[tag=infobar] run data merge entity @e[type=text_display,limit=1,sort=nearest,tag=infobar] {text:'{"text":"$text","color":"$color","bold":true}'}"""
+        cmd = cmd.replace("$text", text).replace("$color", color)
+        await self.publish("mc.post", cmd)
+        self.infobar["text"] = text
+        self.infobar["color"] = color
+
+    async def init_infobar(self):
+        cmd = """execute unless entity @e[tag=infobar] run summon text_display ~ ~ ~ {line_width:400,Tags:["infobar"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[0.5f,0.5f,0.5f]},text:'{"text":"$text","color":"$color","bold":true}',background:-939524096}"""
+        cmd = cmd.replace("~ ~ ~", f"{self.config.podium_pos.offset(y=1)}")
+        cmd = cmd.replace("$text", self.infobar["text"]).replace(
+            "$color", self.infobar["color"]
+        )
+        await self.publish("mc.post", cmd)
+        self.infobar["shown"] = True
 
     def get_word_list(self):
         ls = os.listdir("svg/")
@@ -134,6 +257,7 @@ class GameLoop(Portal):
         print(
             f"Oh, painter ? YOu here ? what a surprise take this file to compute{self.word_filename}"
         )
+        self.svg_ready = False
         await self.publish("painter.compute_svg", self.word_filename)
 
     async def on_painting_finished(self):
@@ -158,7 +282,7 @@ class GameLoop(Portal):
         self.force_next_round = True
 
     async def reset_arena(self):
-        await self.publish("gl.clear_hint")
+        await self.publish("hint.clear")
         await self.publish("gl.clear_svg")
         cmd = f"sudo {self.config.camera_name} //replacenear 1000 grass,grass_block,bedrock air"
         await self.publish("mc.post", cmd)
@@ -174,19 +298,22 @@ class GameLoop(Portal):
         else:
             self.word_filename = new_word + ".svg"
 
+        self.svg_ready = False
         await self.publish("painter.compute_svg", self.word_filename)
         return new_word
 
     def signal_handler(self, sig, frame):
-        # await self.publish("gl.clear_hint") #if we get rid of async publish that's what we can do
+        # await self.publish("hint.clear") #if we get rid of async publish that's what we can do
         # await self.publish("gl.clear_svg")
         sys.exit(0)
 
     async def place_camera(self):
-        await self.publish("mc.post", f"gamemode spectator {self.config.camera_name}")
+        print("-> Placing camera")
+        await self.publish("mc.post", f"gamemode creative {self.config.camera_name}")
         await self.publish(
             "mc.post", f"tp {self.config.camera_name} {self.config.camera_pos}"
         )
+        await self.publish("mc.post", f"gamerule doFireTick false")
 
     def get_current_hint(self, word, hint, progress):
         word_letters = sum(c.isalnum() for c in word)
@@ -218,6 +345,44 @@ class GameLoop(Portal):
 
         return hint
 
+    async def toggle_winstreak(self, viewers):
+        if viewers >= self.config.winstreak_minimum_viewers:
+            self.winstreak_enabled = True
+        else:
+            self.winstreak_enabled = False
+
+    async def handle_winstreak(self, user):
+        user_id = user["user_id"]
+
+        # Check if the user was a winner in the last round
+        if user_id in self.previous_winners:
+            existing_streak = next(
+                (item for item in self.winstreakers if item["user_id"] == user_id), None
+            )
+            if existing_streak:
+                existing_streak["count"] += 1
+                print(
+                    f"-> {user['display']}'s win streak is now {existing_streak['count']}"
+                )
+            else:
+                self.winstreakers.append({"user_id": user_id, "count": 1})
+                print(f"-> {user['display']}'s win streak has started at 1")
+
+            return True
+        else:
+            # Remove any existing streak for this user
+            self.winstreakers = [
+                streak for streak in self.winstreakers if streak["user_id"] != user_id
+            ]
+            print(f"-> {user['display']}'s win streak has been reset.")
+
+            return False
+
+    def compute_winstreak_multiplier(self, winstreak):
+        if winstreak == 0:
+            return 1
+        return 1 + (winstreak / 10)
+
     async def on_comment(self, user):
         if user["comment"].lower() != self.round_word:
             print(f"[{self.round_word}] {user['display']}: {user['comment']}")
@@ -242,8 +407,22 @@ class GameLoop(Portal):
         else:
             points_won = 1
 
+        winstreak_amount = 0
+
+        if len(self.winners) <= 5 and await self.handle_winstreak(user):
+            winstreak_amount = next(
+                (
+                    item
+                    for item in self.winstreakers
+                    if item["user_id"] == user["user_id"]
+                ),
+                None,
+            )["count"]
+
+        multiplier = self.compute_winstreak_multiplier(winstreak_amount)
+
         score = await self.call(
-            "db", ("add_and_get_user_score", points_won, user["user_id"])
+            "db", ("add_and_get_user_score", points_won * multiplier, user["user_id"])
         )
 
         if not score:
@@ -262,12 +441,12 @@ class GameLoop(Portal):
             await self.publish("mc.post", cmd)
 
         await self.publish(
-            "gl.spawn_winner", (len(self.winners), user["display"], score)
+            "gl.spawn_winner", (len(self.winners), user, score, winstreak_amount)
         )
 
     async def before_round(self):
         await self.publish("painter.stop")
-        await self.publish("gl.clear_hint")
+        await self.publish("hint.clear")
         await self.publish("gl.clear_svg")
         print("-> Before round svg_ready?", self.svg_ready)
 
@@ -279,17 +458,22 @@ class GameLoop(Portal):
             await asyncio.sleep(0.1)
             wait_time += 0.1
             if wait_time > 10:
-                print(
-                    "|!!!!!!!| Waited too long for svg_ready, probably painter wasn't listening"
+                cmd = f'title {self.config.camera_name} title {{"text":"Ran into an issue!","color":"red"}}'
+                await self.publish("mc.post", cmd)
+                cmd = f'title {self.config.camera_name} subtitle "restarting the game now :)"'
+                await self.publish("mc.post", cmd)
+                raise Exception(
+                    "Waited too long for svg_ready, probably painter wasn't listening"
                 )
-                sys.exit()
 
         self.svg_ready = False
+        if len(self.winners) != 0:
+            self.previous_winners = self.winners[:5]
+        print(f"-> In previous round, winners were: {self.previous_winners}")
+        print(f"-> Current winstreakers: {self.winstreakers}")
 
         await self.publish("gl.reset_podium")
-        await self.publish("gl.set_timer", 100)
-        cmd = f"bossbar set minecraft:timer visible true"
-        await self.publish("mc.post", cmd)
+        await self.publish("timer.set", 100)
 
     def print_word(self):
         print("--------------------------------------")
@@ -311,9 +495,13 @@ class GameLoop(Portal):
     async def change_next_word(self, word):
         if word in self.total_word_list:
             print("-> Changing next word to: ", word)
-            # this actually changes the next + 1 word, we need to re-trigger lo
+            self.upcoming_word = word
+            self.svg_ready = False
+            await self.publish("painter.compute_svg", word + ".svg")
             self.word_list.insert(0, word)
             self.amount_of_words += 1
+        else:
+            print(f"-> {word} is not in the word list")
 
     async def round(self):
         await asyncio.sleep(1)
@@ -327,9 +515,14 @@ class GameLoop(Portal):
 
         self.rush_round = False
         start_round = time.time()
-        while start_round + self.config.round_time > time.time():
+        while start_round + self.config.round_time > time.time() and not self.pause:
             delta = time.time() - start_round
             round_progress = int(delta / self.config.round_time * 100)
+
+            # if int(delta) % 2:
+            #     await self.edit_infobar(color="yellow")
+            # else:
+            #     await self.edit_infobar(color="gold")
 
             if self.rush_round == True:
                 start_round -= 2
@@ -342,8 +535,8 @@ class GameLoop(Portal):
                 * 100,
             )
 
-            await self.publish("gl.print_hint", hint)
-            await self.publish("gl.set_timer", 100 - round_progress)
+            await self.publish("hint.print", hint)
+            await self.publish("timer.set", 100 - round_progress)
 
             if self.force_next_round:
                 await self.publish("painter.stop")
@@ -355,10 +548,7 @@ class GameLoop(Portal):
     async def after_round(self):
         self.force_next_round = False
         await self.publish("painter.stop")
-        await self.publish("gl.print_hint", self.round_word)
-
-        cmd = f"bossbar set minecraft:timer visible false"
-        await self.publish("mc.post", cmd)
+        await self.publish("hint.print", self.round_word)
 
         cmd = f'title {self.config.camera_name} title {{"text":"Round over","color":"green"}}'
         await self.publish("mc.post", cmd)
@@ -369,13 +559,24 @@ class GameLoop(Portal):
         await asyncio.sleep(3.5)
 
         await self.publish("gl.clear_svg")
-        await self.publish("gl.reset_podium")
+
+    async def toggle_pause(self):
+        if self.pause:
+            print(f"{'=' * 10}\n{'UNPAUSE'.center(10)}\n{'=' * 10}")
+            self.pause = False
+        else:
+            print(f"{'=' * 10}\n{'PAUSE'.center(10)}\n{'=' * 10}")
+            self.pause = True
 
     async def game_loop(self):
         signal.signal(signal.SIGINT, self.signal_handler)
 
-        game_on = True
-        while game_on:
+        while self.should_stop is False:
+            if self.pause:
+                print("|| Gameloop is paused ")
+                await asyncio.sleep(0.8)
+                continue
+
             await self.before_round()
             await self.round()
             await self.after_round()
@@ -384,11 +585,11 @@ class GameLoop(Portal):
 
 if __name__ == "__main__":
     action = GameLoop()
-    # while True:
-    # try:
-    asyncio.run(action.run(), debug=True)
-    # except Exception as e:
-    #     error_msg = f"An error occurred: {e}"
-    #     print(error_msg)
-    #     print("-> Restarting in 1 seconds...")
-    #     time.sleep(1)
+    while True:
+        try:
+            asyncio.run(action.run(), debug=True)
+        except Exception as e:
+            error_msg = f"An error occurred: {e}"
+            print(error_msg)
+            print("-> Restarting in 1 seconds...")
+            time.sleep(1)
