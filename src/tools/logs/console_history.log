@@ -1441,3 +1441,771 @@
 
 # 2023-09-18 01:44:44.910241
 +voice.query_gpt "What would you do in this situation? If the game was beginning again?"
+
+# 2023-09-18 01:53:44.874644
++tts "I think it's a banned word"
+
+# 2023-09-18 01:56:18.660848
++tts "I think it's a banned word Thomski"
+
+# 2023-09-18 01:57:17.547329
++tts "hi everyone"
+
+# 2023-09-18 02:18:32.189643
++tts "congratz inez for your 4 thousands points"
+
+# 2023-09-18 02:20:20.690971
++voice.query_gpt "What would you do in this situation? If the game was beginning again?"
+
+# 2023-09-18 02:28:56.376144
++tts "okay everyone time to wrap up we will improve the game and come back later! see ya soon"
+
+# 2023-09-18 02:31:58.290390
++gl.next_round
+
+# 2023-09-18 02:32:01.481671
++gl.place_camera
+
+# 2023-09-18 02:32:10.178156
++gl.reset_camera
+
+# 2023-09-18 02:34:09.596873
++painter.remove_backboard
+
+# 2023-09-18 02:37:45.574514
++gl.remove_podium
+
+# 2023-09-18 02:38:42.541378
++gl.camera_reset
+
+# 2023-09-18 02:38:52.331923
++gl.next_round
+
+# 2023-09-18 02:39:02.036064
++gl.reset_camera
+
+# 2023-09-18 02:39:29.082528
++post "sudo funyrom /sphere 400 air
+
+# 2023-09-18 02:39:31.306341
++post "sudo funyrom /sphere 400 air"
+
+# 2023-09-18 02:40:38.857790
++gl.create_backboard
+
+# 2023-09-18 02:41:11.953239
++painter.create_backboard
+
+# 2023-09-18 02:48:49.045050
++gl.pause
+
+# 2023-09-18 02:49:53.371695
++painter.create_backboard
+
+# 2023-09-18 02:50:38.666638
++painter.remove_backboard
+
+# 2023-09-18 02:54:12.458208
++painter.create_backboard
+
+# 2023-09-18 02:56:52.340979
++painter.remove_backboard
+
+# 2023-09-18 02:56:54.324731
++painter.create_backboard
+
+# 2023-09-18 02:57:37.603288
++painter.remove_backboard
+
+# 2023-09-18 02:57:40.035258
++painter.create_backboard
+
+# 2023-09-18 02:58:11.721850
++post "sudo PortalHub /replacenear snow_block,black_concrete 80 air
+
+# 2023-09-18 02:58:14.337498
++post "sudo PortalHub /replacenear snow_block,black_concrete 80 air"
+
+# 2023-09-18 02:58:24.969805
++post "sudo PortalHub /replacenear 180 snow_block,black_concrete air"
+
+# 2023-09-18 02:58:38.488905
++painter.create_backboard
+
+# 2023-09-18 03:01:49.122439
++gl.next_round
+
+# 2023-09-18 03:01:52.225835
++painter.create_backboard
+
+# 2023-09-18 03:03:15.518978
++painter.remove_backboard
+
+# 2023-09-18 03:03:17.471391
++painter.create_backboard
+
+# 2023-09-18 03:03:29.774255
++gl.reload_config
+
+# 2023-09-18 03:03:37.310288
++painter.create_backboard
+
+# 2023-09-18 03:03:39.822748
++painter.remove_backboard
+
+# 2023-09-18 03:03:45.013914
++post "sudo PortalHub /replacenear 180 snow_block,black_concrete air"
+
+# 2023-09-18 03:03:47.478131
++painter.create_backboard
+
+# 2023-09-18 03:04:36.404225
++painter.remove_backboard
+
+# 2023-09-18 03:04:40.683951
++gl.reload_config
+
+# 2023-09-18 03:04:43.100160
++painter.create_backboard
+
+# 2023-09-18 03:08:28.635693
++painter.reload_backboard
+
+# 2023-09-18 03:11:10.949950
++gl.reset_camera
+
+# 2023-09-18 03:11:17.942351
++painter.reload_backboard
+
+# 2023-09-18 03:13:05.569929
++post "sudo funyrom /sphere 400 air"
+
+# 2023-09-18 03:13:42.152615
++post "sudo funyrom /sphere air 200"
+
+# 2023-09-18 03:14:03.520181
++post "sudo funyrom /sphere air 400"
+
+# 2023-09-18 03:14:28.159482
++painter.reload_backboard
+
+# 2023-09-18 03:18:33.182610
++hint.print
+
+# 2023-09-18 03:22:40.988926
++hint.reload
+
+# 2023-09-18 03:23:05.604430
++hint.print "test"
+
+# 2023-09-18 03:23:36.411291
++hint.reload
+
+# 2023-09-18 03:24:57.320052
++hint.reload salut
+
+# 2023-09-18 03:25:18.408217
++hint.reload test
+
+# 2023-09-18 03:26:11.441041
++podium.rebuild_podium
+
+# 2023-09-18 03:26:15.913855
++gl.rebuild_podium
+
+# 2023-09-18 03:26:43.845516
++gl.reset_camera
+
+# 2023-09-18 03:28:54.000010
++painter.removebackboard
+
+# 2023-09-18 03:29:05.880265
++painter.remove_backboard
+
+# 2023-09-18 03:29:19.654843
++hint.reload test
+
+# 2023-09-18 03:29:28.703280
++hint.reload papayalola
+
+# 2023-09-18 03:30:06.741132
++gl.reset_camera
+
+# 2023-09-18 03:31:55.505905
++painter.reload_backboard
+
+# 2023-09-18 03:32:20.824338
++painter.clear_svg
+
+# 2023-09-18 03:32:30.544026
++gl.pause
+
+# 2023-09-18 03:32:36.456178
++painter.clear_svg
+
+# 2023-09-18 03:33:02.142974
++podium.remove_podium
+
+# 2023-09-18 03:33:10.750414
++gl.remove_podium
+
+# 2023-09-18 03:33:41.693786
++hint.reload PAPAYAOLA
+
+# 2023-09-18 03:34:00.956940
++gl.reset_camera
+
+# 2023-09-18 03:34:12.484510
++hint.reload PAPAYAOLA
+
+# 2023-09-18 03:34:31.494068
++gl.reset_camera
+
+# 2023-09-18 03:35:52.793430
++gl.pause
+
+# 2023-09-18 03:36:56.055190
++painter.reload_backboard
+
+# 2023-09-18 03:40:32.126553
++gl.pause
+
+# 2023-09-18 03:43:18.488730
++hint.reload 12345678912345678
+
+# 2023-09-18 03:43:41.416467
++hint.reload 123456789123456
+
+# 2023-09-18 03:47:03.256850
++painter.reload_backboard
+
+# 2023-09-18 04:00:39.788460
++gl.reload_map
+
+# 2023-09-18 04:01:52.675784
++gl.pause
+
+# 2023-09-18 04:01:56.384626
++gl.clear_map
+
+# 2023-09-18 04:04:16.852743
++gl.clear_map
+
+# 2023-09-18 04:05:48.832251
++gl.reset_camera
+
+# 2023-09-18 04:06:50.502340
++gl.clear_map
+
+# 2023-09-18 04:11:46.563562
++gl.reload_map
+
+# 2023-09-18 04:16:31.209816
++painter.reload_backboard
+
+# 2023-09-18 04:16:44.680622
++post "sudo PortalHub /replacenear 180 snow_block,black_concrete air"
+
+# 2023-09-18 04:16:48.072913
++painter.reload_backboard
+
+# 2023-09-18 04:16:54.000076
++hint.reload
+
+# 2023-09-18 04:17:04.519945
++hint.reload "test"
+
+# 2023-09-18 04:17:09.592257
++hint.reload SALUT A TOUS
+
+# 2023-09-18 04:17:12.712044
++hint.reload SALUT A TOUS LES
+
+# 2023-09-18 04:19:08.411342
++gl.reload_map
+
+# 2023-09-18 04:19:25.850867
++post "sudo PortalHub /replacenear 180 snow_block,black_concrete;blackstone_blocks,blackstone_stairs,blackstone_slabs air"
+
+# 2023-09-18 04:19:36.050408
++post "sudo PortalHub /replacenear 180 snow_block,black_concrete;blackstone_blocks,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:19:41.786986
++post "sudo PortalHub /replacenear 180 snow_block,black_concrete;blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:19:44.298274
++gl.reload_map
+
+# 2023-09-18 04:20:02.186088
++post "sudo PortalHub /replacenear 250 snow_block,black_concrete;blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:20:45.520160
++post "sudo funyrom /replacenear 250 snow_block,black_concrete;blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:20:52.575766
++post "sudo funyrom /replacenear 350 snow_block,black_concrete;blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:22:13.196917
++post "sudo PortalHub /replacenear 350 snow_block,black_concrete;blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:24:41.759312
++post "sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:25:01.759178
++post "sudo PortalHub /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:25:16.686926
++gl.reload_blackboard
+
+# 2023-09-18 04:25:23.806540
++painter.reload_blackboard
+
+# 2023-09-18 04:28:26.680297
++painter.reload_backboard
+
+# 2023-09-18 04:29:05.453857
++gl.reload_config
+
+# 2023-09-18 04:29:08.174052
++painter.reload_backboard
+
+# 2023-09-18 04:29:14.373612
++post "sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:29:21.429542
++gl.reload_map
+
+# 2023-09-18 04:29:42.269228
++hint.reload
+
+# 2023-09-18 04:29:48.596664
++hint.reload PAPAPAPAPAPAPAAP
+
+# 2023-09-18 04:29:50.764575
++hint.reload PAPAPAPAPAPAPAA
+
+# 2023-09-18 04:30:02.172011
++gl.pause
+
+# 2023-09-18 04:30:10.275951
++gl.rush_paint
+
+# 2023-09-18 04:30:28.603124
++gl.next_round
+
+# 2023-09-18 04:31:40.888539
++painter.reload_backboard
+
+# 2023-09-18 04:31:57.567862
++post "sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:32:00.248293
++painter.reload_backboard
+
+# 2023-09-18 04:33:04.581565
++gl.reset_camera
+
+# 2023-09-18 04:33:16.500847
++painter.reload_backboard
+
+# 2023-09-18 04:33:20.477116
++post "sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:33:23.108807
++painter.reload_backboard
+
+# 2023-09-18 04:33:34.636476
++hint.reload
+
+# 2023-09-18 04:33:40.868417
++hint.reload PAPAPAPAPAPAPAPAPAPA
+
+# 2023-09-18 04:33:43.508530
++post "sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:33:47.451834
++hint.reload PAPAPAPAPAPAPAPAPAPA
+
+# 2023-09-18 04:33:56.851310
++hint.reload PAPAPAPAPAP
+
+# 2023-09-18 04:33:59.651295
++painter.reload_backboard
+
+# 2023-09-18 04:34:10.011164
++hint.reload PAPAPAPAPAP
+
+# 2023-09-18 04:34:13.906900
++post "sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:34:17.434765
++painter.reload_backboard
+
+# 2023-09-18 04:35:16.416759
++hint.reload PAPAPAPAPAP
+
+# 2023-09-18 04:35:18.700533
++gl.pause
+
+# 2023-09-18 04:35:20.976302
++gl.pause
+
+# 2023-09-18 04:35:22.697346
++hint.reload PAPAPAPAPAP
+
+# 2023-09-18 04:35:26.448373
++gl.pause
+
+# 2023-09-18 04:35:27.768253
++hint.reload PAPAPAPAPAP
+
+# 2023-09-18 04:35:41.671674
++hint.reload PAPAPAPAPAPPPPP
+
+# 2023-09-18 04:37:29.956227
++painter.reload_backboard
+
+# 2023-09-18 04:39:18.568632
++post "sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:39:20.951662
++painter.reload_backboard
+
+# 2023-09-18 04:44:05.974122
++post "sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 04:44:08.853999
++painter.reload_backboard
+
+# 2023-09-18 04:47:03.479272
++hint.reload PAPAPAPAPAPAPA
+
+# 2023-09-18 04:49:14.179018
++painter.reload_backboard
+
+# 2023-09-18 05:23:46.096761
++painter.reload_backboard
+
+# 2023-09-18 05:37:44.346291
++podium.spawn_winners
+
+# 2023-09-18 05:38:03.626569
++podium.spawn_winners 15
+
+# 2023-09-18 05:51:17.613382
++gl.reset_camera
+
+# 2023-09-18 05:53:44.913499
++painter.reload_backboard
+
+# 2023-09-18 05:57:27.185113
++gl.reset_camera
+
+# 2023-09-18 05:58:15.649664
++painter.reload_backboard
+
+# 2023-09-18 06:10:05.387291
++post "sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 06:10:20.554618
++-/sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air
+
+# 2023-09-18 06:11:06.213686
++painter.reload_backboard
+
+# 2023-09-18 06:14:15.794326
++hint.reload PAPAPAPAPA
+
+# 2023-09-18 06:14:18.841903
++hint.reload PAPAPAPAPAPAP
+
+# 2023-09-18 06:14:20.722349
++hint.reload PAPAPAPAPAPA
+
+# 2023-09-18 06:16:54.540163
++gl.reset_camera
+
+# 2023-09-18 06:19:07.079585
++hint.reload PAPAPAPAPAP
+
+# 2023-09-18 06:19:23.048607
++painter.reload_backboard
+
+# 2023-09-18 06:19:30.178241
++gl.pause
+
+# 2023-09-18 06:19:46.056570
++painter.reload_backboard
+
+# 2023-09-18 06:27:16.205753
++gl.reset_camera
+
+# 2023-09-18 06:27:59.731783
++hint.reload PAPAPAPAPAP
+
+# 2023-09-18 06:33:59.618115
++gl.reset_camera
+
+# 2023-09-18 06:35:56.506280
++gl.reload_map
+
+# 2023-09-18 06:36:08.921806
++/sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air
+
+# 2023-09-18 06:36:20.722476
++post "sudo funyrom /replacenear 350 snow_block,black_concrete,blackstone,blackstone_stairs,blackstone_slab air"
+
+# 2023-09-18 06:36:25.025337
++gl.reload_map
+
+# 2023-09-18 06:37:03.728232
++hint.reload
+
+# 2023-09-18 06:37:21.000161
++hint.reload PAPAPAPA
+
+# 2023-09-18 06:42:51.283307
++painter.reload_backboard
+
+# 2023-09-18 06:43:39.057718
++gl.next_word flare
+
+# 2023-09-18 06:45:12.319494
++painter.reload_backboard
+
+# 2023-09-18 06:45:32.613472
++gl.next_word flare
+
+# 2023-09-18 06:46:07.246220
++gl.reset_camera
+
+# 2023-09-18 06:52:43.227551
++hint.reload PAPAPAPA
+
+# 2023-09-18 06:53:56.234015
++gl.pause
+
+# 2023-09-18 06:54:11.320677
++hint.reload PAPAPAPAPAPAPAP
+
+# 2023-09-18 06:54:33.720414
++hint.reload 1234567891234
+
+# 2023-09-18 06:54:43.576526
++hint.reload 12345678912
+
+# 2023-09-18 06:55:14.928483
++hint.reload 1234567891
+
+# 2023-09-18 06:55:19.839229
++hint.reload 12345678912
+
+# 2023-09-18 06:55:22.128222
++hint.reload 123456789123
+
+# 2023-09-18 06:55:36.943906
++hint.reload 1234567891
+
+# 2023-09-18 06:55:43.478688
++hint.reload __A__AV__
+
+# 2023-09-18 06:57:17.508605
++hint.reload
+
+# 2023-09-18 06:57:22.232007
++hint.reload PAPAPA
+
+# 2023-09-18 06:57:44.710709
++hint.reload PAPAPAPAPAP
+
+# 2023-09-18 06:57:53.744770
++hint.reload PABOKUILAO
+
+# 2023-09-18 06:58:31.323777
++gl.reset_camera
+
+# 2023-09-18 07:13:18.280250
++gl.next_round
+
+# 2023-09-18 07:15:50.338720
++gl.next_round
+
+# 2023-09-18 07:22:13.333122
++gl.rush_paint
+
+# 2023-09-18 07:25:34.855802
++gl.pause
+
+# 2023-09-18 07:26:00.327410
++hint.reload_hint Guess the
+
+# 2023-09-18 07:26:13.831123
++hint.reload Guess the
+
+# 2023-09-18 07:27:21.122212
++gl.pause
+
+# 2023-09-18 07:28:56.353348
++post "say hi"
+
+# 2023-09-18 07:29:04.054054
++post "time set day"
+
+# 2023-09-18 08:03:44.364342
++gl.pause
+
+# 2023-09-18 08:08:43.020177
++timer.build
+
+# 2023-09-18 08:24:33.800977
++timer.reload
+
+# 2023-09-18 09:06:50.293306
++gl.reset_camera
+
+# 2023-09-18 09:13:14.564834
++gl.reload_map
+
+# 2023-09-18 09:13:54.571229
++painter.reload_backboard
+
+# 2023-09-18 09:15:23.632120
++gl.clear_map
+
+# 2023-09-18 09:23:21.607615
++gl.next_round
+
+# 2023-09-18 09:43:28.972068
++gl.pause
+
+# 2023-09-18 09:46:17.366114
++gl.change_next_word lice
+
+# 2023-09-18 09:46:20.398723
++gl.pause
+
+# 2023-09-18 09:46:52.357025
++gl.change_next_word lice
+
+# 2023-09-18 09:46:56.076798
++gl.next_round
+
+# 2023-09-18 09:48:44.972587
++hint.reload
+
+# 2023-09-18 09:48:56.742821
++timer.reload
+
+# 2023-09-18 09:51:49.530248
++gl.change_next_word lice
+
+# 2023-09-18 09:51:57.281971
++gl.next_round
+
+# 2023-09-18 10:05:15.454460
++gl.pause
+
+# 2023-09-18 10:11:55.343948
++gl.next_round
+
+# 2023-09-18 10:39:26.197458
++timer.reload
+
+# 2023-09-18 10:56:58.014971
++gl.reset_camera
+
+# 2023-09-18 10:58:11.710642
++gl.next_round
+
+# 2023-09-18 11:41:37.159495
++post list
+
+# 2023-09-18 11:41:40.455492
++post "list"
+
+# 2023-09-18 11:45:08.560279
++gl.next_round
+
+# 2023-09-18 12:42:40.698945
++gl.change_next_word longboard
+
+# 2023-09-18 12:42:42.914396
++gl.next_round
+
+# 2023-09-18 12:42:52.898160
++gl.rush_paint
+
+# 2023-09-18 12:43:17.937585
++gl.change_next_word longboard
+
+# 2023-09-18 12:43:19.425380
++gl.next_round
+
+# 2023-09-18 12:43:21.345391
++gl.change_next_word longboard
+
+# 2023-09-18 12:43:28.664562
++gl.rush_paint
+
+# 2023-09-18 12:47:37.719972
++gl.change_next_word longboard
+
+# 2023-09-18 12:47:42.103991
++gl.change_next_word lice
+
+# 2023-09-18 12:47:47.184606
++gl.rush_paint
+
+# 2023-09-18 12:52:31.425388
++gl.next_round
+
+# 2023-09-18 15:06:49.865171
++gl.draw_svg banana
+
+# 2023-09-18 16:33:10.837145
++gl.clear_backboard
+
+# 2023-09-18 16:33:20.156005
++gl.pause
+
+# 2023-09-18 16:33:26.266965
++post "list"
+
+# 2023-09-18 16:33:38.811056
++gl.pause
+
+# 2023-09-20 00:57:05.454552
++gl.reset_camera
+
+# 2023-09-20 01:39:04.347029
++gl.rebuild_podium
+
+# 2023-09-20 01:52:13.557423
++gl.reload_podium
+
+# 2023-09-20 01:55:37.391807
++podium.reload
+
+# 2023-09-20 01:58:09.256233
++gl.fake_win
+
+# 2023-09-20 02:49:45.516178
++gl.pause
+
+# 2023-09-20 03:27:33.367718
++gl.reset_camera
+
+# 2023-09-20 04:22:15.525617
++post "say hi"
+
+# 2023-09-20 04:47:30.290477
++gl.camera_reset
+
+# 2023-09-20 04:47:37.448796
++gl.reset_camera
+
+# 2023-09-20 04:48:38.372881
++gl.reload_backplate
+
+# 2023-09-20 04:48:57.283188
++painter.reload_backboard

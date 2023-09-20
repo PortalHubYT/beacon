@@ -99,6 +99,9 @@ class Dispatch(Portal):
 
         if listener not in config.listen_to:
             return
+        
+        if listener == "gift" and event.gift.info.type == 1 and event.gift.is_repeating == 1:
+            return
 
         start = time.time()
         
@@ -122,7 +125,8 @@ class Dispatch(Portal):
     async def views_handler(self, event):
         await self.publish("db", ("store_views", event.viewer_count))
         await self.publish("db", ("commit",))
-
+        await self.publish("live.viewer_update", event.viewer_count)
+        
         if config.verbose:
             print("--------------------------------------")
             print("Database committed, new viewer count: ", event.viewer_count)

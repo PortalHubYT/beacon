@@ -3,10 +3,8 @@ import time
 import shulker as mc
 from dill import loads
 
-
 from tools.config import config
 from tools.pulsar import Portal
-
 
 class Poster(Portal):
     async def on_join(self):
@@ -66,7 +64,7 @@ if __name__ == "__main__":
     action = Poster()
     while True:
         try:
-            asyncio.run(action.run(), debug=True)
+            asyncio.run(action.run())
         except Exception as e:
             error_msg = f"An error occurred: {e}"
             print(error_msg)

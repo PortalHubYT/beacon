@@ -13,17 +13,12 @@ import datetime
 from pulsar import AuthenticationToken
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 PULSAR_URL = os.getenv("PULSAR_URL")
 PULSAR_TOKEN = os.getenv("PULSAR_TOKEN")
 PULSAR_NAMESPACE = os.getenv("PULSAR_NAMESPACE")
 prefix = f"non-persistent://{PULSAR_NAMESPACE}/"
-
-pulsar_logger = log.getLogger("pulsar")
-pulsar_logger.setLevel(log.CRITICAL)
-
 
 # Wraps the Hub to create an inheritable class that can be used
 # as an open connection to pulsar and an async loop
@@ -90,6 +85,10 @@ class Hub:
         self.pending_calls = {}
 
     async def __aenter__(self):
+        
+        pulsar_logger = log.getLogger("pulsar")
+        pulsar_logger.setLevel(log.CRITICAL)
+
         self.client = await aiopulsar.connect(
             PULSAR_URL,
             authentication=AuthenticationToken(PULSAR_TOKEN),

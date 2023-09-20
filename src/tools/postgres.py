@@ -76,7 +76,16 @@ class PostgresDB:
             "total_gifted_value": "integer NOT NULL DEFAULT(0)",
             "gifted_value_since_last_reset": "integer NOT NULL DEFAULT(0)",
             "score": "integer NOT NULL DEFAULT(0)",
+            # "winstreak": "integer NOT NULL DEFAULT(0)",
+            # "highest_winstreak": "integer NOT NULL DEFAULT(0)",
+            # "custom_skin": "text",
+            # "permanent_bonus": "integer NOT NULL DEFAULT(0)",
         },
+        # "rounds": {
+        #   "timestamp": "timestamp",
+        #   "word": "text",
+        #   "guessed": "integer",
+        # },
         "comments": {
             "timestamp": "timestamp",
             "user_id": "text",
@@ -434,7 +443,23 @@ class StreamDB(PostgresDB):
         self.add_user_score(value, user_id)
         return self.get_user_score(user_id)
 
-
+    @function_logger
+    def get_user_score_and_rank(self, user_id):
+        sql = f"""WITH RankedUsers AS (
+                SELECT 
+                    user_id, 
+                    score, 
+                    RANK() OVER (ORDER BY score DESC) as rank 
+                FROM 
+                    users
+                )
+                SELECT * FROM RankedUsers WHERE user_id = '{user_id}';
+        """
+        
+        ret = self.get(sql, (user_id,), one=True)
+        return ret
+        
+        
 db = StreamDB(
     POSTGRES_HOST, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_PORT
 )

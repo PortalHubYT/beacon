@@ -13,15 +13,23 @@ from tools.pulsar import Portal
 class Hint(Portal):
     async def on_join(self):
         await self.reload_config()
-        
-        await self.subscribe("gl.print_hint", self.print_hint)
-        await self.subscribe("gl.clear_hint", self.clear_hint)
+
+        self.hint = None
+
+        await self.subscribe("hint.print", self.print_hint)
+        await self.subscribe("hint.clear", self.clear_hint)
+        await self.subscribe("hint.reload", self.reload_hint)
         await self.subscribe("gl.reload_config", self.reload_config)
 
     async def reload_config(self):
         importlib.reload(tools.config)
         self.config = tools.config.config
-        
+
+    async def reload_hint(self, hint):
+        await self.clear_hint()
+        await self.reload_config()
+        await self.print_hint(hint)
+
     async def clear_hint(self):
         pos1 = self.config.hint_start.offset(x=-self.config.width, y=-5)
         pos2 = self.config.hint_start.offset(x=self.config.width, y=5)
@@ -31,7 +39,10 @@ class Hint(Portal):
         await self.publish("mc.lambda", dumps(f))
 
     async def print_hint(self, hint):
+        hint = hint.upper()
         print("-> Printing hint :", hint)
+
+        self.hint = hint
 
         def print_hint_get_zone(hint_pos, hint_palette):
             status = mc.meta_set_text(

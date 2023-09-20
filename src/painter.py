@@ -1,103 +1,52 @@
 import asyncio
-import io
 import time
 import importlib
 import random
-from scipy.spatial.distance import euclidean
-from PIL import Image
-from dill import dumps
-from sklearn.neighbors import KDTree
+import re
+
+from dill import dumps, loads
+
 import numpy as np
 
-import cairosvg
-import xml.etree.ElementTree as ET
-
 import shulker as mc
+
 from tools.pulsar import Portal
+from tools.svg import svg_to_block_lists
+
 import tools.config
-
-
-def png_to_pixel_data(image):
-    palette = mc.get_palette("side")
-    pixel_data = []
-
-    width, height = image.size
-    for x in range(width):
-        for y in range(height):
-            pixel = image.getpixel((x, y))
-            if pixel[3] > 0:
-                pixel_data.append(
-                    {"x": x, "y": y, "block": mc.color_picker(pixel, palette)}
-                )
-    return pixel_data
-
-
-def get_svg(filename):
-    filename = f"svg/{filename}"
-
-    with open(filename, "r") as file:
-        svg_data = file.read()
-
-    return svg_data
-
 
 class Painter(Portal):
     async def on_join(self):
         await self.reload_config()
+        
         self.stop_painting = False
         self.rush_paint = False
         self.fast_mode = False
         self.computed_svg = None
+        
         await self.subscribe("gl.paint_svg", self.paint)
         await self.subscribe("gl.clear_svg", self.remove_zone)
         await self.subscribe("painter.stop", self.stop_painter)
         await self.subscribe("painter.create_backboard", self.create_backboard)
         await self.subscribe("painter.remove_backboard", self.remove_backboard)
-        await self.subscribe("painter.move_backboard", self.move_backboard)
+        await self.subscribe("painter.reload_backboard", self.reload_backboard)
         await self.subscribe("gl.rush_paint", self.on_rush)
         await self.subscribe("gl.reload_config", self.reload_config)
         await self.subscribe("painter.fast_mode", self.toggle_fast_mode)
         await self.subscribe("painter.compute_svg", self.compute_svg)
         await self.publish("painter.joined")
-
-        if not hasattr(self, "backboard_origin"):
-            # await self.create_backboard()
-            pass
+        
+        await self.publish("gl.next_round")
+        
+        await self.paint("banana")
 
     async def reload_config(self):
         importlib.reload(tools.config)
         self.config = tools.config.config
 
     async def toggle_fast_mode(self):
-        if self.fast_mode:
-            self.fast_mode = False
-        else:
-            self.fast_mode = True
+        self.fast_mode = not self.fast_mode
         await self.on_rush()
-
-    def generate_pixel_lists(self, filename, random=False):
-        pixel_lists = []
-        root = ET.fromstring(get_svg(filename))
-
-        for idx, element in enumerate(root.iter()):
-            if element.tag == "{http://www.w3.org/2000/svg}path":
-                shape_svg = ET.Element(
-                    "svg", attrib=root.attrib, xmlns="http://www.w3.org/2000/svg"
-                )
-                shape_svg.append(element)
-
-                png_data = cairosvg.svg2png(
-                    bytestring=ET.tostring(shape_svg),
-                    output_height=self.config.height,
-                    output_width=self.config.width,
-                )
-                image = Image.open(io.BytesIO(png_data))
-                plist = png_to_pixel_data(image)
-                if random:
-                    random.shuffle(plist)
-                pixel_lists.append(plist)
-
-        return pixel_lists
 
     async def on_rush(self):
         print("-> Rush painting")
@@ -122,65 +71,138 @@ class Painter(Portal):
         if interval > 0.75:
             interval = 0.75
 
-        print(
-            f"Try {wait_time}: ({(steps / 10)}s to build) + ({steps} steps x {interval:.2f} = {steps*interval}s)"
-        )
+        # print(
+        #     f"Try {wait_time}: ({(steps / 10)}s to build) + ({steps} steps x {interval:.2f} = {steps*interval}s)"
+        # )
+        
+        print(f"-> Estimated time: {wait_time:.0f}s")
         return interval
 
-    async def move_backboard(self):
+    async def reload_backboard(self):
+        print("-> Reload backboard")
+        await self.remove_backboard()
         await self.reload_config()
-
-        if hasattr(self, "backboard_origin"):
-            print("-> Move backboard")
-            await self.remove_backboard(self.backboard_origin)
-            await self.create_backboard()
+        await self.create_backboard()
 
     async def create_backboard(self):
         print("-> Create backboard")
         origin = self.config.paint_start.offset(z=-2)
+        extra_margin = self.config.backboard_extra_size
+        extra_height = self.config.backboard_extra_height
+        border_thickness = self.config.backboard_border_thickness
 
+        height = (
+            self.config.height + extra_margin * 2 + border_thickness * 2 + extra_height
+        )
+        width = self.config.width + extra_margin * 2 + border_thickness * 2
+        print(f"1-{height=}{width=}")
         # black backboard
-        pos1 = origin.offset(x=-8, y=-3)
-        pos2 = origin.offset(x=self.config.width + 8, y=self.config.height + 3)
+        pos1 = origin.offset(
+            x=-extra_margin - border_thickness, y=-extra_margin - border_thickness
+        )
+        pos2 = pos1.offset(x=width, y=height)
         zone = mc.BlockZone(pos1, pos2)
         f = lambda: mc.set_zone(zone, "black_concrete")
         await self.publish("mc.lambda", dumps(f))
 
         # white canvas
-        canvas_pos1 = pos1.offset(x=2, y=2)
-        canvas_pos2 = pos2.offset(x=-2, y=-2)
+        canvas_pos1 = pos1.offset(x=border_thickness, y=border_thickness)
+        canvas_pos2 = pos2.offset(x=-border_thickness, y=-border_thickness)
         zone = mc.BlockZone(canvas_pos1, canvas_pos2)
         f = lambda: mc.set_zone(zone, "snow_block")
         await self.publish("mc.lambda", dumps(f))
 
+        # painting zone
+        # painting1 = origin
+        # painting2 = origin.offset(x=self.config.width, y=self.config.height)
+        # zone = mc.BlockZone(painting1, painting2)
+        # f = lambda: mc.set_zone(zone, "stone")
+        # await self.publish("mc.lambda", dumps(f))
+
         # corners
+        bottom_left = [
+            mc.BlockZone(pos1, pos1.offset(x=1, y=1)),
+            mc.BlockZone(pos1, pos1.offset(x=3)),
+            mc.BlockZone(pos1, pos1.offset(y=3)),
+        ]
+        top_left = [
+            mc.BlockZone(pos1.offset(y=height), pos1.offset(x=1, y=height - 1)),
+            mc.BlockZone(pos1.offset(y=height), pos1.offset(x=3, y=height)),
+            mc.BlockZone(pos1.offset(y=height), pos1.offset(y=height - 3)),
+        ]
+        bottom_right = [
+            mc.BlockZone(pos1.offset(x=width), pos1.offset(x=width - 1, y=1)),
+            mc.BlockZone(pos1.offset(x=width), pos1.offset(x=width - 3)),
+            mc.BlockZone(pos1.offset(x=width), pos1.offset(x=width, y=3)),
+        ]
+        top_right = [
+            mc.BlockZone(
+                pos1.offset(x=width, y=height), pos1.offset(x=width - 1, y=height - 1)
+            ),
+            mc.BlockZone(
+                pos1.offset(x=width, y=height), pos1.offset(x=width - 3, y=height)
+            ),
+            mc.BlockZone(
+                pos1.offset(x=width, y=height), pos1.offset(x=width, y=height - 3)
+            ),
+        ]
+
+        def transpose_angle(zones, x, y):
+            new_zones = []
+            for z in zones:
+                new_zones.append(
+                    mc.BlockZone(z.pos1.offset(x=x, y=y), z.pos2.offset(x=x, y=y))
+                )
+            return new_zones
+
+        voids = [
+            bottom_left,
+            top_left,
+            bottom_right,
+            top_right,
+        ]
+        fills = [
+            transpose_angle(bottom_left, 3, 3),
+            transpose_angle(top_left, 3, -3),
+            transpose_angle(bottom_right, -3, 3),
+            transpose_angle(top_right, -3, -3),
+        ]
+
+        for void_zones, fill_zones in zip(voids, fills):
+            for v_zone, f_zone in zip(void_zones, fill_zones):
+                print(f"TRYING: {v_zone}, {f_zone}")
+                f = lambda: mc.set_zone(v_zone, "air")
+                await self.publish("mc.lambda", dumps(f))
+                f = lambda: mc.set_zone(f_zone, "black_concrete")
+                await self.publish("mc.lambda", dumps(f))
 
         # lights
-        light_pos1 = pos1.offset(z=3)
-        light_pos2 = pos2.offset(z=3)
+        light_pos1 = pos1.offset(z=3 + extra_margin)
+        light_pos2 = pos2.offset(z=3 + extra_margin)
         zone = mc.BlockZone(light_pos1, light_pos2)
         f = lambda: mc.set_zone(zone, "light")
         await self.call("mc.lambda", dumps(f))
 
         self.backboard_origin = origin
 
-    async def remove_backboard(self, start=None):
-        if start:
-            base_origin = self.config.paint_start
-        else:
-            base_origin = start
+    async def remove_backboard(self):
+        base_origin = self.config.paint_start
+        extra_margin = self.config.backboard_extra_size
 
         print("-> Remove backboard")
         origin = base_origin.offset(z=-2)
-        pos1 = origin.offset(x=-8, y=-3)
-        pos2 = origin.offset(x=self.config.width + 8, y=self.config.height + 3)
+        pos1 = origin.offset(x=-8 - extra_margin, y=-3 - extra_margin)
+        pos2 = origin.offset(
+            x=self.config.width + 8 + extra_margin,
+            y=self.config.height + 3 + extra_margin,
+        )
 
         zone = mc.BlockZone(pos1, pos2)
         f = lambda: mc.set_zone(zone, "air")
         await self.publish("mc.lambda", dumps(f))
 
-        light_pos1 = pos1.offset(z=3)
-        light_pos2 = pos2.offset(z=3)
+        light_pos1 = pos1.offset(z=3 + extra_margin)
+        light_pos2 = pos2.offset(z=3 + extra_margin)
 
         zone = mc.BlockZone(light_pos1, light_pos2)
         f = lambda: mc.set_zone(zone, "air")
@@ -194,57 +216,16 @@ class Painter(Portal):
         f = lambda: mc.set_zone(zone, "air")
         await self.publish("mc.lambda", dumps(f))
 
-    def greedy_sort(self, pixel_list):
-        if not pixel_list:
-            return []
-
-        def distance(p1, p2):
-            return abs(p1["x"] - p2["x"]) + abs(p1["y"] - p2["y"])
-
-        visited = set()
-        path = []
-
-        # Initialize with the first point
-        current_point = pixel_list[0]
-        path.append(current_point)
-        visited.add((current_point["x"], current_point["y"]))
-
-        while len(path) < len(pixel_list):
-            closest_distance = float("inf")
-            closest_point = None
-
-            for point in pixel_list:
-                point_tuple = (point["x"], point["y"])
-                if point_tuple in visited:
-                    continue
-
-                dist = distance(current_point, point)
-                if dist < closest_distance:
-                    closest_distance = dist
-                    closest_point = point
-
-            current_point = closest_point
-            path.append(current_point)
-            visited.add((current_point["x"], current_point["y"]))
-
-        return path
-
     async def compute_svg(self, filename):
-        print(f"Computing {filename}...")
-        # get a list per path
-        plists = self.generate_pixel_lists(filename)
-
-        big_start = time.time()
-        for i in range(len(plists)):
-            plists[i] = self.greedy_sort(plists[i])
-        print(f"Sorted points in: {str(time.time() - big_start)[:4]}s")
-        self.computed_svg = plists
+        start = time.time()
+        self.computed_svg = svg_to_block_lists(filename)
+        print(f"->\nFinished computing {filename} in {time.time() - start:.0f}s")
         await self.publish("painter.svg_ready")
 
     async def paint(self, word):
         if not self.computed_svg:
             print("-> No computed svg paint returned")
-            return
+            await self.compute_svg("banana.svg")
 
         self.stop_painting = False
 
@@ -255,34 +236,37 @@ class Painter(Portal):
                 pos = start_pos.offset(x=p["x"], y=height - p["y"], z=0)
                 mc.set_block(pos, p["block"])
 
-        plists = self.computed_svg
-
-        # flatten plists then turn it into a list of bite-sized chunks
-        big_list = sum(plists, [])
+        block_list = self.computed_svg["block_list"]
+        
+        flattened_block_list = sum(block_list, [])
+        
+        # amount of chunks
         n = max(1, self.config.paint_chunk_size)
-        chunks = [big_list[i : i + n] for i in range(0, len(big_list), n)]
+        chunks = [flattened_block_list[i : i + n] 
+                  for i in range(0, len(flattened_block_list), n)]
 
         interval = await self.get_interval(len(chunks))
 
-        print(f"Painting '{word}': {len(big_list)} blocks")
+        print(f"Painting '{word}': {len(flattened_block_list)} blocks")
+         
         start = time.time()
-
-        start_pos = self.config.paint_start
+        start_pos = str(self.config.paint_start)
         height = self.config.height
 
-        for chunk in chunks:
+        for n, chunk in enumerate(chunks):
             if not self.rush_paint:
                 await asyncio.sleep(interval)
-
+            
             f = lambda: paint_chunk(height, start_pos, chunk)
             await self.publish("mc.lambda", dumps(f))
             if self.stop_painting:
                 break
-
+            
+            print(f"Painted chunk {n+1}/{len(chunks)}", end="\r")
+        
         self.rush_paint = False
         await self.publish("painter.finished")
-        print(f"Finished in {str(time.time() - start)[:2]} seconds\n")
-
+        print(f"\nFinished in {str(time.time() - start)[:2]} seconds\n")
 
 if __name__ == "__main__":
     action = Painter()

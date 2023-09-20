@@ -3,6 +3,7 @@ import time
 import importlib
 import shulker as mc
 from dill import dumps
+import copy
 
 import tools.config
 from tools.pulsar import Portal
@@ -10,42 +11,175 @@ from tools.pulsar import Portal
 
 class Timer(Portal):
     async def on_join(self):
-        
         await self.reload_config()
-        
+
         await self.subscribe("gl.reload_config", self.reload_config)
-        await self.subscribe("gl.timer", self.initialize_timer)
-        await self.subscribe("gl.set_timer", self.set_timer)
+        await self.subscribe("timer.set", self.set_timer)
+        await self.subscribe("timer.build", self.build_timer)
+        await self.subscribe("timer.remove", self.remove_timer)
+        await self.subscribe("timer.reload", self.reload_timer)
         await self.initialize_timer()
+
+    def draw_progress_bar(value, config):
+        origin = config["timer_start"].offset(
+            x=config.timer_border_thickness, y=config.timer_border_thickness
+        )
+
+        palette = config["timer_palette"]
+        width = (
+            config.width
+            + config.backboard_extra_size * 2
+            + config.timer_border_thickness * 2
+        )
+        height = config.timer_height
+        lines = [[] for _ in range(height + 1)]
+        for i in range(height):
+            while len(lines[i]) < width:
+                block = config.timer_palette[(len(lines[i]) + i) % len(palette)]
+                lines[i].append(block)
+
+        for y, line in enumerate(lines):
+            for x, block in enumerate(line):
+                pos = origin.offset(x=x, y=y, z=-1)
+                # print(block)
+                mc.set_block(pos, block)
+
+    async def reload_timer(self):
+        await self.remove_timer()
+        await self.reload_config()
+        await self.build_timer()
+
+    async def remove_timer(self):
+        print("-> Remove timer")
+        height = self.config.timer_height + self.config.timer_border_thickness * 2 + 30
+        width = (
+            self.config.width
+            + self.config.backboard_extra_size * 2
+            + self.config.timer_border_thickness * 2
+        )
+        pos1 = self.config["timer_start"]
+        pos2 = pos1.offset(x=width, y=height, z=-1)
+        remove_zone = mc.BlockZone(pos1, pos2)
+
+        f = lambda: mc.set_zone(remove_zone, "air")
+        await self.publish("mc.lambda", dumps(f))
+
+    async def build_timer(self):
+        print("-> Build timer")
+        height = self.config.timer_height + self.config.timer_border_thickness * 2
+        width = (
+            self.config.width
+            + self.config.backboard_extra_size * 2
+            + self.config.backboard_border_thickness * 2
+        )
+
+        # background
+        pos1 = self.config["timer_start"]
+        pos2 = pos1.offset(x=width, y=height)
+        borders = mc.BlockZone(pos1, pos2)
+
+        f = lambda: mc.set_zone(borders, "black_concrete")
+        await self.publish("mc.lambda", dumps(f))
+
+        # cutout
+        cutout_pos1 = pos1.offset(
+            x=self.config.timer_border_thickness,
+            y=self.config.timer_border_thickness,
+        )
+        cutout_pos2 = pos1.offset(
+            x=width - self.config.timer_border_thickness,
+            y=height - self.config.timer_border_thickness,
+        )
+        cutout_zone = mc.BlockZone(cutout_pos1, cutout_pos2)
+        f = lambda: mc.set_zone(cutout_zone, "air")
+        await self.publish("mc.lambda", dumps(f))
+
+        # background
+        background_pos1 = cutout_pos1.offset(z=-1)
+        background_pos2 = cutout_pos2.offset(z=-1)
+        background_zone = mc.BlockZone(background_pos1, background_pos2)
+        f = lambda: mc.set_zone(background_zone, "snow_block")
+        await self.publish("mc.lambda", dumps(f))
+
+        # lights
+        lights_pos1 = cutout_pos1.offset(z=1)
+        lights_pos2 = cutout_pos2.offset(z=1)
+        lights_zone = mc.BlockZone(lights_pos1, lights_pos2)
+
+        f = lambda: mc.set_zone(lights_zone, "light")
+        await self.publish("mc.lambda", dumps(f))
+
+        # corners
+        bottom_left = [
+            mc.BlockZone(pos1, pos1.offset(x=1, y=1)),
+            mc.BlockZone(pos1, pos1.offset(x=3)),
+            mc.BlockZone(pos1, pos1.offset(y=3)),
+        ]
+        top_left = [
+            mc.BlockZone(pos1.offset(y=height), pos1.offset(x=1, y=height - 1)),
+            mc.BlockZone(pos1.offset(y=height), pos1.offset(x=3, y=height)),
+            mc.BlockZone(pos1.offset(y=height), pos1.offset(y=height - 3)),
+        ]
+        bottom_right = [
+            mc.BlockZone(pos1.offset(x=width), pos1.offset(x=width - 1, y=1)),
+            mc.BlockZone(pos1.offset(x=width), pos1.offset(x=width - 3)),
+            mc.BlockZone(pos1.offset(x=width), pos1.offset(x=width, y=3)),
+        ]
+        top_right = [
+            mc.BlockZone(
+                pos1.offset(x=width, y=height), pos1.offset(x=width - 1, y=height - 1)
+            ),
+            mc.BlockZone(
+                pos1.offset(x=width, y=height), pos1.offset(x=width - 3, y=height)
+            ),
+            mc.BlockZone(
+                pos1.offset(x=width, y=height), pos1.offset(x=width, y=height - 3)
+            ),
+        ]
+
+        def transpose_angle(zones, x, y):
+            new_zones = []
+            for z in zones:
+                new_zones.append(
+                    mc.BlockZone(z.pos1.offset(x=x, y=y), z.pos2.offset(x=x, y=y))
+                )
+            return new_zones
+
+        voids = [
+            bottom_left,
+            top_left,
+            bottom_right,
+            top_right,
+        ]
+        fills = [
+            transpose_angle(bottom_left, 2, 2),
+            transpose_angle(top_left, 2, -2),
+            transpose_angle(bottom_right, -2, 2),
+            transpose_angle(top_right, -2, -2),
+        ]
+        for void_zones, fill_zones in zip(voids, fills):
+            for v_zone, f_zone in zip(void_zones, fill_zones):
+                f = lambda: mc.set_zone(v_zone, "air")
+                await self.publish("mc.lambda", dumps(f))
+                f = lambda: mc.set_zone(f_zone, "black_concrete")
+                await self.publish("mc.lambda", dumps(f))
+
+        # print(self.draw_progress_bar(50, self.config))
+        config_copy = copy.deepcopy(self.config)
+        # args = (50, config_copy)
+
+        f = lambda: self.draw_progress_bar(50, config_copy)
+        await self.publish("mc.lambda", dumps(f))
 
     async def reload_config(self):
         importlib.reload(tools.config)
         self.config = tools.config.config
-        
+
     async def initialize_timer(self):
         print("-> Initializing timer")
-        f = lambda: mc.remove_bossbar("timer")
-        await self.publish("mc.lambda", dumps(f))
-
-        round_time = self.config.round_time
-        f = lambda: mc.create_bossbar(
-            "timer",
-            "Guess the word in chat!",
-            value=round_time,
-            color="red",
-            style="progress",
-            max=100,
-            visible=True,
-        )
-        await self.publish("mc.lambda", dumps(f))
 
     async def set_timer(self, value):
-        """
-        value: int between 0 and 100
-        """
         print("-> Setting timer to", value)
-        f = lambda: mc.set_bossbar("timer", "value", value)
-        ret = await self.publish("mc.lambda", dumps(f))
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ import math
 from dill import dumps
 import time
 import importlib
+import random
 
 import shulker as mc
 import tools.config
@@ -20,11 +21,32 @@ class Podium(Portal):
     async def on_join(self):
         await self.reload_config()
 
+        self.winner_ids = []
+        random.seed()
+
+        await self.subscribe("podium.spawn_winners", self.spawn_winners)
         await self.subscribe("gl.spawn_winner", self.spawn_winner)
-        await self.subscribe("gl.reset_podium", self.reset_podium)
-        await self.subscribe("gl.rebuild_podium", self.rebuild_podium)
+        await self.subscribe("podium.reset", self.reset_podium)
+        await self.subscribe("podium.reload", self.reload_podium)
+        await self.subscribe("podium.remove", self.remove_podium)
         await self.subscribe("gl.reload_config", self.reload_config)
         await self.reset_podium()
+
+        await self.spawn_winners(5)
+
+    async def spawn_winners(self, amount):
+        origin = self.config.camera_pos
+        x_range = 2.0
+        cmd = """summon slime ~ ~ ~ {CustomNameVisible:1b,ActiveEffects:[{Id:28,Amplifier:1b,Duration:200}],Motion:[$random,1.0,-1.0],CustomName:'{"text":"$name"}'}"""
+
+        for i in range(int(amount)):
+            random_x_range = random.uniform(-x_range, x_range)
+            cmd = cmd.replace("$random", str(random_x_range))
+            cmd = cmd.replace("$name", "Winner")
+            cmd = cmd.replace("~ ~ ~", str(origin.offset(y=3)))
+            await self.publish("mc.post", cmd)
+
+            await asyncio.sleep(0.5)
 
     async def reload_config(self):
         importlib.reload(tools.config)
@@ -44,16 +66,39 @@ class Podium(Portal):
 
         return coords.offset(x=deltas[pos]), coords.yaw, coords.pitch
 
+    def compute_winstreak_multiplier(self, winstreak):
+        if winstreak == 0:
+            return 1
+        return 1 + (winstreak / 10)
+
     async def spawn_winner(self, args):
-        def spawn_npc(score_template, camera_name, name, pos, podium_pos):
-            cmd = f'sudo {camera_name} /npc create --at {pos[0].x}:{pos[0].y}:{pos[0].z} --nameplate true "+{score_template[podium_pos -1]}"'
-            mc.post(cmd)
+        def spawn_npc(score_template, name, pos, podium_pos, winstreak):
+            multiplicator = self.compute_winstreak_multiplier(winstreak)
+            cmd = f'npc create --at {pos[0].x}:{pos[0].y}:{pos[0].z}:world --nameplate true "+{int(score_template[podium_pos -1] * multiplicator)}"'
+            ret = mc.post(cmd)
 
-            mc.post(f"sudo {camera_name} /npc moveto --pitch {pos[1]} --yaw {pos[2]}")
+            ret = (
+                ret.replace("\x1b[0m", "")
+                .replace("\x1b[32;1m", "")
+                .replace("\x1b[33;1m", "")
+                .replace("\n", "")
+            )
+            id = ret.split("ID ")[1].replace(").", "")
 
-            mc.post(f"sudo {camera_name} /npc skin -s {name}")
+            mc.post(f"npc moveto --pitch {pos[1]} --yaw {pos[2]} --id {id}")
+            mc.post(f"npc skin -s {name} --id {id}")
 
-        pos, name, score = args
+            mc.post(
+                "setblock "
+                + str(pos[0].offset(y=-1))
+                + (" fire" if winstreak else "air")
+                + ""
+            )
+            return id
+
+        pos, user, score, winstreak_amount = args
+        name = user["display"]
+
         if pos > self.config.podium_size:
             cmd = (
                 f'title {self.config.camera_name} actionbar {{"text":'
@@ -62,29 +107,28 @@ class Podium(Portal):
             await self.publish("mc.post", cmd)
             return
 
-        print("spawn winner", pos, name, score)
         spawn_start = self.config.podium_pos.offset(y=-3, z=-0.2)
         coords = self.coords_from_pos(spawn_start, pos - 1)
 
-        camera_name = self.config.camera_name
         score_template = self.config.scores_template
-
-        f = lambda: spawn_npc(score_template, camera_name, name, coords, pos)
-        await self.publish("mc.lambda", dumps(f))
+        f = lambda: spawn_npc(score_template, name, coords, pos, winstreak_amount)
+        ret = await self.call("mc.lambda", dumps(f))
+        self.winner_ids.append({"npc_id": ret, "user_id": user["user_id"]})
 
         cmd = f"particle wax_on {coords[0]} 0 0 0 6 100 normal"
-        print(cmd)
         await self.publish("mc.post", cmd)
         cmd = f"particle wax_off {coords[0]} 0 0 0 6 100 normal"
-        print(cmd)
         await self.publish("mc.post", cmd)
 
         sign_start = self.config.podium_pos.offset(
             x=math.floor(-self.config.podium_size / 2)
         )
+
         sign_message = [
             f"#{pos}",
-            "",
+            f"Streak!!x{self.compute_winstreak_multiplier(winstreak_amount)}"
+            if winstreak_amount
+            else f"",
             f"{name}",
             f"{score} pts",
         ]
@@ -96,7 +140,6 @@ class Podium(Portal):
         )
 
         cmd = f'title {self.config.camera_name} actionbar {{"text":"#{pos} | {name[:14].center(14)} | +{self.config["scores_template"][pos - 1]}pt | Score: {score}"}}'
-        print(cmd)
         await self.publish("mc.post", cmd)
 
     async def remove_podium(self):
@@ -108,8 +151,14 @@ class Podium(Portal):
         await self.publish("mc.post", cmd)
 
     async def remove_all_npc(self):
-        cmd = f"npc remove all"
-        await self.publish("mc.post", cmd)
+        def remove_all_winners(winners):
+            for winner in winners:
+                cmd = f"npc remove {winner['npc_id']}"
+                mc.post(cmd)
+
+        winners = self.winner_ids
+        f = lambda: remove_all_winners(winners)
+        await self.publish("mc.lambda", dumps(f))
 
     async def reset_signs(self):
         sign_start = self.config.podium_pos.offset(
@@ -129,6 +178,20 @@ class Podium(Portal):
 
     async def build_podium(self):
         origin = self.config.podium_pos
+
+        ### BACKGROUND
+        background_start = origin.offset(x=-self.config.podium_size * 2, y=-5, z=-9)
+        background_block = mc.Block("end_portal")
+        await self.publish(
+            "mc.post",
+            f"fill {background_start} {background_start.offset(x = self.config.podium_size * 4, z=7)} {background_block}",
+        )
+
+        barrier_block = mc.Block("barrier")
+        await self.publish(
+            "mc.post",
+            f"fill {background_start.offset(y=1)} {background_start.offset(x = self.config.podium_size * 4, y=1, z=7)} {barrier_block}",
+        )
 
         ###### SIGN LINE
         sign_line = []
@@ -198,27 +261,14 @@ class Podium(Portal):
             f"fill {grass_start} {grass_start.offset(x = self.config.podium_size * 2)} {grass_block}",
         )
 
-        ### BACKGROUND
-        background_start = origin.offset(x=-self.config.podium_size * 2, y=-5, z=-9)
-        background_block = mc.Block("end_portal")
-        await self.publish(
-            "mc.post",
-            f"fill {background_start} {background_start.offset(x = self.config.podium_size * 4, z=7)} {background_block}",
-        )
-
-        barrier_block = mc.Block("barrier")
-        await self.publish(
-            "mc.post",
-            f"fill {background_start.offset(y=1)} {background_start.offset(x = self.config.podium_size * 4, y=1, z=7)} {barrier_block}",
-        )
-
     async def reset_podium(self):
         await self.remove_all_npc()
         await self.reset_signs()
 
-    async def rebuild_podium(self):
+    async def reload_podium(self):
         await self.reset_podium()
         await self.remove_podium()
+        await self.reload_config()
         await self.build_podium()
 
 
@@ -226,7 +276,7 @@ if __name__ == "__main__":
     action = Podium()
     while True:
         try:
-            asyncio.run(action.run(), debug=True)
+            asyncio.run(action.run())
         except Exception as e:
             error_msg = f"An error occurred: {e}"
             print(error_msg)

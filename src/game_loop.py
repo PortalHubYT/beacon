@@ -14,71 +14,7 @@ from dill import dumps
 import tools.config
 from tools.pulsar import Portal
 from tools.mimic import gen_fake_profiles
-
-BANNED_WORDS = [
-    "alien",
-    "penguin",
-    "snowflake",
-    "pigeon",
-    "hand grenade",
-    "worm",
-    "banana",
-    "pinwheel",
-    "dump truck",
-    "beaver",
-    "elephant",
-    "mushroom",
-    "milk tank" "dinosaur",
-    "pig",
-    "torpedo",
-    "whale",
-    "mushroom",
-    "cow",
-    "uterus",
-    "banana",
-    "witch",
-    "cutter",
-    "cones",
-    "zombie",
-    "testicle",
-    "vagina",
-    "penis",
-    "breast",
-    "clown",
-    "crackers",
-    "screwdriver",
-    "rubbish",
-    "jewelery",
-    "buttocks",
-    "catfish",
-    "cat fish",
-    "sack",
-    "dog",
-    "garbage",
-    "socks",
-    "pig",
-    "gorilla",
-    "cow",
-    "monkey",
-    "banana",
-    "penis",
-    "donkey",
-    "joint",
-    "hamburguer",
-    "hippo",
-    "rat",
-    "testicles",
-    "pinwheel",
-    "beach",
-    "grooming",
-    "sloth",
-    "walrus",
-    "prawn",
-    "stand",
-    "underwear",
-    "balloon",
-]
-
+from tools.svg import get_word_list
 
 class GameLoop(Portal):
     async def on_join(self):
@@ -86,7 +22,7 @@ class GameLoop(Portal):
         self.pause = False
         self.should_stop = False
 
-        self.total_word_list = self.get_word_list()
+        self.total_word_list = get_word_list()
         self.amount_of_words = len(self.total_word_list)
         self.word_list = self.total_word_list.copy()
 
@@ -122,7 +58,6 @@ class GameLoop(Portal):
         await self.subscribe("gl.infobar", self.infobar_handler)
         await self.subscribe("live.viewer_update", self.toggle_winstreak)
         await self.subscribe("gl.pause", self.toggle_pause)
-        await self.subscribe("gl.get_word_list", lambda: self.word_list)
 
         await self.subscribe("gl.clear_map", self.clear_map)
         await self.subscribe("gl.reload_map", self.reload_map)
@@ -230,33 +165,7 @@ class GameLoop(Portal):
         await self.publish("mc.post", cmd)
         self.infobar["shown"] = True
 
-    def get_word_list(self):
-        ls = os.listdir("svg/")
-        strip_file_ext = [f.replace(".svg", "") for f in ls]
-
-        def remove_special_suffix(word):
-            # Use a regular expression to match the special suffix pattern and remove it
-            res = re.sub(r"_\$\d+", "", word)
-            return res
-
-        strip_too_long = [
-            f
-            for f in strip_file_ext
-            if len(remove_special_suffix(f)) < self.config.word_len_limit
-        ]
-        strip_banned = [
-            f for f in strip_too_long if remove_special_suffix(f) not in BANNED_WORDS
-        ]
-
-        random.seed()
-        random.shuffle(strip_banned)
-
-        return strip_banned
-
     async def on_painter_joined(self):
-        print(
-            f"Oh, painter ? YOu here ? what a surprise take this file to compute{self.word_filename}"
-        )
         self.svg_ready = False
         await self.publish("painter.compute_svg", self.word_filename)
 
@@ -289,14 +198,13 @@ class GameLoop(Portal):
 
     async def next_word(self):
         if len(self.word_list) == 0:
-            self.word_list = self.get_word_list()
+            self.word_list = get_word_list()
 
         new_word = self.word_list.pop(0)
+        self.word_filename = new_word + ".svg"
+        
         if "_$" in new_word:
-            self.word_filename = new_word + ".svg"
             new_word = new_word.split("_$")[0]
-        else:
-            self.word_filename = new_word + ".svg"
 
         self.svg_ready = False
         await self.publish("painter.compute_svg", self.word_filename)

@@ -87,6 +87,12 @@ class Console(Portal):
             "Call and await self.publish",
             args=["name", "arguments"],
         )
+        self.register_command(
+            "tts",
+            self.tts,
+            "Plays a tts of the text passed as argument, a voice can be passed too",
+            args=["text", "voice (optional)"],
+        )
         self.session = PromptSession(
             history=FileHistory(log_file_path),
             completer=CommandCompleter(self.commands),
@@ -123,7 +129,10 @@ class Console(Portal):
         print()
 
     async def call_publish(self, publish_name, *args):
-        arg = "".join(args)
+        if all(type(arg) == str for arg in args):
+            arg = " ".join(args)
+        else:
+            arg = "".join(args)
 
         if len(args) > 0:
             print(f"\n-> Publish {publish_name} with args {arg}")
@@ -132,6 +141,80 @@ class Console(Portal):
             print(f"\n-> Publish {publish_name}")
             await self.publish(publish_name)
 
+    async def tts(self, *args):
+            # Find the text between quote
+            text = " ".join(args).split('"')[1::2][0]
+            # Get the voice if it was provided
+            voice = " ".join(args).split('"')[2::2][0] if len(" ".join(args).split('"')) > 2 else None
+            voice = voice.strip()
+            
+            voices = [
+                # DISNEY VOICES
+                'en_us_ghostface',            # Ghost Face
+                'en_us_chewbacca',            # Chewbacca
+                'en_us_c3po',                 # C3PO
+                'en_us_stitch',               # Stitch
+                'en_us_stormtrooper',         # Stormtrooper
+                'en_us_rocket',               # Rocket
+    
+                # ENGLISH VOICES
+                'en_au_001',                  # English AU - Female
+                'en_au_002',                  # English AU - Male
+                'en_uk_001',                  # English UK - Male 1
+                'en_uk_003',                  # English UK - Male 2
+                'en_us_001',                  # English US - Female (Int. 1)
+                'en_us_002',                  # English US - Female (Int. 2)
+                'en_us_006',                  # English US - Male 1
+                'en_us_007',                  # English US - Male 2
+                'en_us_009',                  # English US - Male 3
+                'en_us_010',                  # English US - Male 4
+    
+                # EUROPE VOICES
+                'fr_001',                     # French - Male 1
+                'fr_002',                     # French - Male 2
+                'de_001',                     # German - Female
+                'de_002',                     # German - Male
+                'es_002',                     # Spanish - Male
+    
+                # AMERICA VOICES
+                'es_mx_002',                  # Spanish MX - Male
+                'br_001',                     # Portuguese BR - Female 1
+                'br_003',                     # Portuguese BR - Female 2
+                'br_004',                     # Portuguese BR - Female 3
+                'br_005',                     # Portuguese BR - Male
+    
+                # ASIA VOICES
+                'id_001',                     # Indonesian - Female
+                'jp_001',                     # Japanese - Female 1
+                'jp_003',                     # Japanese - Female 2
+                'jp_005',                     # Japanese - Female 3
+                'jp_006',                     # Japanese - Male
+                'kr_002',                     # Korean - Male 1
+                'kr_003',                     # Korean - Female
+                'kr_004',                     # Korean - Male 2
+    
+                # SINGING VOICES
+                'en_female_f08_salut_damour',  # Alto
+                'en_male_m03_lobby',           # Tenor
+                'en_female_f08_warmy_breeze',  # Warmy Breeze
+                'en_male_m03_sunshine_soon',   # Sunshine Soon
+    
+                # OTHER
+                'en_male_narration',           # narrator
+                'en_male_funny',               # wacky
+                'en_female_emotional',         # peaceful
+            ]
+            
+            if text == "list":
+                for voice in voices: # we also print the
+                    print(f"-> " + voice)
+                return
+            
+            if voice not in voices:
+                voice = 'en_us_001'
+                
+            await self.publish('tts', (text, voice))
+            
     async def mimic(self, action, amount, time_between=1, use_db=False, overwrite=None):
         amount = int(amount)
         time_between = float(time_between)
@@ -140,6 +223,7 @@ class Console(Portal):
             overwrite = overwrite.split(",")
             overwrite = {elem.split("=")[0]: elem.split("=")[1] for elem in overwrite}
 
+        print(overwrite)
         profiles = gen_fake_profiles(amount, overwritten=overwrite)
 
         start = datetime.datetime.now()

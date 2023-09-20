@@ -5,13 +5,18 @@ import os
 import glob
 
 
-from palette import ColorParser, PaletteManager
+from palette import PaletteGenerator
 
-palette = PaletteManager.load_palette(0, 0)
+
+# palette = PaletteManager.load_palette(0, 0)
 mc.connect()
 
 
 SIZE = 50
+petalette = PaletteGenerator.load_palette(100, variety=15, complexity=7)
+
+print(petalette)
+
 palette_full = {
     "acacia_planks": (66, 35, 20),
     "acacia_wood": (40, 38, 34),
@@ -35,7 +40,6 @@ palette_full = {
     "brown_mushroom_block": (58, 44, 32),
     "brown_terracotta": (30, 20, 14),
     "brown_wool": (45, 28, 16),
-    "budding_amethyst": (52, 38, 73),
     "calcite": (87, 88, 87),
     "cherry_planks": (89, 70, 68),
     "cherry_wood": (22, 13, 17),
@@ -221,14 +225,11 @@ palette_full = {
     "yellow_glazed_terracotta": (92, 75, 35),
     "yellow_terracotta": (73, 52, 14),
     "yellow_wool": (98, 78, 16),
-    "azalea": (40, 49, 19),
-    "flowering_azalea": (44, 48, 25),
     "dirt_path": (58, 48, 25),
     "jukebox": (37, 25, 18),
     "mycelium": (44, 39, 40),
     "podzol": (36, 25, 9),
     "respawn_anchor": (13, 13, 20),
-    "sculk_sensor": (5, 11, 13),
     "ancient_debris": (38, 25, 22),
     "ancient_debris": (37, 26, 23),
     "ancient_debris": (37, 26, 23),
@@ -241,9 +242,6 @@ palette_full = {
     "lodestone": (47, 47, 48),
     "lodestone": (58, 58, 60),
     "lodestone": (58, 58, 60),
-    "mangrove_roots": (16, 13, 8),
-    "mangrove_roots": (20, 16, 10),
-    "mangrove_roots": (20, 16, 10),
     "melon": (45, 57, 12),
     "melon": (44, 57, 12),
     "melon": (44, 57, 12),
@@ -343,6 +341,7 @@ palette_full = {
     "smoker": (33, 33, 32),
     "smoker": (42, 41, 40),
     "smoker": (35, 29, 23),
+    "bookshelf": (46, 37, 24),
     "chiseled_red_sandstone": (72, 38, 11),
     "chiseled_sandstone": (85, 80, 61),
     "cut_red_sandstone": (74, 40, 13),
@@ -356,7 +355,6 @@ palette_full = {
     "composter": (44, 27, 13),
     "crafting_table": (51, 42, 27),
     "crafting_table": (47, 29, 16),
-    "daylight_detector": (51, 45, 37),
     "observer": (28, 27, 27),
     "observer": (38, 39, 38),
     "observer": (38, 39, 38),
@@ -405,7 +403,6 @@ palette_small = {
     "brown_mushroom_block": (58, 44, 32),
     "brown_terracotta": (30, 20, 14),
     "brown_wool": (45, 28, 16),
-    "budding_amethyst": (52, 38, 73),
     "calcite": (87, 88, 87),
     "cherry_planks": (89, 70, 68),
     "cherry_wood": (22, 13, 17),
@@ -544,6 +541,7 @@ palette_small = {
     "redstone_lamp": (37, 22, 12),
     "redstone_ore": (55, 43, 43),
     "rooted_dirt": (56, 41, 30),
+    "sculk": (5, 11, 14),
     "slime_block": (44, 75, 36),
     "smooth_basalt": (29, 28, 31),
     "smooth_quartz": (93, 90, 88),
@@ -630,9 +628,22 @@ def find_closest_color(pixel, picker):
         pixel = (pixel[0], pixel[1], pixel[2])
         return mc.color_picker(pixel, mc.get_palette("side"))
     elif picker == "alex":
-        print(palette)
+        closest = math.inf
+        palette = petalette
+        for p in palette:
+            r = palette[p][0]
+            g = palette[p][1]
+            b = palette[p][2]
 
-        return pixel
+            distance = math.sqrt(
+                (pixel[0] - r) ** 2 + (pixel[1] - g) ** 2 + (pixel[2] - b) ** 2
+            )
+
+            if distance < closest:
+                closest = distance
+                closest_color = p
+
+        return closest_color
 
     elif picker == "full" or picker == "small":
         closest = math.inf
@@ -675,6 +686,8 @@ def print_palette(x_offset, picker=False):
                 pixel = (x * 2 + x_offset, y * 2, z * 2)
                 closest_color = find_closest_color(color_to_match, picker=picker)
                 mc.set_block(pixel, closest_color)
+                light_pos = (pixel[0], pixel[1] + 1, pixel[1])
+                mc.set_block(light_pos, "light")
 
 
 def remove_shulkers():
@@ -698,8 +711,8 @@ SPACE_BETWEEN = 120
 import random
 
 pickers = ["old", "small", "full", "alex"]
-pickers_to_try = ["old", "small", "full"]
-# pickers_to_try = ["alex"]
+# pickers_to_try = ["old", "small", "full", "alex"]
+pickers_to_try = ["alex"]
 
 
 while True:
@@ -710,10 +723,10 @@ while True:
     for p in pickers_to_try:
         for i, _ in enumerate(pickers):
             if p == _:
-                x_offset = i * SPACE_BETWEEN
+                x_offset = (1 + i) * SPACE_BETWEEN
                 print("picker=", p)
-                draw_picture(x_offset, path, picker=p)
                 # print_palette(x_offset, picker=p)
+                draw_picture(x_offset, path, picker=p)
 
-    time.sleep(10)
-    # input("Press Enter for next image...")
+    # time.sleep(10)
+    input("Press Enter for next image...")
