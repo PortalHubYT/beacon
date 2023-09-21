@@ -23,7 +23,10 @@ class GameLoop(Portal):
         self.pause = False
         self.should_stop = False
 
-        self.total_word_list = get_word_list()
+        self.total_word_list = get_word_list(
+            character_limit=self.config.word_len_limit,
+            banned_words=self.config.banned_words,
+        )
         self.amount_of_words = len(self.total_word_list)
         self.word_list = self.total_word_list.copy()
 
@@ -140,7 +143,10 @@ class GameLoop(Portal):
 
     async def next_word(self):
         if len(self.word_list) == 0:
-            self.word_list = get_word_list()
+            self.word_list = get_word_list(
+                character_limit=self.config.word_len_limit,
+                banned_words=self.config.banned_words,
+            )
 
         new_word = self.word_list.pop(0)
         self.word_filename = new_word + ".svg"
