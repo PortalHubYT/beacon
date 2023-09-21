@@ -233,6 +233,7 @@ class Painter(Portal):
         computing_config = {k: v for k, v in self.config.compute_data.items() if v is not None}
 
         print("\n" + ("-" * 10) + f"  Computing [{filename}]  " + ("-" * 10) + "\n")
+        print(f"Config: {computing_config}\n")
         self.computed_svg = svg_to_block_lists(filename, palette=None, **computing_config)
         print(
             "\n"
@@ -295,7 +296,7 @@ class Painter(Portal):
             if not self.rush_paint and not self.fast_mode:
                 await asyncio.sleep(interval)
 
-            print(f"-> Painting chunk [{n+1}/{len(chunks)}]" + ('[FAST] ' if self.rush_paint else ''), end="\r")
+            print(f"-> Painting chunk [{n+1}/{len(chunks)}]" + (' - [FAST] ' if (self.rush_paint or self.fast_mode) else ''), end="\r")
             
             f = lambda: paint_chunk(height, start_pos, chunk)
             await self.publish("mc.lambda", dumps(f))

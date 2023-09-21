@@ -36,14 +36,26 @@ config_values = {
     "backboard_extra_size": 2,
     "backboard_extra_height": 20,
     "backboard_border_thickness": 3,
-    "compute_data": { # Any value set to None will default
-        "dpi": 96, # Defaults is 96
-        "scale": 1, # Defaults is 1
-        "sort": "greedy", # Default is "greedy"
-        "trim": False, # Defaults is False
-        "blend": True, # Defaults is True (not implemented)
-        "only_opaque": True, # Default is True
+    "compute_data": {  # Any value set to None will default
+        "dpi": 40,  # Defaults is 96
+        "scale": 1,  # Defaults is 1
+        "sort": "greedy",  # Default is "greedy"
+        "trim": False,  # Defaults is False
+        "blend": False,  # Defaults is True (not implemented)
+        "only_opaque": False,  # Default is True
     },
+    "particles": [
+    {
+        "particle": "dust",
+        "size": 4, # From 1 to 4, only applies to dust
+        "speed": 0,
+        "amount": 1,
+        "rgb": (255, 255, 255), # Only applies to dust, set to None to match block color
+        "delta": (0, 0, 0), # Spreads the particle allowed distance on each axis
+        "offset": (0, 0, 0), # Offset to current block
+        "force": True, # Force particle to be shown even if out of range
+    }
+    ],
     # PODIUM #####################
     "podium_pos": mc.BlockCoordinates(0, 68, 23),
     "podium_size": 5,

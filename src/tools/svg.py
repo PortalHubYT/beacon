@@ -9,7 +9,6 @@ import cairosvg
 import xml.etree.ElementTree as ET
 from PIL import Image
 
-
 def get_word_list(
     character_limit=None, banned_words=None, as_filename=False, shuffle=True
 ):
@@ -145,14 +144,14 @@ def process_layers(
             if new_alpha == 0:
                 continue
 
-            # if blend:
-            #     new_pixel = blend_colors_to_opaque(old_pixel, pixel)
-            # else:
-            new_pixel = pixel
+            if blend:
+                new_pixel = blend_colors_to_opaque(old_pixel, pixel)
+            else:
+                new_pixel = pixel
 
-            # if new_pixel[3] < 255:
-            #     # Handle non-opaque pixels here. For example, blend with a background.
-            #     new_pixel = blend_colors_to_opaque(new_pixel, (255, 255, 255, 255))
+            if new_pixel[3] < 255:
+                # Handle non-opaque pixels here. For example, blend with a background.
+                new_pixel = blend_colors_to_opaque(new_pixel, (255, 255, 255, 255))
 
             grid[(x, y)] = new_pixel
             new_layer.append({"x": x, "y": y, "pixel": new_pixel})

@@ -34,6 +34,7 @@ class GameLoop(Portal):
         self.round_word = None
         self.upcoming_word = await self.next_word()
 
+        self.fast_mode = False
         self.force_next_round = False
         self.rush_round = False
         self.painting_finished = False
@@ -60,6 +61,7 @@ class GameLoop(Portal):
 
         await self.subscribe("gl.clear_map", self.clear_map)
         await self.subscribe("gl.reload_map", self.reload_map)
+        await self.subscribe("gl.fast_mode", self.toggle_fast_mode)
 
         await self.game_loop()
 
@@ -67,6 +69,10 @@ class GameLoop(Portal):
         importlib.reload(tools.config)
         self.config = tools.config.config
         await self.publish("gl.reload_config")
+
+    async def toggle_fast_mode(self):
+        self.fast_mode = not self.fast_mode
+        await self.publish("painter.fast_mode")
 
     async def reload_map(self):
         await self.publish("gl.pause")
@@ -300,6 +306,17 @@ class GameLoop(Portal):
             "gl.spawn_winner", (len(self.winners), user, score, winstreak_amount)
         )
 
+    async def change_next_word(self, word):
+        if word in self.total_word_list:
+            print("-> Changing next word to: ", word)
+            self.upcoming_word = word
+            self.svg_ready = False
+            await self.publish("painter.compute_svg", word + ".svg")
+            self.word_list.insert(0, word)
+            self.amount_of_words += 1
+        else:
+            print(f"-> {word} is not in the word list")
+
     async def before_round(self):
         await self.publish("painter.stop")
         await self.publish("hint.clear")
@@ -348,17 +365,6 @@ class GameLoop(Portal):
 
         print("--------------------------------------")
 
-    async def change_next_word(self, word):
-        if word in self.total_word_list:
-            print("-> Changing next word to: ", word)
-            self.upcoming_word = word
-            self.svg_ready = False
-            await self.publish("painter.compute_svg", word + ".svg")
-            self.word_list.insert(0, word)
-            self.amount_of_words += 1
-        else:
-            print(f"-> {word} is not in the word list")
-
     async def round(self):
         await asyncio.sleep(1)
         self.winners = []
@@ -375,7 +381,7 @@ class GameLoop(Portal):
             delta = time.time() - start_round
             round_progress = int(delta / self.config.round_time * 100)
 
-            if self.rush_round == True:
+            if self.rush_round == True or self.fast_mode == True:
                 start_round -= 2
 
             hint = self.get_current_hint(
