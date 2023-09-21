@@ -400,6 +400,7 @@ class GameLoop(Portal):
                 break
 
             await asyncio.sleep(0.3)
+            
         self.rush_round = False
 
     async def after_round(self):
@@ -438,8 +439,7 @@ class GameLoop(Portal):
             await self.round()
             await self.after_round()
             await self.reload_config()
-
-
+            
 if __name__ == "__main__":
     action = GameLoop()
     while True:

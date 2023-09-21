@@ -23,11 +23,13 @@ prefix = f"non-persistent://{PULSAR_NAMESPACE}/"
 # Wraps the Hub to create an inheritable class that can be used
 # as an open connection to pulsar and an async loop
 class Portal:
-    def __new__(cls, delay_between_restarts=0, max_restarts=0, stack_trace_amount=1, blocking=False, verbose=True, retro_compatibility=True):
+    def __new__(cls, delay_between_restarts=0, max_restarts=0, stack_trace_amount=1,
+                blocking=False, verbose=True, retro_compatibility=True):
         """
         This method is called before __init__.
         It lets us call the object like this: Portal(args)
         """
+        
         portal = super().__new__(cls)
         portal.__init__(delay_between_restarts=delay_between_restarts,
                         max_restarts=max_restarts,
@@ -44,7 +46,9 @@ class Portal:
         except KeyboardInterrupt:
             print(f"-> Keyboard interrupt received. Exiting.")
     
-    def __init__(self, delay_between_restarts=0, max_restarts=0, stack_trace_amount=1, blocking=False, verbose=True, retro_compatibility=True):
+    def __init__(self, delay_between_restarts=0, max_restarts=0, stack_trace_amount=1,
+                 blocking=False, retro_compatibility=True):
+        
         self.delay_between_restarts = delay_between_restarts
         self.max_restarts = max_restarts
         self.stack_trace_amount = stack_trace_amount

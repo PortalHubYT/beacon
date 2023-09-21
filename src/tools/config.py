@@ -48,8 +48,8 @@ config_values = {
     {
         "particle": "dust",
         "size": 4, # From 1 to 4, only applies to dust
-        "speed": 0,
-        "amount": 1,
+        "speed": 0, # Describes how "far" a particle will go during its lifetime
+        "amount": 1, # Amount of particles to spawn
         "rgb": (255, 255, 255), # Only applies to dust, set to None to match block color
         "delta": (0, 0, 0), # Spreads the particle allowed distance on each axis
         "offset": (0, 0, 0), # Offset to current block

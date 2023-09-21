@@ -1,24 +1,19 @@
 import asyncio
 import time
 import importlib
-import random
-import re
-import traceback
 
-from dill import dumps, loads
-
-import numpy as np
-
+from dill import dumps
 import shulker as mc
 
 from tools.pulsar_wip import Portal
 from tools.svg import svg_to_block_lists
-
 import tools.config
 
 
 class Painter(Portal):
+    
     async def on_join(self):
+        
         await self.reload_config()
 
         self.stop_painting = False
@@ -247,6 +242,7 @@ class Painter(Portal):
         self.is_computing = False
 
     async def paint(self, word=None):
+        
         if not self.computed_svg:
             print("-> No computed svg paint returned")
             return
