@@ -39,11 +39,15 @@ class Poster(Portal):
 
     def lambda_post(self, serialized_lambda):
         instruction = loads(serialized_lambda)
-        ret = instruction()
-        if type(ret) is list:
-            return ", ".join(ret)
-        else:
-            return str(ret)
+        try:
+            ret = instruction()
+            if type(ret) is list:
+                return ", ".join(ret)
+            else:
+                return str(ret)
+        except Exception as e:
+            print(f"-> [ERROR] {e}")
+            return e
 
     def rcon_connect(self):
         server_status = (
@@ -61,4 +65,5 @@ class Poster(Portal):
 
 
 if __name__ == "__main__":
-    Poster()
+    action = Poster()
+    asyncio.run(action.run())
