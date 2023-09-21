@@ -3,6 +3,7 @@ import time
 import importlib
 import random
 import re
+import traceback
 
 from dill import dumps, loads
 
@@ -34,9 +35,9 @@ class Painter(Portal):
         await self.subscribe("gl.reload_config", self.reload_config)
         await self.subscribe("painter.fast_mode", self.toggle_fast_mode)
         await self.subscribe("painter.compute_svg", self.compute_svg)
-        await self.publish("painter.joined")
+        self.publish("painter.joined")
         
-        await self.publish("gl.next_round")
+        self.publish("gl.next_round")
         
         await self.paint("banana")
 
@@ -103,21 +104,21 @@ class Painter(Portal):
         pos2 = pos1.offset(x=width, y=height)
         zone = mc.BlockZone(pos1, pos2)
         f = lambda: mc.set_zone(zone, "black_concrete")
-        await self.publish("mc.lambda", dumps(f))
+        self.publish("mc.lambda", dumps(f))
 
         # white canvas
         canvas_pos1 = pos1.offset(x=border_thickness, y=border_thickness)
         canvas_pos2 = pos2.offset(x=-border_thickness, y=-border_thickness)
         zone = mc.BlockZone(canvas_pos1, canvas_pos2)
         f = lambda: mc.set_zone(zone, "snow_block")
-        await self.publish("mc.lambda", dumps(f))
+        self.publish("mc.lambda", dumps(f))
 
         # painting zone
         # painting1 = origin
         # painting2 = origin.offset(x=self.config.width, y=self.config.height)
         # zone = mc.BlockZone(painting1, painting2)
         # f = lambda: mc.set_zone(zone, "stone")
-        # await self.publish("mc.lambda", dumps(f))
+        # self.publish("mc.lambda", dumps(f))
 
         # corners
         bottom_left = [
@@ -172,9 +173,9 @@ class Painter(Portal):
             for v_zone, f_zone in zip(void_zones, fill_zones):
                 print(f"TRYING: {v_zone}, {f_zone}")
                 f = lambda: mc.set_zone(v_zone, "air")
-                await self.publish("mc.lambda", dumps(f))
+                self.publish("mc.lambda", dumps(f))
                 f = lambda: mc.set_zone(f_zone, "black_concrete")
-                await self.publish("mc.lambda", dumps(f))
+                self.publish("mc.lambda", dumps(f))
 
         # lights
         light_pos1 = pos1.offset(z=3 + extra_margin)
@@ -199,14 +200,14 @@ class Painter(Portal):
 
         zone = mc.BlockZone(pos1, pos2)
         f = lambda: mc.set_zone(zone, "air")
-        await self.publish("mc.lambda", dumps(f))
+        self.publish("mc.lambda", dumps(f))
 
         light_pos1 = pos1.offset(z=3 + extra_margin)
         light_pos2 = pos2.offset(z=3 + extra_margin)
 
         zone = mc.BlockZone(light_pos1, light_pos2)
         f = lambda: mc.set_zone(zone, "air")
-        await self.publish("mc.lambda", dumps(f))
+        self.publish("mc.lambda", dumps(f))
 
     async def remove_zone(self):
         pos1 = self.config.paint_start
@@ -214,13 +215,13 @@ class Painter(Portal):
         zone = mc.BlockZone(pos1, pos2)
 
         f = lambda: mc.set_zone(zone, "air")
-        await self.publish("mc.lambda", dumps(f))
+        self.publish("mc.lambda", dumps(f))
 
     async def compute_svg(self, filename):
         start = time.time()
         self.computed_svg = svg_to_block_lists(filename)
         print(f"->\nFinished computing {filename} in {time.time() - start:.0f}s")
-        await self.publish("painter.svg_ready")
+        self.publish("painter.svg_ready")
 
     async def paint(self, word):
         if not self.computed_svg:
@@ -233,7 +234,7 @@ class Painter(Portal):
 
         def paint_chunk(height, start_pos, pixel_list):
             for p in pixel_list:
-                pos = start_pos.offset(x=p["x"], y=height - p["y"], z=0)
+                pos = start_pos.offset(x=p["x"], y=height - p["y"])
                 mc.set_block(pos, p["block"])
 
         block_list = self.computed_svg["block_list"]
@@ -250,7 +251,7 @@ class Painter(Portal):
         print(f"Painting '{word}': {len(flattened_block_list)} blocks")
          
         start = time.time()
-        start_pos = str(self.config.paint_start)
+        start_pos = self.config.paint_start
         height = self.config.height
 
         for n, chunk in enumerate(chunks):
@@ -258,23 +259,15 @@ class Painter(Portal):
                 await asyncio.sleep(interval)
             
             f = lambda: paint_chunk(height, start_pos, chunk)
-            await self.publish("mc.lambda", dumps(f))
+            self.publish("mc.lambda", dumps(f))
             if self.stop_painting:
                 break
             
-            print(f"Painted chunk {n+1}/{len(chunks)}", end="\r")
+            print(f"Painted chunk {n+1}/{len(chunks)}{'.' * (n%3)}\n", end="\r")
         
         self.rush_paint = False
-        await self.publish("painter.finished")
-        print(f"\nFinished in {str(time.time() - start)[:2]} seconds\n")
+        self.publish("painter.finished")
+        print(f"\nFinished in {str(time.time() - start)[:2]} seconds")
 
 if __name__ == "__main__":
-    action = Painter()
-    while True:
-        try:
-            asyncio.run(action.run())
-        except Exception as e:
-            error_msg = f"An error occurred: {e}"
-            print(error_msg)
-            print("-> Restarting in 1 seconds...")
-            time.sleep(1)
+    Painter()

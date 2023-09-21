@@ -61,12 +61,4 @@ class Poster(Portal):
 
 
 if __name__ == "__main__":
-    action = Poster()
-    while True:
-        try:
-            asyncio.run(action.run())
-        except Exception as e:
-            error_msg = f"An error occurred: {e}"
-            print(error_msg)
-            print("-> Restarting in 1 seconds...")
-            time.sleep(1)
+    Poster()
