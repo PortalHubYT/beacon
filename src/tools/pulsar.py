@@ -15,142 +15,62 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PULSAR_URL = "pulsar://localhost:6650"
+PULSAR_URL = os.getenv("PULSAR_URL")
 PULSAR_TOKEN = os.getenv("PULSAR_TOKEN")
-PULSAR_NAMESPACE = "public/default"
+PULSAR_NAMESPACE = os.getenv("PULSAR_NAMESPACE")
 prefix = f"non-persistent://{PULSAR_NAMESPACE}/"
 
 # Wraps the Hub to create an inheritable class that can be used
 # as an open connection to pulsar and an async loop
 class Portal:
-    def __new__(cls, delay_between_restarts=0, max_restarts=0, stack_trace_amount=1, blocking=False, verbose=True):
-        """
-        This method is called before __init__.
-        It lets us call the object like this: Portal(args)
-        """
-        portal = super().__new__(cls)
-        portal.__init__(delay_between_restarts=delay_between_restarts,
-                        max_restarts=max_restarts,
-                        stack_trace_amount=stack_trace_amount,
-                        blocking=blocking,
-                        verbose=verbose)
+    def __init__(self, sleep=0.0001):
+        self.pulsar = None
+        self.should_stop = False
+        self.sleep = sleep
 
-        try:
-            asyncio.run(portal.open())
-        except KeyboardInterrupt:
-            print(f"-> Keyboard interrupt received. Exiting.")
-            
-        return portal
-    
-    def __init__(self, delay_between_restarts=0, max_restarts=0, stack_trace_amount=1, blocking=False, verbose=True):
-        self.delay_between_restarts = delay_between_restarts
-        self.max_restarts = max_restarts
-        self.stack_trace_amount = stack_trace_amount
-        self.restart_count = 0
-        self.blocking = blocking
-        self.tasks = set()
-        
-    async def open(self):
-        should_continue = True
-        
-        while should_continue:
-            self.tasks = set()
-            
-            try:
-                self.hub = Hub()
-                await self.hub.connect()
-                print("-> Pulsar connection established")
-                
-                print(f"-> Processing {self.__class__.__name__}'s on join.")
-                await self.on_join()
-                
-                self.tasks.update(self.hub.subscribe_tasks)  # Include Hub's subscribe_tasks
-                print(f"-> {len(self.tasks)} tasks were set for {self.__class__.__name__}.")
-                
-                if self.blocking or self.hub.registered_functions:  # Only add loop task if there are other tasks
-                    self.tasks.add(asyncio.create_task(self.loop()))
-                
-                # If no tasks are running, then exit
-                if not self.tasks:
-                    should_continue = False
-                    print(f"-> No tasks were set, and blocking is set to False")
-                    break
-                
-                if self.blocking and len(self.tasks) == 1:
-                    print(f"-> Blocking is set to True, Will run until first exception.")
-                else:
-                    print(f"-> Starting {len(self.tasks)} tasks for {self.__class__.__name__}. Will run until first exception.")
-                    
-                done, pending = await asyncio.wait(self.tasks, return_when=asyncio.FIRST_EXCEPTION)
-                
-                for task in done:
-                    if task.exception():
-                        should_continue = await self.handle_exception(task.exception())
-                        if not should_continue:
-                            break
+    async def setup(self):
+        self.pulsar = Hub()
+        await self.pulsar.__aenter__()
 
-            except Exception as e:
-                should_continue = await self.handle_exception(e)
-            except (KeyboardInterrupt, asyncio.CancelledError):
-                should_continue = False
-                print(f"-> Keyboard interrupt received. Exiting.")
-            finally:
-                print("-> Killing all pulsar subscriptions and closing client.")
-                if await self.cleanup(force=should_continue):
-                    print("-> Pulsar connection closed.")
-                else:
-                    print("-> Pulsar connection already closed or client not initialized.")
-                    
+    async def teardown(self):
+        if self.pulsar is not None:
+            await self.pulsar.__aexit__(None, None, None)
+
+    async def loop(self):
+        pass
+
+    async def execute(self):
+        while not self.should_stop:
+            await self.loop()
+            await asyncio.sleep(self.sleep)
 
     async def on_join(self):
         pass
 
-    async def loop(self):
-        await asyncio.Event().wait()
+    async def run(self):
+        print(f"-> Starting {self.__class__.__name__}")
+        try:
+            await self.setup()
+            await self.on_join()
+            await self.execute()
+        except KeyboardInterrupt:
+            self.should_stop = True
+        finally:
+            await self.teardown()
+        print(f"-> {self.__class__.__name__} is stopping")
 
-    async def cleanup(self, force=False):
-        if hasattr(self, 'hub'):
-            await self.hub.disconnect()
-        for task in self.tasks:
-            task.cancel()
-            if not force:
-                try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
-
-    async def handle_exception(self, e):
-        
-        traceback_lines = traceback.format_tb(e.__traceback__)
-        
-        if traceback_lines:
-            print("-----------------")
-            print(traceback_lines[-1])  # Assuming you want the last line of traceback
-            print(f"ERROR: {e}")
-            print("-----------------")
-            
-        self.restart_count += 1
-        if self.max_restarts is not None and self.restart_count >= self.max_restarts:
-            if self.max_restarts > 0:
-                print(f"-> Max restarts reached ({self.restart_count}/{self.max_restarts}). Exiting.")
-            else:
-                print(f"-> No restarts allowed. Exiting.")
-            return False
-        
-        print(f"-> Restarting in {self.delay_between_restarts} seconds ({self.restart_count}/{self.max_restarts})")
-        return True
-    
     async def register(self, topic_name, func):
-        await self.hub.register(topic_name, func)
+        await self.pulsar.register(topic_name, func)
 
     async def subscribe(self, topic, callback, subscription_name=None):
-        await self.hub.subscribe(topic, callback, subscription_name)
+        await self.pulsar.subscribe(topic, callback, subscription_name)
 
-    def publish(self, topic, message=None):
-        self.hub.publish(topic, message)
+    async def publish(self, topic, message=None):
+        await self.pulsar.publish(topic, message)
 
     async def call(self, function_name, *args, **kwargs):
-        return await self.hub.call(function_name, *args, **kwargs)
+        return await self.pulsar.call(function_name, *args, **kwargs)
+
 
 # Wraps pulsar to create a pub/sub and RPC object
 class Hub:
@@ -164,41 +84,46 @@ class Hub:
         self.registered_functions = {}
         self.pending_calls = {}
 
-    async def connect(self):
+    async def __aenter__(self):
+        
         pulsar_logger = log.getLogger("pulsar")
         pulsar_logger.setLevel(log.CRITICAL)
 
         self.client = await aiopulsar.connect(
             PULSAR_URL,
+            authentication=AuthenticationToken(PULSAR_TOKEN),
             logger=pulsar_logger,
         )
-        
-    async def disconnect(self):
+        print("-> Pulsar connection established")
 
+        loop = asyncio.get_event_loop()
+        loop.add_signal_handler(signal.SIGINT, self.handle_signal)
+
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.graceful_exit()
+
+    async def graceful_exit(self):
+        print("-> Killing all pulsar subscriptions")
         for task in self.subscribe_tasks:
             task.cancel()
-            try:
-                await task
-            except asyncio.CancelledError:
-                pass
-        
-        if self.client:
-            await self.client.close()
-            return True
-        else:
-            return False
+            await task
 
-    async def _async_publish(self, topic, message):
+        await self.client.close()
+        print("-> Pulsar connection closed")
+
+    def handle_signal(self):
+        print("-> Signal received, closing Pulsar connection.")
+        loop = asyncio.get_event_loop()
+        loop.remove_signal_handler(signal.SIGINT)
+        loop.create_task(self.graceful_exit())
+        exit(0)
+
+    async def publish(self, topic, message):
         async with self.client.create_producer(topic=prefix + topic) as producer:
             await producer.send(pickle.dumps(message))
-    
-    def publish(self, topic, message, blocking=False):
-        coro = self._async_publish(topic, message)
-        task = asyncio.create_task(coro)
-        
-        if blocking:
-            asyncio.run(task)
-            
+
     async def subscribe(self, topic, callback, subscription_name=None):
         if subscription_name is None:
             subscription_name = topic + "-subscription" + str(uuid.uuid4())
@@ -264,7 +189,6 @@ class Hub:
                 except Exception as e:
                     print(f"An error occurred while processing the message:")
                     traceback.print_exc()
-                    raise
 
             await asyncio.sleep(0.001)
 
