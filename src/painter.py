@@ -11,20 +11,21 @@ import numpy as np
 
 import shulker as mc
 
-from tools.pulsar import Portal
+from tools.pulsar_wip import Portal
 from tools.svg import svg_to_block_lists
 
 import tools.config
 
+
 class Painter(Portal):
     async def on_join(self):
         await self.reload_config()
-        
+
         self.stop_painting = False
         self.rush_paint = False
         self.fast_mode = False
         self.computed_svg = None
-        
+
         await self.subscribe("gl.paint_svg", self.paint)
         await self.subscribe("gl.clear_svg", self.remove_zone)
         await self.subscribe("painter.stop", self.stop_painter)
@@ -35,11 +36,26 @@ class Painter(Portal):
         await self.subscribe("gl.reload_config", self.reload_config)
         await self.subscribe("painter.fast_mode", self.toggle_fast_mode)
         await self.subscribe("painter.compute_svg", self.compute_svg)
-        self.publish("painter.joined")
-        
-        self.publish("gl.next_round")
-        
-        await self.paint("banana")
+
+        await self.publish("painter.joined")
+
+        self.is_computing = False
+        self.is_painting = False
+        await self.wait_loop()
+
+    async def wait_loop(self):
+        i = 0
+        while True:
+            await asyncio.sleep(1)
+            if not self.is_computing and not self.is_painting:
+                i += 1
+                print(
+                    f"-> Painter is idle (not computing, not painting) [{i}s]",
+                    end="\r",
+                    flush=True,
+                )
+            else:
+                i = 0
 
     async def reload_config(self):
         importlib.reload(tools.config)
@@ -67,17 +83,12 @@ class Painter(Portal):
         wait_time = (
             self.config.drawing_finished_at_percentage / 100 * self.config.round_time
         )
-        interval = (wait_time - (steps / 10)) / steps
+        interval = (wait_time - (steps / (1000 / self.config.paint_chunk_size))) / steps
         interval = interval if interval > 0 else 0
         if interval > 0.75:
             interval = 0.75
 
-        # print(
-        #     f"Try {wait_time}: ({(steps / 10)}s to build) + ({steps} steps x {interval:.2f} = {steps*interval}s)"
-        # )
-        
-        print(f"-> Estimated time: {wait_time:.0f}s")
-        return interval
+        return interval, wait_time, steps
 
     async def reload_backboard(self):
         print("-> Reload backboard")
@@ -104,21 +115,21 @@ class Painter(Portal):
         pos2 = pos1.offset(x=width, y=height)
         zone = mc.BlockZone(pos1, pos2)
         f = lambda: mc.set_zone(zone, "black_concrete")
-        self.publish("mc.lambda", dumps(f))
+        await self.publish("mc.lambda", dumps(f))
 
         # white canvas
         canvas_pos1 = pos1.offset(x=border_thickness, y=border_thickness)
         canvas_pos2 = pos2.offset(x=-border_thickness, y=-border_thickness)
         zone = mc.BlockZone(canvas_pos1, canvas_pos2)
         f = lambda: mc.set_zone(zone, "snow_block")
-        self.publish("mc.lambda", dumps(f))
+        await self.publish("mc.lambda", dumps(f))
 
         # painting zone
         # painting1 = origin
         # painting2 = origin.offset(x=self.config.width, y=self.config.height)
         # zone = mc.BlockZone(painting1, painting2)
         # f = lambda: mc.set_zone(zone, "stone")
-        # self.publish("mc.lambda", dumps(f))
+        # await self.publish("mc.lambda", dumps(f))
 
         # corners
         bottom_left = [
@@ -173,9 +184,9 @@ class Painter(Portal):
             for v_zone, f_zone in zip(void_zones, fill_zones):
                 print(f"TRYING: {v_zone}, {f_zone}")
                 f = lambda: mc.set_zone(v_zone, "air")
-                self.publish("mc.lambda", dumps(f))
+                await self.publish("mc.lambda", dumps(f))
                 f = lambda: mc.set_zone(f_zone, "black_concrete")
-                self.publish("mc.lambda", dumps(f))
+                await self.publish("mc.lambda", dumps(f))
 
         # lights
         light_pos1 = pos1.offset(z=3 + extra_margin)
@@ -200,14 +211,14 @@ class Painter(Portal):
 
         zone = mc.BlockZone(pos1, pos2)
         f = lambda: mc.set_zone(zone, "air")
-        self.publish("mc.lambda", dumps(f))
+        await self.publish("mc.lambda", dumps(f))
 
         light_pos1 = pos1.offset(z=3 + extra_margin)
         light_pos2 = pos2.offset(z=3 + extra_margin)
 
         zone = mc.BlockZone(light_pos1, light_pos2)
         f = lambda: mc.set_zone(zone, "air")
-        self.publish("mc.lambda", dumps(f))
+        await self.publish("mc.lambda", dumps(f))
 
     async def remove_zone(self):
         pos1 = self.config.paint_start
@@ -215,59 +226,99 @@ class Painter(Portal):
         zone = mc.BlockZone(pos1, pos2)
 
         f = lambda: mc.set_zone(zone, "air")
-        self.publish("mc.lambda", dumps(f))
+        await self.publish("mc.lambda", dumps(f))
 
     async def compute_svg(self, filename):
+        self.is_computing = True
         start = time.time()
-        self.computed_svg = svg_to_block_lists(filename)
-        print(f"->\nFinished computing {filename} in {time.time() - start:.0f}s")
-        self.publish("painter.svg_ready")
+        computing_config = {k: v for k, v in self.config.compute_data.items() if v is not None}
 
-    async def paint(self, word):
+        print("\n" + ("-" * 10) + f"  Computing [{filename}]  " + ("-" * 10) + "\n")
+        self.computed_svg = svg_to_block_lists(filename, palette=None, **computing_config)
+        print(
+            "\n"
+            + ("-" * 10)
+            + f"  Finished in [{time.time() - start:.0f}s]  "
+            + ("-" * 10)
+            + "\n"
+        )
+
+        await self.publish("painter.svg_ready")
+        self.is_computing = False
+
+    async def paint(self, word=None):
         if not self.computed_svg:
             print("-> No computed svg paint returned")
-            await self.compute_svg("banana.svg")
-
+            return
+        
+        print("\n" + ("-" * 10) + f"  Painting [{word}]  " + ("-" * 10) + "\n")
+        self.is_painting = True
         self.stop_painting = False
-
-        self.rush_paint = self.fast_mode
+        
+        ################################################
+        
+        block_list = self.computed_svg["block_list"]
+        flattened_block_list = sum(block_list, [])
+        print(f"-> Flattened {len(block_list)} layers into {len(flattened_block_list)} block list")
+        
+        ################################################
+        
+        n = max(1, self.config.paint_chunk_size)
+        chunks = [
+            flattened_block_list[i : i + n]
+            for i in range(0, len(flattened_block_list), n)
+        ]
+        print(f"-> Computed {len(chunks)} chunks of {n} blocks each")
+        
+        ################################################
+        
+        interval, wait_time, steps = await self.get_interval(len(chunks))
+        print(
+            f"-> Will attempt in: {wait_time}: ({steps / (1000 / self.config.paint_chunk_size)}s to build) + ({steps} steps x {interval:.2f} = {steps*interval}s)"
+        )
+        
+        ################################################
+        
+        start = time.time()
+        start_pos = self.config.paint_start
+        height = self.config.height
 
         def paint_chunk(height, start_pos, pixel_list):
             for p in pixel_list:
                 pos = start_pos.offset(x=p["x"], y=height - p["y"])
                 mc.set_block(pos, p["block"])
-
-        block_list = self.computed_svg["block_list"]
         
-        flattened_block_list = sum(block_list, [])
-        
-        # amount of chunks
-        n = max(1, self.config.paint_chunk_size)
-        chunks = [flattened_block_list[i : i + n] 
-                  for i in range(0, len(flattened_block_list), n)]
-
-        interval = await self.get_interval(len(chunks))
-
-        print(f"Painting '{word}': {len(flattened_block_list)} blocks")
-         
-        start = time.time()
-        start_pos = self.config.paint_start
-        height = self.config.height
-
+        print(
+            f"-> Painting '{word}' [{len(flattened_block_list)} blocks] Estimated: {wait_time:.0f}s"
+        )
         for n, chunk in enumerate(chunks):
-            if not self.rush_paint:
+
+            if not self.rush_paint and not self.fast_mode:
                 await asyncio.sleep(interval)
+
+            print(f"-> Painting chunk [{n+1}/{len(chunks)}]" + ('[FAST] ' if self.rush_paint else ''), end="\r")
             
             f = lambda: paint_chunk(height, start_pos, chunk)
-            self.publish("mc.lambda", dumps(f))
+            await self.publish("mc.lambda", dumps(f))
+
             if self.stop_painting:
+                print("\n-> Was ordered to stop painting")
                 break
-            
-            print(f"Painted chunk {n+1}/{len(chunks)}{'.' * (n%3)}\n", end="\r")
-        
+
         self.rush_paint = False
-        self.publish("painter.finished")
-        print(f"\nFinished in {str(time.time() - start)[:2]} seconds")
+        await self.publish("painter.finished")
+
+        print(
+            "\n"
+            + ("-" * 10)
+            + f"  Finished in [{time.time() - start:.0f} seconds]  "
+            + ("-" * 10)
+            + "\n"
+        )
+        
+        self.is_painting = False
+
 
 if __name__ == "__main__":
-    Painter()
+    action = Painter(retro_compatibility=True)
+    asyncio.run(action.open())
