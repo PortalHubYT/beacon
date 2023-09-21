@@ -63,7 +63,6 @@ class Painter(Portal):
 
     async def toggle_fast_mode(self):
         self.fast_mode = not self.fast_mode
-        await self.on_rush()
 
     async def on_rush(self):
         print("-> Rush painting")

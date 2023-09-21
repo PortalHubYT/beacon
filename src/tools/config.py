@@ -36,13 +36,13 @@ config_values = {
     "backboard_extra_size": 2,
     "backboard_extra_height": 20,
     "backboard_border_thickness": 3,
-    "particle_data": {
-        "name": "minecraft:dust",
-        "delta": mc.Coordinates(0.2, 0.2, 0),
-        "size": 1,
-        "speed": 0.1,
-        "amount": 10,
-        "offset_to_block": {"x": 0, "y": 0, "z": 2},
+    "compute_data": { # Any value set to None will default
+        "dpi": 96, # Defaults is 96
+        "scale": 1, # Defaults is 1
+        "sort": "greedy", # Default is "greedy"
+        "trim": False, # Defaults is False
+        "blend": True, # Defaults is True (not implemented)
+        "only_opaque": True, # Default is True
     },
     # PODIUM #####################
     "podium_pos": mc.BlockCoordinates(0, 68, 23),
@@ -66,14 +66,24 @@ config_values = {
     # TIMER #####################
     "timer_start": mc.BlockCoordinates(-55, 175, -132),
     "timer_palette": [
-        "black_concrete",
-        "black_concrete",
-        "gray_concrete",
-        "gray_concrete",
-        "white_concrete",
-        "white_concrete",
-        "gray_concrete",
-        "gray_concrete",
+        "light_blue_concrete",
+        "light_blue_concrete",
+        "light_blue_concrete",
+        "cyan_concrete",
+        "cyan_concrete",
+        "cyan_concrete",
+        "blue_concrete",
+        "blue_concrete",
+        "blue_concrete",
+        "purple_concrete",
+        "purple_concrete",
+        "purple_concrete",
+        "magenta_concrete",
+        "magenta_concrete",
+        "magenta_concrete",
+        "pink_concrete",
+        "pink_concrete",
+        "pink_concrete",
     ],
     "timer_border_thickness": 2,
     "timer_height": 10,
@@ -143,11 +153,12 @@ config_values["banned_words"] = [
     "balloon",
 ]
 
+
 class Config:
     def __init__(self):
         for key, value in config_values.items():
             setattr(self, key, value)
-        
+
     def __getitem__(self, key):
         return getattr(self, key)
 
