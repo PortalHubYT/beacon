@@ -6,3 +6,4 @@ pulsar-client
 aiopulsar-py
 prompt_toolkit
 cairosvg
+psycopg2-binary
