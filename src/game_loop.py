@@ -16,6 +16,7 @@ from tools.pulsar import Portal
 from tools.mimic import gen_fake_profiles
 from tools.svg import get_word_list
 
+
 class GameLoop(Portal):
     async def on_join(self):
         await self.reload_config()
@@ -42,10 +43,6 @@ class GameLoop(Portal):
 
         await self.place_camera()
 
-        self.infobar = self.config.infobar_default
-
-        await self.init_infobar()
-
         await self.subscribe("live.comment", self.on_comment)
         await self.subscribe("gl.reset_camera", self.place_camera)
         await self.subscribe("gl.reset_arena", self.reset_arena)
@@ -55,7 +52,6 @@ class GameLoop(Portal):
         await self.subscribe("gl.change_next_word", self.change_next_word)
         await self.subscribe("painter.svg_ready", self.on_svg_ready)
         await self.subscribe("painter.joined", self.on_painter_joined)
-        await self.subscribe("gl.infobar", self.infobar_handler)
         await self.subscribe("live.viewer_update", self.toggle_winstreak)
         await self.subscribe("gl.pause", self.toggle_pause)
 
@@ -111,60 +107,6 @@ class GameLoop(Portal):
                 f"fill {pos_1.offset(x=50, z=50)} {pos_2.offset(x=50, z=50)} air",
             )
 
-    async def infobar_handler(self, action):
-        if action == "on":
-            await self.init_infobar()
-        elif action == "off":
-            await self.remove_infobar()
-        elif action == "toggle":
-            await self.toggle_infobar()
-        elif action == "reset":
-            self.infobar = self.config.infobar_default
-            await self.remove_infobar()
-            await self.init_infobar()
-        else:
-            color = self.infobar["color"]
-            text = self.infobar["text"]
-
-            if "text=" in action:
-                text = action.split(",")[0].split("=")[1].replace('"', "")
-            if ",color=" in action:
-                color = action.split(",")[1].split("=")[1].replace('"', "")
-
-            await self.edit_infobar(text, color)
-
-    async def toggle_infobar(self):
-        if self.infobar["shown"]:
-            await self.remove_infobar()
-        else:
-            await self.init_infobar()
-
-    async def remove_infobar(self):
-        cmd = """kill @e[tag=infobar]"""
-        await self.publish("mc.post", cmd)
-        self.infobar["shown"] = False
-
-    async def edit_infobar(self, text=None, color=None):
-        if color is None:
-            color = self.infobar["color"]
-        if text is None:
-            text = self.infobar["text"]
-
-        cmd = """execute if entity @e[tag=infobar] run data merge entity @e[type=text_display,limit=1,sort=nearest,tag=infobar] {text:'{"text":"$text","color":"$color","bold":true}'}"""
-        cmd = cmd.replace("$text", text).replace("$color", color)
-        await self.publish("mc.post", cmd)
-        self.infobar["text"] = text
-        self.infobar["color"] = color
-
-    async def init_infobar(self):
-        cmd = """execute unless entity @e[tag=infobar] run summon text_display ~ ~ ~ {line_width:400,Tags:["infobar"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[0.5f,0.5f,0.5f]},text:'{"text":"$text","color":"$color","bold":true}',background:-939524096}"""
-        cmd = cmd.replace("~ ~ ~", f"{self.config.podium_pos.offset(y=1)}")
-        cmd = cmd.replace("$text", self.infobar["text"]).replace(
-            "$color", self.infobar["color"]
-        )
-        await self.publish("mc.post", cmd)
-        self.infobar["shown"] = True
-
     async def on_painter_joined(self):
         self.svg_ready = False
         await self.publish("painter.compute_svg", self.word_filename)
@@ -202,7 +144,7 @@ class GameLoop(Portal):
 
         new_word = self.word_list.pop(0)
         self.word_filename = new_word + ".svg"
-        
+
         if "_$" in new_word:
             new_word = new_word.split("_$")[0]
 
@@ -381,7 +323,7 @@ class GameLoop(Portal):
         print(f"-> Current winstreakers: {self.winstreakers}")
 
         await self.publish("gl.reset_podium")
-        await self.publish("timer.set", 100)
+        await self.publish("timer.reset")
 
     def print_word(self):
         print("--------------------------------------")
@@ -426,11 +368,6 @@ class GameLoop(Portal):
         while start_round + self.config.round_time > time.time() and not self.pause:
             delta = time.time() - start_round
             round_progress = int(delta / self.config.round_time * 100)
-
-            # if int(delta) % 2:
-            #     await self.edit_infobar(color="yellow")
-            # else:
-            #     await self.edit_infobar(color="gold")
 
             if self.rush_round == True:
                 start_round -= 2
