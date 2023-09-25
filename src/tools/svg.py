@@ -1,13 +1,15 @@
-import time
-import numpy as np
-import shulker as mc
-import re
+import io
 import os
 import random
-import io
-import cairosvg
+import re
+import time
 import xml.etree.ElementTree as ET
+
+import cairosvg
+import numpy as np
+import shulker as mc
 from PIL import Image
+
 
 def get_word_list(
     character_limit=None, banned_words=None, as_filename=False, shuffle=True
@@ -167,8 +169,8 @@ def blend_colors_to_opaque(old_pixel, new_pixel, background_color=(255, 255, 255
         return blend_colors(blended, background_color)
     return blended
 
-def pixel_to_block(pixel: tuple[int, int, int, int], palette: dict = None):
-    return mc.color_picker(pixel, palette)
+def pixel_to_block(pixel: tuple[int, int, int, int]):
+    return mc.block_from_rgb(pixel)
 
 def greedy_sort(layers):
     sorted_layers = []
@@ -215,7 +217,6 @@ def greedy_sort(layers):
 
 def svg_to_block_lists(
     filename: str,
-    palette: dict = None,
     dpi: int = 96,
     scale: float = 1,
     sort: str = "greedy",
@@ -238,13 +239,6 @@ def svg_to_block_lists(
         return None
     
     print(f"-> OK [{time.time() - start:.1f}s] | Filename: {filename} exists")
-    ################################################
-    start = time.time()
-    
-    if not palette:
-        palette: dict[str] = mc.get_palette("side")
-    
-    print(f"-> OK [{time.time() - start:.1f}s] | Palette: {len(palette.items())} colors")
     ################################################
     start = time.time()
     
@@ -278,7 +272,7 @@ def svg_to_block_lists(
                 {
                     "x": pixel_info["x"],
                     "y": pixel_info["y"],
-                    "block": pixel_to_block(pixel_info["pixel"], palette),
+                    "block": pixel_to_block(pixel_info["pixel"]),
                 }
                 for pixel_info in layer
             ]
