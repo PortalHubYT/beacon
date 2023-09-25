@@ -5,7 +5,7 @@ import importlib
 from dill import dumps
 import shulker as mc
 
-from tools.pulsar_wip import Portal
+from tools.pulsar import Portal
 from tools.svg import svg_to_block_lists
 import tools.config
 
@@ -316,5 +316,5 @@ class Painter(Portal):
 
 
 if __name__ == "__main__":
-    action = Painter(retro_compatibility=True)
-    asyncio.run(action.open())
+    action = Painter()
+    asyncio.run(action.run())
