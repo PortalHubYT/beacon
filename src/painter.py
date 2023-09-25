@@ -1,13 +1,13 @@
 import asyncio
-import time
 import importlib
+import time
 
-from dill import dumps
 import shulker as mc
+from dill import dumps
 
+import tools.config
 from tools.pulsar import Portal
 from tools.svg import svg_to_block_lists
-import tools.config
 
 
 class Painter(Portal):
@@ -229,7 +229,7 @@ class Painter(Portal):
 
         print("\n" + ("-" * 10) + f"  Computing [{filename}]  " + ("-" * 10) + "\n")
         print(f"Config: {computing_config}\n")
-        self.computed_svg = svg_to_block_lists(filename, palette=None, **computing_config)
+        self.computed_svg = svg_to_block_lists(filename, **computing_config)
         print(
             "\n"
             + ("-" * 10)
