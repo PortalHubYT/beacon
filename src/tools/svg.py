@@ -46,9 +46,7 @@ def get_svg_data(filename: str, trim_opacity=False) -> str:
     with open(filename, "r") as file:
         svg_data = file.read()
 
-    if trim_opacity:
-        # who remembers opacity?
-        svg_data = re.sub(r"<g.[^>]*(opacity)(?<!>)[\s\S]*?\/g>", "", svg_data)
+    svg_data = re.sub(r"<g.[^>]*(opacity)(?<!>)[\s\S]*?\/g>", "", svg_data)
 
     return svg_data
 
