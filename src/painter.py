@@ -283,7 +283,10 @@ class Painter(Portal):
             for p in pixel_list:
                 pos = start_pos.offset(x=p["x"], y=height - p["y"])
                 mc.set_block(pos, p["block"])
-        
+                
+                rgb = mc.rgb_from_block(p["block"])
+                particle_cmd = f"particle dust {rgb[0] / 100:.3f} {rgb[1]/100:.3f} {rgb[2]/100:.3f} 10 {pos} 0.2 0.2 0.2 1 600 force"
+                mc.post(particle_cmd)
         print(
             f"-> Painting '{word}' [{len(flattened_block_list)} blocks] Estimated: {wait_time:.0f}s"
         )
