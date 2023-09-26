@@ -1,19 +1,19 @@
 import asyncio
-import time
-import random
-import signal
-import sys
+import importlib
 import math
 import os
-import importlib
+import random
 import re
+import signal
+import sys
+import time
 
 import shulker as mc
 from dill import dumps
 
 import tools.config
-from tools.pulsar import Portal
 from tools.mimic import gen_fake_profiles
+from tools.pulsar import Portal
 from tools.svg import get_word_list
 
 
@@ -303,7 +303,7 @@ class GameLoop(Portal):
             await self.publish("mc.post", cmd)
 
         await self.publish(
-            "gl.spawn_winner", (len(self.winners), user, score, winstreak_amount)
+            "podium.spawn_winner", (len(self.winners), user, score, winstreak_amount)
         )
 
     async def change_next_word(self, word):
@@ -330,7 +330,7 @@ class GameLoop(Portal):
         while not self.svg_ready:
             await asyncio.sleep(0.1)
             wait_time += 0.1
-            if wait_time > 10:
+            if wait_time > 15:
                 cmd = f'title {self.config.camera_name} title {{"text":"Ran into an issue!","color":"red"}}'
                 await self.publish("mc.post", cmd)
                 cmd = f'title {self.config.camera_name} subtitle "restarting the game now :)"'
@@ -345,7 +345,7 @@ class GameLoop(Portal):
         print(f"-> In previous round, winners were: {self.previous_winners}")
         print(f"-> Current winstreakers: {self.winstreakers}")
 
-        await self.publish("gl.reset_podium")
+        await self.publish("podium.reset")
         await self.publish("timer.reset")
 
     def print_word(self):
@@ -404,6 +404,7 @@ class GameLoop(Portal):
         self.rush_round = False
 
     async def after_round(self):
+        await self.publish("timer.set", 0)
         self.force_next_round = False
         await self.publish("painter.stop")
         await self.publish("hint.print", self.round_word)
@@ -414,7 +415,7 @@ class GameLoop(Portal):
         cmd = f'title {self.config.camera_name} subtitle "found by {len(self.winners)} players"'
         await self.publish("mc.post", cmd)
 
-        await asyncio.sleep(3.5)
+        await asyncio.sleep(4.5)
 
         await self.publish("gl.clear_svg")
 

@@ -1,11 +1,12 @@
 import asyncio
-import math
-from dill import dumps
-import time
 import importlib
+import math
 import random
+import time
 
 import shulker as mc
+from dill import dumps
+
 import tools.config
 from tools.pulsar import Portal
 
@@ -24,29 +25,16 @@ class Podium(Portal):
         self.winner_ids = []
         random.seed()
 
-        await self.subscribe("podium.spawn_winners", self.spawn_winners)
-        await self.subscribe("gl.spawn_winner", self.spawn_winner)
+        await self.subscribe("podium.spawn_winner", self.spawn_winner)
         await self.subscribe("podium.reset", self.reset_podium)
         await self.subscribe("podium.reload", self.reload_podium)
         await self.subscribe("podium.remove", self.remove_podium)
         await self.subscribe("gl.reload_config", self.reload_config)
+
         await self.reset_podium()
+        await self.publish("mc.post", "npc remove all")
+        
 
-        await self.spawn_winners(5)
-
-    async def spawn_winners(self, amount):
-        origin = self.config.camera_pos
-        x_range = 2.0
-        cmd = """summon slime ~ ~ ~ {CustomNameVisible:1b,ActiveEffects:[{Id:28,Amplifier:1b,Duration:200}],Motion:[$random,1.0,-1.0],CustomName:'{"text":"$name"}'}"""
-
-        for i in range(int(amount)):
-            random_x_range = random.uniform(-x_range, x_range)
-            cmd = cmd.replace("$random", str(random_x_range))
-            cmd = cmd.replace("$name", "Winner")
-            cmd = cmd.replace("~ ~ ~", str(origin.offset(y=3)))
-            await self.publish("mc.post", cmd)
-
-            await asyncio.sleep(0.5)
 
     async def reload_config(self):
         importlib.reload(tools.config)
@@ -66,15 +54,18 @@ class Podium(Portal):
 
         return coords.offset(x=deltas[pos]), coords.yaw, coords.pitch
 
-    def compute_winstreak_multiplier(self, winstreak):
-        if winstreak == 0:
-            return 1
-        return 1 + (winstreak / 10)
-
     async def spawn_winner(self, args):
         def spawn_npc(score_template, name, pos, podium_pos, winstreak):
-            multiplicator = self.compute_winstreak_multiplier(winstreak)
-            cmd = f'npc create --at {pos[0].x}:{pos[0].y}:{pos[0].z}:world --nameplate true "+{int(score_template[podium_pos -1] * multiplicator)}"'
+
+
+            multiplicator = 1 + winstreak / 10
+            win_colors = ["f", "e", "6", "c", "5", "d", "b"]
+            if winstreak < len(win_colors):
+                points_color = win_colors[winstreak]
+            else:
+                points_color = win_colors[-1]
+
+            cmd = f'npc create --at {pos[0].x}:{pos[0].y}:{pos[0].z}:world --nameplate true "&{points_color}+{int(score_template[podium_pos -1] * multiplicator)}"'
             ret = mc.post(cmd)
 
             ret = (
@@ -88,12 +79,6 @@ class Podium(Portal):
             mc.post(f"npc moveto --pitch {pos[1]} --yaw {pos[2]} --id {id}")
             mc.post(f"npc skin -s {name} --id {id}")
 
-            mc.post(
-                "setblock "
-                + str(pos[0].offset(y=-1))
-                + (" fire" if winstreak else "air")
-                + ""
-            )
             return id
 
         pos, user, score, winstreak_amount = args
@@ -126,14 +111,20 @@ class Podium(Portal):
 
         sign_message = [
             f"#{pos}",
-            f"Streak!!x{self.compute_winstreak_multiplier(winstreak_amount)}"
-            if winstreak_amount
-            else f"",
+            f"",
             f"{name}",
             f"{score} pts",
         ]
 
         data = get_sign_data(sign_message, pos)
+
+        fire_pos = f"{coords[0].x - 0.5} {coords[0].y} {coords[0].z - 0.5}"
+        if winstreak_amount >= 5:
+            cmd = f'summon block_display {fire_pos} {{block_state:{{Name:"minecraft:soul_fire"}}}}'
+        elif winstreak_amount >= 1:
+            cmd = f'summon block_display {fire_pos} {{block_state:{{Name:"minecraft:fire"}}}}'
+        print(cmd)
+        await self.publish("mc.post", cmd)
 
         await self.publish(
             "mc.post", f"data merge block {sign_start.offset(x=pos)} {data}"
@@ -264,6 +255,7 @@ class Podium(Portal):
     async def reset_podium(self):
         await self.remove_all_npc()
         await self.reset_signs()
+        await self.publish("mc.post", "kill @e[type=minecraft:block_display]")
 
     async def reload_podium(self):
         await self.reset_podium()

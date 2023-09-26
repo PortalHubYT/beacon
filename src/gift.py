@@ -1,14 +1,14 @@
 import asyncio
-import shulker as mc
-from dill import dumps
 import importlib
 import random
-
-from tools.pulsar import Portal
-from tools.mimic import gen_fake_profiles
-import tools.config
-
 import time
+
+import shulker as mc
+from dill import dumps
+
+import tools.config
+from tools.mimic import gen_fake_profiles
+from tools.pulsar import Portal
 
 
 class Gift(Portal):
@@ -98,6 +98,7 @@ class Gift(Portal):
         walkspeed = self.config.npc_walk_speed
         
         def spawn_npc(camera_name, spawn_pos, path_to, name, username, display, game_score, thx_message, walkspeed):
+            print(f"-> Spawning gifter {name}")
             
             spawn_pos = str(spawn_pos).replace(" ", ":")
             
