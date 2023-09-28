@@ -44,18 +44,6 @@ config_values = {
         "blend": False,  # Defaults is True (not implemented)
         "only_opaque": False,  # Default is True
     },
-    "particles": [
-    {
-        "particle": "dust",
-        "size": 4, # From 1 to 4, only applies to dust
-        "speed": 0, # Describes how "far" a particle will go during its lifetime
-        "amount": 1, # Amount of particles to spawn
-        "rgb": (255, 255, 255), # Only applies to dust, set to None to match block color
-        "delta": (0, 0, 0), # Spreads the particle allowed distance on each axis
-        "offset": (0, 0, 0), # Offset to current block
-        "force": True, # Force particle to be shown even if out of range
-    }
-    ],
     # PODIUM #####################
     "podium_pos": mc.BlockCoordinates(0, 68, 23),
     "podium_size": 5,
