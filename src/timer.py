@@ -1,9 +1,10 @@
 import asyncio
-import time
+import copy
 import importlib
+import time
+
 import shulker as mc
 from dill import dumps
-import copy
 
 import tools.config
 from tools.pulsar import Portal
@@ -61,15 +62,19 @@ class Timer(Portal):
             await self.publish("mc.lambda", dumps(f))
         else:
             pos1 = origin.offset(x=int(width * (value / 100)), z=-1)
-            pos2 = origin.offset(x=width, y=height - 1, z=-1)
-            zone = mc.BlockZone(pos1, pos2)
-
-            f = lambda: mc.set_zone(zone, "snow_block")
-            await self.publish("mc.lambda", dumps(f))
+            
 
             zone = mc.BlockZone(pos1, pos1.offset(y=height - 1))
             f = lambda: mc.set_zone(zone, "black_concrete")
             await self.publish("mc.lambda", dumps(f))
+
+
+            pos2 = origin.offset(x=width, y=height - 1, z=-1)
+            zone = mc.BlockZone(pos1.offset(x=1), pos2)
+            f = lambda: mc.set_zone(zone, "snow_block")
+            await self.publish("mc.lambda", dumps(f))
+
+            
 
     async def reload_timer(self):
         await self.remove_timer()
