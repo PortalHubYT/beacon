@@ -171,17 +171,17 @@ class Podium(Portal):
         origin = self.config.podium_pos
 
         ### BACKGROUND
-        background_start = origin.offset(x=-self.config.podium_size * 2, y=-5, z=-9)
+        background_start = origin.offset(x=-self.config.podium_size * 2, y=-5, z=-20)
         background_block = mc.Block("end_portal")
         await self.publish(
             "mc.post",
-            f"fill {background_start} {background_start.offset(x = self.config.podium_size * 4, z=7)} {background_block}",
+            f"fill {background_start} {background_start.offset(x = self.config.podium_size * 4, z=18)} {background_block}",
         )
 
         barrier_block = mc.Block("barrier")
         await self.publish(
             "mc.post",
-            f"fill {background_start.offset(y=1)} {background_start.offset(x = self.config.podium_size * 4, y=1, z=7)} {barrier_block}",
+            f"fill {background_start.offset(y=1)} {background_start.offset(x = self.config.podium_size * 4, y=1, z=18)} {barrier_block}",
         )
 
         ###### SIGN LINE
