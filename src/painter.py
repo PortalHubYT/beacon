@@ -58,6 +58,7 @@ class Painter(Portal):
 
     async def toggle_fast_mode(self):
         self.fast_mode = not self.fast_mode
+        print("-> Fast mode is now", self.fast_mode)
 
     async def on_rush(self):
         print("-> Rush painting")
@@ -285,7 +286,7 @@ class Painter(Portal):
                 mc.set_block(pos, p["block"])
                 
                 rgb = mc.rgb_from_block(p["block"])
-                particle_cmd = f"particle dust {rgb[0] / 100:.3f} {rgb[1]/100:.3f} {rgb[2]/100:.3f} 10 {pos} 0.2 0.2 0.2 1 600 force"
+                particle_cmd = f"particle dust {rgb[0] / 100:.3f} {rgb[1]/100:.3f} {rgb[2]/100:.3f} 4 {pos.offset(z=1)} 0.2 0.2 0.2 1 500 force"
                 mc.post(particle_cmd)
         print(
             f"-> Painting '{word}' [{len(flattened_block_list)} blocks] Estimated: {wait_time:.0f}s"
@@ -303,7 +304,10 @@ class Painter(Portal):
             if self.stop_painting:
                 print("\n-> Was ordered to stop painting")
                 break
-
+        
+        #just to clear out particles
+        # particle_cmd = f"particle dust 1.000 1.000 1.000 10 0 0 0 0.2 0.2 0.2 1 1000 force"
+        # await self.publish("mc.post", particle_cmd)
         self.rush_paint = False
         await self.publish("painter.finished")
 
