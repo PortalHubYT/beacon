@@ -7,8 +7,9 @@ import xml.etree.ElementTree as ET
 
 import cairosvg
 import numpy as np
-import shulker as mc
 from PIL import Image
+
+import shulker as mc
 
 
 def get_word_list(
@@ -40,13 +41,14 @@ def get_word_list(
 
     return word_list
 
-def get_svg_data(filename: str, trim_opacity=False) -> str:
+def get_svg_data(filename: str, trim_opacity=True) -> str:
     filename = f"svg/{filename}"
 
     with open(filename, "r") as file:
         svg_data = file.read()
 
-    svg_data = re.sub(r"<g.[^>]*(opacity)(?<!>)[\s\S]*?\/g>", "", svg_data)
+    if trim_opacity:
+        svg_data = re.sub(r"<g.[^>]*(opacity)(?<!>)[\s\S]*?\/g>", "", svg_data)
 
     return svg_data
 
