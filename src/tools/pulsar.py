@@ -1,17 +1,17 @@
 import asyncio
-import aiopulsar
-import pulsar
+import datetime
 import json
-import uuid
-import os
 import logging as log
+import os
+import pickle
 import signal
 import traceback
-import pickle
-import datetime
+import uuid
 
-from pulsar import AuthenticationToken
+import aiopulsar
+import pulsar
 from dotenv import load_dotenv
+from pulsar import AuthenticationToken
 
 load_dotenv()
 
@@ -91,7 +91,7 @@ class Hub:
 
         self.client = await aiopulsar.connect(
             PULSAR_URL,
-            authentication=AuthenticationToken(PULSAR_TOKEN),
+            # authentication=AuthenticationToken(PULSAR_TOKEN),
             logger=pulsar_logger,
         )
         print("-> Pulsar connection established")
