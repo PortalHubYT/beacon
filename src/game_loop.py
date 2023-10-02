@@ -8,13 +8,13 @@ import signal
 import sys
 import time
 
-import shulker as mc
-from dill import dumps
-
 import tools.config
+from dill import dumps
 from tools.mimic import gen_fake_profiles
 from tools.pulsar import Portal
 from tools.svg import get_word_list
+
+import shulker as mc
 
 
 class GameLoop(Portal):
@@ -307,9 +307,10 @@ class GameLoop(Portal):
         )
 
     async def change_next_word(self, word):
+        print(word)
         if word in self.total_word_list:
             print("-> Changing next word to: ", word)
-            self.upcoming_word = word
+            self.upcoming_word = word.split("_$")[0]
             self.svg_ready = False
             await self.publish("painter.compute_svg", word + ".svg")
             self.word_list.insert(0, word)
