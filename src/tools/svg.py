@@ -7,9 +7,8 @@ import xml.etree.ElementTree as ET
 
 import cairosvg
 import numpy as np
-from PIL import Image
-
 import shulker as mc
+from PIL import Image
 
 
 def get_word_list(
@@ -136,7 +135,7 @@ def process_layers(
 
             old_pixel = grid[(x, y)]
             old_alpha = old_pixel[3]
-            new_alpha = pixel[3]
+            new_alpha = 255 if len(pixel) < 4 else pixel[3]
 
             # Skip if the old pixel is fully opaque and we're trimming lower_layers
             if trim and old_alpha == 255:
