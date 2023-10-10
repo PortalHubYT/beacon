@@ -56,6 +56,7 @@ class Podium(Portal):
 
     async def spawn_winner(self, args):
         def spawn_npc(score_template, name, pos, podium_pos, winstreak):
+            print(f"spawn {name}")
 
 
             multiplicator = 1 + winstreak / 10
@@ -123,7 +124,6 @@ class Podium(Portal):
             cmd = f'summon block_display {fire_pos} {{block_state:{{Name:"minecraft:soul_fire"}}}}'
         elif winstreak_amount >= 1:
             cmd = f'summon block_display {fire_pos} {{block_state:{{Name:"minecraft:fire"}}}}'
-        print(cmd)
         await self.publish("mc.post", cmd)
 
         await self.publish(
