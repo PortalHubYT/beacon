@@ -2,7 +2,7 @@ services:
 
   minecraft:
     container_name: minecraft_server
-    image: ghcr.io/portalhubyt/template_server:flat
+    image: ghcr.io/portalhubyt/bedrock:flat
     tty: true
     stdin_open: true
     ports:
@@ -24,7 +24,7 @@ services:
 
   stream:
     container_name: stream
-    image: ghcr.io/portalhubyt/tiktok_streams:${BRANCH_NAME:-latest}
+    image: ghcr.io/portalhubyt/beacon:${BRANCH_NAME:-latest}
     volumes:
       - ./src:/src
     working_dir: /src
