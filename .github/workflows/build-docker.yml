@@ -34,6 +34,6 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: |
-          ghcr.io/portalhubyt/tiktok_streams:${{ github.ref_name }}
+          ghcr.io/portalhubyt/${{ github.repository }}:${{ github.ref_name }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache

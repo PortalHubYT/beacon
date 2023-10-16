@@ -15,7 +15,7 @@ if [[ "$current_branch" == "main" ]]; then
         case $opt in
             "Switch to another branch")
                 echo "Available branches:"
-                git for-each-ref --format="%(refname:short)" refs/
+                git for-each-ref --format="%(refname:short)" refs/ | grep -vE 'main$|HEAD$' | sed 's/^origin\///'
                 read -p "Enter branch name to switch: " branch_name
                 git checkout $branch_name
                 current_branch=$branch_name
