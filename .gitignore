@@ -1,9 +1,1 @@
-.crossbar
-*.pyc
-.env
-test.py
-__pycache__/
-volumes/
-.pyenv/
-test.sh
-src/tools/logs/*.log
+data/

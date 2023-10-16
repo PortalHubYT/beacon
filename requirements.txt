@@ -1,8 +1,5 @@
 TikTokLive
 shulker
 dill
-python-dotenv
-psycopg2
-pulsar-client
-aiopulsar-py
+redis
 prompt_toolkit

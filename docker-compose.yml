@@ -1,0 +1,36 @@
+services:
+
+  minecraft:
+    container_name: minecraft_server
+    image: ghcr.io/portalhubyt/template_server:flat
+    tty: true
+    stdin_open: true
+    ports:
+      - "25565:25565" # Assuming standard Minecraft port
+      - "25575:25575" # RCON port
+    volumes:
+      - ./data/minecraft:/data
+    network_mode: host
+    restart: unless-stopped
+
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - "6379:6379" # Default Redis port
+    volumes:
+      - ./data/redis:/data
+    restart: unless-stopped
+
+  stream:
+    container_name: stream
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/src
+    working_dir: /src
+    stdin_open: true
+    tty: true
+    depends_on:
+      - redis
