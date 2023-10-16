@@ -24,9 +24,7 @@ services:
 
   stream:
     container_name: stream
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/portalhubyt/tiktok_streams:${BRANCH_NAME:-latest}
     volumes:
       - ./src:/src
     working_dir: /src
