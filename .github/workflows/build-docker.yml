@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - 'Dockerfile'
-      - 'requirements.txt'
       - '.github/workflows/build-docker.yml'
     branches:
       - '**' # This matches every branch

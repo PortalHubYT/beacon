@@ -6,8 +6,8 @@ services:
     tty: true
     stdin_open: true
     ports:
-      - "25565:25565" # Assuming standard Minecraft port
-      - "25575:25575" # RCON port
+      - "25565:25565"
+      - "25575:25575"
     volumes:
       - ./data/minecraft:/data
     network_mode: host
@@ -17,7 +17,7 @@ services:
     container_name: redis
     image: redis
     ports:
-      - "6379:6379" # Default Redis port
+      - "6379:6379"
     volumes:
       - ./data/redis:/data
     restart: unless-stopped
