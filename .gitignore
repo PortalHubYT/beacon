@@ -1,2 +1,4 @@
 data/
 src/tools/logs/
+./test*
+test.log

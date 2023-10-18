@@ -2,4 +2,5 @@ textual-dev
 textual
 textual[syntax]
 termcolor
+markdown
 python-on-whales

@@ -1,4 +1,13 @@
-STREAM_GENERAL_LOGS = "/home/alex-wsl/minecraft_related/streams/tiktok/main/test.log"
+
+import os
+
+STREAM_GENERAL_PATH = "/home/alex-wsl/minecraft_related/streams/tiktok/main/test.log"
+STREAM_GENERAL_LOGS = ""
+
+if os.path.exists(STREAM_GENERAL_PATH):
+    with open(STREAM_GENERAL_PATH, "r") as f:
+        STREAM_GENERAL_LOGS = f.read()
+
 
 """Ici on déclare les path Redis à appeler ainsi qu'une petite fonction
 qui génère le markdown suivant:"""
