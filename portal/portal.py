@@ -70,6 +70,9 @@ class FileLog(RichLog):
         self._file_position = 0
 
     async def on_mount(self, event: events.Mount) -> None:
+        if self.filename is None:
+            self.write("Couldn't file the log file.")
+            return
         self._file_descriptor = open(self.filename, 'rb')
         self.set_interval(1, self.read_from_file)
 

@@ -1,12 +1,13 @@
 
 import os
 
-STREAM_GENERAL_PATH = "/home/alex-wsl/minecraft_related/streams/tiktok/main/test.log"
-STREAM_GENERAL_LOGS = ""
+STREAM_GENERAL_LOGS = "/home/alex-wsl/minecraft_related/streams/tiktok/main/test.log"
 
-if os.path.exists(STREAM_GENERAL_PATH):
-    with open(STREAM_GENERAL_PATH, "r") as f:
+if os.path.exists(STREAM_GENERAL_LOGS):
+    with open(STREAM_GENERAL_LOGS, "r") as f:
         STREAM_GENERAL_LOGS = f.read()
+else:
+    STREAM_GENERAL_LOGS = None
 
 
 """Ici on déclare les path Redis à appeler ainsi qu'une petite fonction
