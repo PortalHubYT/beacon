@@ -1,0 +1,5 @@
+textual-dev
+textual
+textual[syntax]
+termcolor
+python-on-whales

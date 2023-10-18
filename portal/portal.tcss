@@ -1,0 +1,73 @@
+Footer {
+    height: 2;
+    dock: bottom;
+    background: $background-lighten-2;
+    width: 1fr;
+    border-top: wide $background;
+    margin-top: -1;
+    color: silver;
+}
+
+#footer_data {
+    align: left middle;
+    margin-left: 1;
+}
+
+#footer_docker_status {
+    overflow: hidden;
+    background: transparent;
+}
+
+#footer_clock {
+    align: right middle;
+}
+
+Dashboard {
+    height: 1fr;
+    width: 1fr;
+    grid-size: 2;
+    grid-columns: 5fr 3fr;
+    grid-gutter: 1;
+}
+
+.command_input {
+    border: panel $primary;
+    height: 1fr;
+}
+
+.file_log {
+    border: panel $warning-darken-3;
+    column-span: 2;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: $background;
+}
+
+.info_box {
+    border: panel $primary-background;
+    height: 1fr;
+    margin: 0;
+    padding-left: 1;
+    padding-top: 1;
+}
+
+MarkdownTable {
+    width: 100%;
+    margin: 0 2;
+    background: $panel;
+    border: wide $background;
+}
+
+MarkdownTableContent {
+    width: 100%;
+    height: auto;
+
+}
+MarkdownTableContent > .markdown-table--header {
+    text-style: bold;
+}
+
+#minecraft_server_console {
+    margin-bottom: 1;
+    height: 1;
+}
