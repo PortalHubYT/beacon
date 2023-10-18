@@ -107,7 +107,7 @@ class FileLog(RichLog):
             self._file_descriptor.close()
 
 
-###     VIEWS       ###
+### VIEWS ###
 
 class Dashboard(Grid):
 
@@ -135,7 +135,7 @@ class MinecraftServer(Vertical):
         yield server_log
    
 
-###     MAIN       ###
+### MAIN ###
 
 class Navbar(Static):
     BINDINGS: list[BindingType] = [
@@ -188,18 +188,19 @@ class Footer(Static):
         Returns a dict of pretty_name: boolean"""
         status = {}
         for pretty_name, service in DOCKER_SERVICES.items():
-            try:
+            if service in docker.container.list():
                 container = docker.container.inspect(service)
                 status[pretty_name] = container.state.running
-            except:
-                status[pretty_name] = False
+            else:
+                status[pretty_name] = None
         return status
         
     def set_docker_status(self) -> str:
         status_bar: RichLog = self.children[0].get_child_by_id("footer_docker_status")
         pretty = {
             False: Text("NO", style="bold red"),
-            True: Text("OK", style="bold green")
+            True: Text("OK", style="bold green"),
+            None: Text("N/A", style="bold yellow")
         }
         state = self.get_docker_status()
         
@@ -216,37 +217,6 @@ class Footer(Static):
 
         computed = Text.assemble(*pre_compute)
         status_bar.write(computed)
-        return ""
-        # w = self.app.get_widget_by_id("Footer")
-        # print(dir(w))
-        # footer = self.get_widget_by_id("footer_data")
-        # id_base = "footer_docker_status_"
-        # for pretty_name, service in DOCKER_SERVICES.items():
-        #     curr_id = id_base + pretty_name
-        #     # First we check if a widget with the service name exists
-        #     try:
-        #         widget = self.get_widget_by_id(curr_id)
-        #     except:
-        #         footer.get_widget_by_id("footer_data").append(Label("", id=curr_id))
-
-        # return
-        # docker_status = ConsoleRenderable()
-        # ok = "OK"
-        # no = "NO"
-        
-
-        # docker_status = ""
-        # for pretty_name, service in DOCKER_SERVICES.items():
-        #     status = f"{pretty_name.capitalize()}: {no}   "
-        #     try:
-        #         container = docker.container.inspect(service)
-        #         if container.state.running:
-        #             status = f"{pretty_name.capitalize()}: {ok}   "
-        #     except:
-        #         pass
-        #     docker_status += status
-            
-        # return docker_status
     
 
     def update_status(self) -> None:
