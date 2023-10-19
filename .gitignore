@@ -1,4 +1,4 @@
 data/
 src/tools/logs/
-./test*
-test.log
+test.*
+*.cpython-39.pyc

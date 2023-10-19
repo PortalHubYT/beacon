@@ -5,62 +5,21 @@ from typing import Union
 
 import termcolor
 from python_on_whales import docker
+from python_on_whales.components.container.cli_wrapper import \
+    Container as DockerContainer
 from retriever import STREAM_GENERAL_INFO, STREAM_GENERAL_LOGS
 from rich.console import ConsoleRenderable
 from rich.text import Text
 from textual import events
 from textual.app import App, ComposeResult
 from textual.binding import Binding, BindingType
-from textual.containers import (Container, Grid, Horizontal, HorizontalScroll,
-                                Vertical, VerticalScroll)
+from textual.containers import Grid, Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import (Button, Collapsible, ContentSwitcher, Input,
-                             Label, Log, Markdown, MarkdownViewer, Placeholder,
-                             RichLog, Static, TabbedContent, TabPane, Tabs,
-                             TextArea)
+from textual.widgets import (Input, Label, Markdown, Placeholder, RichLog,
+                             Static, TabbedContent, TabPane, Tabs)
 
-# Container name of the service
-DOCKER_SERVICES = {
-    "server": "minecraft_server",
-    "redis": "redis_deamon",
-    "stream": "tiktok_stream"
-}
-
-# ["server", "redis", "stream"]
 ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
-### CUSTOM WIDGETS  ###
-
-class DockerLog(RichLog):
-    def __init__(self, container_name: str, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.container_name = container_name
-        self._last_log_size = 0
-
-    async def on_mount(self, event: events.Mount) -> None:
-        self.set_interval(1, self.fetch_docker_logs)
-        self.set_timer(2, lambda: self.write("Resuming from most recent logs above...!"))
-
-    def fetch_docker_logs(self) -> None:
-        """Fetch new logs from the Docker container and update the Log widget."""
-        logs = docker.container.logs(self.container_name, tail=1000)
-        
-        # Split the logs into individual lines
-        lines = logs.splitlines()
-
-        # Determine new lines since the last update
-        new_lines = lines[self._last_log_size:]
-        
-        if not new_lines:
-            return
-        else:
-            new_lines = [ANSI_ESCAPE.sub('', line) for line in new_lines]
-        
-        # Update the Log widget with new content
-        self.write("\n".join(new_lines))
-
-        # Update our current position in the logs
-        self._last_log_size = len(lines)
 
 class FileLog(RichLog):
     def __init__(self, filename: str, *args, **kwargs):
@@ -105,7 +64,6 @@ class FileLog(RichLog):
         # Close the file descriptor when we're done with it
         if self._file_descriptor:
             self._file_descriptor.close()
-
 
 ### VIEWS ###
 
