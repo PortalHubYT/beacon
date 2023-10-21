@@ -1,26 +1,43 @@
 import datetime
 import os
 import re
+import time
 from typing import Union
 
-import termcolor
+from dockman import Compose
 from python_on_whales import docker
 from python_on_whales.components.container.cli_wrapper import \
     Container as DockerContainer
 from retriever import STREAM_GENERAL_INFO, STREAM_GENERAL_LOGS
-from rich.console import ConsoleRenderable
 from rich.text import Text
 from textual import events
 from textual.app import App, ComposeResult
 from textual.binding import Binding, BindingType
 from textual.containers import Grid, Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import (Input, Label, Markdown, Placeholder, RichLog,
-                             Static, TabbedContent, TabPane, Tabs)
+from textual.widgets import (DataTable, Input, Label, Markdown, Placeholder,
+                             RichLog, Static, TabbedContent, TabPane, Tabs)
+
+# TODO: Right justified, last > 3 words chat message?
 
 ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
+dockfleet = Compose()
 
+class DockerLog(RichLog):
+    def __init__(self, container_name: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.container_name = container_name
+        
+    async def on_mount(self, event: events.Mount) -> None:
+        self.update_logs()
+        # self.set_interval(1, self.update_logs)
+    
+    def update_logs(self) -> str:
+        logs = dockfleet.get_docker(self.container_name).logs
+        if logs:
+            self.write("".join(logs))
+    
 class FileLog(RichLog):
     def __init__(self, filename: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -88,11 +105,20 @@ class MinecraftServer(Vertical):
         console.border_title = "Console"
         yield console
         
-        server_log = DockerLog(DOCKER_SERVICES["server"], classes="file_log", id="minecraft_server_logs", auto_scroll=True, max_lines=1000, wrap=True, highlight=True)
-        server_log.border_title = "Server Log"
-        yield server_log
-   
-
+        with Horizontal(id="minecraft_server_logs_area"):
+            server_log = DockerLog("minecraft_server", classes="file_log", id="minecraft_server_logs", auto_scroll=True, max_lines=1000, wrap=True, highlight=True)
+            server_log.border_title = "Server Log"
+            yield server_log
+            
+            rcon_group_infobox = DataTable(classes="info_box", id="rcon_group_infobox")
+            rcon_group_infobox.border_title = "Rcon Logs"
+            yield rcon_group_infobox
+    
+    async def on_mount(self, event: events.Mount) -> None:
+        table: DataTable = self.get_widget_by_id("rcon_group_infobox")
+        table.add_columns("1")
+        table.add_rows("row")
+        
 ### MAIN ###
 
 class Navbar(Static):
@@ -124,7 +150,7 @@ class Navbar(Static):
 
 class Footer(Static):
     
-    date = lambda self: datetime.datetime.now().strftime("%d/%m")
+    date = lambda self: datetime.datetime.now().strftime("%A %d %B")
     hour = lambda self: datetime.datetime.now().strftime("%H:%M:%S")
     separator = lambda self: " | "
     
@@ -134,33 +160,22 @@ class Footer(Static):
             yield Label(self.separator(), classes="footer_separator")
             yield Label(self.hour(), id="footer_clock")
             yield Label(self.separator(), classes="footer_separator")
-            yield RichLog(id="footer_docker_status")
+            yield Label(id="footer_docker_status")
 
     async def on_mount(self, event: events.Mount) -> None:
-        self.set_interval(1, self.update_status)
-        self.set_docker_status()
-
-    @staticmethod
-    def get_docker_status() -> dict:
-        """Using the DOCKER_SERVICES variable, check if the services are running.
-        Returns a dict of pretty_name: boolean"""
-        status = {}
-        for pretty_name, service in DOCKER_SERVICES.items():
-            if service in docker.container.list():
-                container = docker.container.inspect(service)
-                status[pretty_name] = container.state.running
-            else:
-                status[pretty_name] = None
-        return status
+        self.update_time()
+        self.update_docker_status()
+        self.set_interval(1, self.update_time)
+        self.set_interval(5, self.update_docker_status)
         
     def set_docker_status(self) -> str:
-        status_bar: RichLog = self.children[0].get_child_by_id("footer_docker_status")
+        
         pretty = {
             False: Text("NO", style="bold red"),
             True: Text("OK", style="bold green"),
             None: Text("N/A", style="bold yellow")
         }
-        state = self.get_docker_status()
+        state = dockfleet.get_dockers_status()
         
         pre_compute: list[Text] = []
         for container in state:
@@ -173,11 +188,15 @@ class Footer(Static):
             # Services separator
             pre_compute.append(Text("  "))
 
-        computed = Text.assemble(*pre_compute)
-        status_bar.write(computed)
+        return Text.assemble(*pre_compute)
     
-
-    def update_status(self) -> None:
+    def update_docker_status(self) -> None:
+        """Update the docker status."""
+        docker_status: Static = self.get_widget_by_id("footer_docker_status")
+        new_docker_status = self.set_docker_status()
+        docker_status.update(new_docker_status)
+        
+    def update_time(self) -> None:
         """Update the hour."""
 
         clock: Static = self.get_widget_by_id("footer_clock")
@@ -185,11 +204,7 @@ class Footer(Static):
         
         date: Static = self.get_widget_by_id("footer_date")
         date.update(self.date())
-        
-        self.set_docker_status()
-        
-        
-          
+         
 class Portal(Screen):
     
     BINDINGS: list[BindingType] = [

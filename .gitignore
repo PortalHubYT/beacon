@@ -2,3 +2,4 @@ data/
 src/tools/logs/
 test.*
 *.cpython-39.pyc
+*.db*

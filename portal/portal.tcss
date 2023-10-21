@@ -71,3 +71,14 @@ MarkdownTableContent > .markdown-table--header {
     margin-bottom: 1;
     height: 1;
 }
+
+#minecraft_server_logs {
+    width: 3fr;
+}
+
+# #rcon_group_infobox {
+#     width: 1fr;
+#     grid-size: 2;
+#     grid-columns: 1fr 1fr;
+#     grid-gutter: 1;
+# }

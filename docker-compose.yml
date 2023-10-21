@@ -10,8 +10,14 @@ services:
       - "25575:25575"
     volumes:
       - ./data/minecraft:/data
+      - /etc/timezone:/etc/timezone:ro
     network_mode: host
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "1000m"
+          max-file: "5"
 
   redis_deamon:
     container_name: redis
@@ -20,15 +26,30 @@ services:
       - "6379:6379"
     volumes:
       - ./data/redis:/data
+      - /etc/timezone:/etc/timezone:ro
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "1000m"
+          max-file: "5"
 
   tiktok_stream:
     container_name: stream
     image: ghcr.io/portalhubyt/beacon:${BRANCH_NAME:-main}
+    command: python3 test.py
     volumes:
       - ./src:/src
+      - /etc/timezone:/etc/timezone:ro
     working_dir: /src
     stdin_open: true
     tty: true
     depends_on:
       - redis_deamon
+    network_mode: host
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "1000m"
+          max-file: "5"
+
