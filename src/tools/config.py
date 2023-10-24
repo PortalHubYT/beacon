@@ -47,7 +47,7 @@ config_values = {
     # PODIUM #####################
     "podium_pos": mc.BlockCoordinates(0, 68, 23),
     "podium_size": 5,
-    "scores_template": [10, 5, 3, 1, 1],
+    "scores_template": [30, 15, 5, 2, 1],
     "winstreak_minimum_viewers": 50,
     # HINT #####################
     "hint_palette": "stone",
@@ -151,6 +151,11 @@ config_values["banned_words"] = [
     "stand",
     "underwear",
     "balloon",
+    "whisk"
+    "sperm",
+    "sheep",
+    "pizza cutter",
+    "tart"
 ]
 
 
