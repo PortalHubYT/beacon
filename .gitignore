@@ -13,3 +13,5 @@ src/tools/logs/db_error.log
 src/tools/palette_cache/*
 src/tools/png/*
 /venv_skrib/
+src/long_msgs.txt
+src/short_msgs.txt
