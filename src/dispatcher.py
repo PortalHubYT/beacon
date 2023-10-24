@@ -1,16 +1,16 @@
 import asyncio
 import datetime
 import logging
-import time
 import os
+import time
 
-from TikTokLive.types.errors import FailedFetchRoomInfo
 from TikTokLive import TikTokLiveClient
-from TikTokLive.types.events import DisconnectEvent, ConnectEvent
+from TikTokLive.types.errors import FailedFetchRoomInfo
+from TikTokLive.types.events import ConnectEvent, DisconnectEvent
 
 from tools.config import config
-from tools.sanitize import get_profile
 from tools.pulsar import Portal
+from tools.sanitize import get_profile
 
 # Get the absolute path of the current file
 current_file_path = os.path.abspath(__file__)
@@ -61,6 +61,9 @@ class Dispatch(Portal):
         try:
             await self.client.start()
         except Exception as e:
+            import traceback
+            traceback.print_exc()
+            raise e
             error_msg = f"An error occurred: {e}"
             print(error_msg)
             logging.error(error_msg)
@@ -69,8 +72,9 @@ class Dispatch(Portal):
     def connect(self, stream_id):
         if stream_id == "":
             exit("-> No streamer id defined")
-
+            
         try:
+            print(f"-> Trying to connect to @{stream_id}...")
             client = TikTokLiveClient(unique_id=f"@{stream_id}")
         except FailedFetchRoomInfo:
             exit(f"-> Failed to connect to @{stream_id}")
@@ -134,11 +138,19 @@ class Dispatch(Portal):
 
 
 if __name__ == "__main__":
+    # We check if there's an arg, if there is one, it overrides the config.stream_id
+    import sys
+    if len(sys.argv) > 1:
+        config.stream_id = sys.argv[1]
+    
     dispatch = Dispatch()
     while True:
         try:
             asyncio.run(dispatch.run(), debug=True)
         except Exception as e:
+            # get full stacktrace
+            import traceback
+            traceback.print_exc()
             error_msg = f"An error occurred: {e}"
             print(error_msg)
             logging.error(error_msg)
