@@ -1,10 +1,13 @@
 import asyncio
+import sys
 import time
+
 import shulker as mc
 from dill import loads
 
 from tools.config import config
 from tools.pulsar import Portal
+
 
 class Poster(Portal):
     async def on_join(self):
@@ -57,6 +60,8 @@ class Poster(Portal):
         fail = f"-> Failed to connect to: {server_status}"
 
         try:
+            # TODO THIS IS TEMPORARY FIX: UNCOMMEND TRUE RCON PASSWORD
+            # mc.connect(config.server_ip, "test", port=config.rcon_port)
             mc.connect(config.server_ip, config.rcon_password, port=config.rcon_port)
             print(success)
         except Exception as e:

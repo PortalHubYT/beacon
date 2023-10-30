@@ -1,12 +1,12 @@
-import sys
 import asyncio
 import signal
+import sys
 
 import shulker as mc
 
-from tools.postgres import db
-from src.tools.pulsar import Portal
 from src.tools.config import config
+from src.tools.pulsar import Portal
+from tools.postgres import db
 
 if sys.argv[1] == "check_database":
     print("\n-> Checking database connection...")

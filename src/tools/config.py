@@ -27,7 +27,7 @@ config_values = {
         "color": "gold",
     },
     # PAINTER #####################
-    "paint_start": mc.BlockCoordinates(-50, 43, -130),
+    "paint_start": mc.BlockCoordinates(-60, 43, -130),
     "keep_layering": True,
     "drawing_finished_at_percentage": 80,
     "width": 100,
@@ -45,14 +45,13 @@ config_values = {
         "only_opaque": False,  # Default is True
     },
     # PODIUM #####################
-    "podium_pos": mc.BlockCoordinates(0, 68, 23),
-    "podium_size": 5,
+    "podium_pos": mc.BlockCoordinates(4, 60, 18),
     "scores_template": [30, 15, 5, 2, 1],
     "winstreak_minimum_viewers": 50,
     # HINT #####################
     "hint_palette": "stone",
     "word_len_limit": 13,
-    "hint_start": mc.BlockCoordinates(0, 107, -45),
+    "hint_start": mc.BlockCoordinates(-5, 107, -45),
     "letters_to_reveal_in_percentage": 50,
     # MATCH #####################
     "round_per_match": 10,
@@ -64,7 +63,8 @@ config_values = {
     "gifters_name_styling": "random",
     "gifter_message": "&lThanks for the gift! <3",
     # TIMER #####################
-    "timer_start": mc.BlockCoordinates(-55, 175, -132),
+    "timer_start": mc.BlockCoordinates(-65, 175, -132),
+    "timer_lenght": 120,
     "timer_palette": [
         "light_blue_concrete",
         "light_blue_concrete",
