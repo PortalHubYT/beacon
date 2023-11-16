@@ -296,14 +296,18 @@ class GameLoop(Portal):
             score = points_won + random.randint(0, 100)
 
         if (score % 100) - points_won < 0:
+            cmd = f"execute as @e[type=player] at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 5 2"
+            await self.publish("mc.post", cmd)
+
             cmd = f'title {self.config.camera_name} subtitle {{"text":"For reaching {score} points","color":"gold"}}'
             await self.publish("mc.post", cmd)
 
             cmd = f'title {self.config.camera_name} title {{"text":"GG {user["display"]}","color":"gold"}}'
             await self.publish("mc.post", cmd)
+            
 
         await self.publish(
-            "podium.spawn_winner", (len(self.winners), user, score, winstreak_amount)
+            "podium.spawn_winner", (len(self.winners)-1, user["display"], score, points_won)
         )
 
     async def change_next_word(self, word):
