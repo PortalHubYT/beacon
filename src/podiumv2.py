@@ -7,7 +7,9 @@ import time
 import shulker as mc
 from dill import dumps
 
+import models.podium_box as podium_box
 import tools.config
+from models.podium_box import data as box_data
 from tools.pulsar import Portal
 
 # """
@@ -20,22 +22,14 @@ from tools.pulsar import Portal
 # "/data merge entity @e[type=text_display,limit=1,tag=subtext1] {start_interpolation:-1,interpolation_duration:5,transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[-1.2f,0.2f,0.2f],scale:[1f,1f,1f]}}"
 
 class AnimatedSign():
-    def __init__(self, pos, texture, title, subtitle, sign_size = (1.5,1,0.1), translation = (0, 0, 0)):
+    def __init__(self, pos, texture, text, subtext, suffix, sign_size = (1.5,1,0.1), translation = (0, 0, 0)):
         self.pos = pos
         self.texture = texture
-        self.title = title
-        self.subtitle = subtitle
+        self.text = text
+        self.subtext = subtext
+        self.suffix = suffix
         self.sign_size = sign_size
         self.translation = translation
-
-    def update_text(self):
-        pass
-
-    
-
-    def delete(self):
-        pass    
-        
 
 
 class Podium(Portal):
@@ -46,32 +40,23 @@ class Podium(Portal):
         self.winner_ids = []
         random.seed()
 
-        await self.subscribe("podium.spawn_winner", self.spawn_winner)
-        await self.subscribe("podium.reset", self.reset_podium)
+        await self.subscribe("podium.spawn", self.spawn)
         await self.subscribe("podium.reload", self.reload_podium)
         await self.subscribe("podium.remove", self.remove_podium)
+        await self.subscribe("podium.dev", self.spawn)
         await self.subscribe("gl.reload_config", self.reload_config)
 
-        await self.reset_podium()
-        
 
     async def reload_config(self):
         importlib.reload(tools.config)
         self.config = tools.config.config
 
-    async def spawn_winner(self, args):
-        def spawn_npc(score_template, name, pos, podium_pos, winstreak):
-            print(f"spawn {name}")
-
-
-            multiplicator = 1 + winstreak / 10
-            win_colors = ["f", "e", "6", "c", "5", "d", "b"]
-            if winstreak < len(win_colors):
-                points_color = win_colors[winstreak]
-            else:
-                points_color = win_colors[-1]
-
-            cmd = f'npc create --at {pos[0].x}:{pos[0].y}:{pos[0].z}:world --nameplate true "&{points_color}+{int(score_template[podium_pos -1] * multiplicator)}"'
+    async def spawn(self, args):
+    
+        def spawn_npc(x, y, skin):
+            pos = f"{x}:{y}:18.7"
+            cmd = f'npc create --at {pos}:world --nameplate false {skin}'
+            
             ret = mc.post(cmd)
 
             ret = (
@@ -81,78 +66,127 @@ class Podium(Portal):
                 .replace("\n", "")
             )
             id = ret.split("ID ")[1].replace(").", "")
-
-            mc.post(f"npc moveto --pitch {pos[1]} --yaw {pos[2]} --id {id}")
-            mc.post(f"npc skin -s {name} --id {id}")
-
-            return id
-
-        pos, user, score, winstreak_amount = args
-        # name = user["display"]
-
-        # if pos > self.config.podium_size:
-        #     cmd = (
-        #         f'title {self.config.camera_name} actionbar {{"text":'
-        #         + f'"#{pos} | {name[:14].center(14)} | +1pt | Score: {score}"}}'
-        #     )
-        #     await self.publish("mc.post", cmd)
-        #     return
-
-        # spawn_start = self.config.podium_pos.offset(y=-3, z=-0.2)
-        # coords = self.coords_from_pos(spawn_start, pos - 1)
-
-        # score_template = self.config.scores_template
-        # f = lambda: spawn_npc(score_template, name, coords, pos, winstreak_amount)
-        # ret = await self.call("mc.lambda", dumps(f))
-        # self.winner_ids.append({"npc_id": ret, "user_id": user["user_id"]})
-
-        # cmd = f"particle wax_on {coords[0]} 0 0 0 6 100 normal"
-        # await self.publish("mc.post", cmd)
-        # cmd = f"particle wax_off {coords[0]} 0 0 0 6 100 normal"
-        # await self.publish("mc.post", cmd)
+            
+            mc.post(f"npc gravity --id {id}")
+            time.sleep(0.05)
+            print(mc.post(f"npc moveto --x {x - 2} --yaw 30 --id {id}"))
 
 
-       
-        # cmd = f'title {self.config.camera_name} actionbar {{"text":"#{pos} | {name[:14].center(14)} | +{self.config["scores_template"][pos - 1]}pt | Score: {score}"}}'
-        # await self.publish("mc.post", cmd)
+        def spawn_box(x, y, podium_pos, score="none", points="none", box_data=box_data):
+            
+            ##SUPER CURSED DEV CODE
+            import importlib
+
+            import models.podium_box as podium_box
+            importlib.reload(podium_box)
+            box_data = podium_box.data
+
+            names = ["funyrom", "Yasbaltrine", "portalhub", "123456l8", "jeb"]
+            score = ["19856", "156", "123", "1", "0"]
+            points = ["11", "34", "100", "210", "1"]
+            ############
+
+            
+            for data in box_data:
+                tags = [f"podium{i}", "podium"]
+                
+                if "$name" in data:
+                    data = data.replace("$name", f"{names[podium_pos][:9]}").replace("uniform", "default")
+                if "$pos" in data:
+                    data = data.replace("$pos", f"{podium_pos + 1}")
+                if "$score" in data:
+                    data = data.replace("$score", f"{score[podium_pos]}").replace("uniform", "default")
+                if "$points" in data:
+                    data = data.replace("Tags:[\"podium\"]", f"Tags:[\"podium\",\"points{podium_pos}\"]").replace("$points", f"+{points[podium_pos]}").replace("uniform", "default")
+                    tags.append(f"points{podium_pos}")
+                    
+                    x -= (3 - len(points[podium_pos])) * 0.1
+                    
+                box_command = f"summon block_display {x - 1} {y} 18 {{Tags:{tags}, teleport_duration:3, Passengers:[{data}]}}"
+                ret = mc.post(box_command)
+
+
+            tp_box_cmd = f"execute as @e[tag=podium{i}] at @s run tp @s ~-2.5 ~ ~"
+            mc.post(tp_box_cmd)
+
+            sound_cmd = f"execute as @e[type=player] at @s run playsound minecraft:entity.experience_orb.pickup master @s ~ ~ ~ 1 {0.4+(i*0.2)}"
+            mc.post(sound_cmd)
+            
+            time.sleep(0.05)
+            hide_points_cmd = f"data merge entity @e[type=text_display,limit=1,tag=points{i}] {{start_interpolation:30,interpolation_duration:10,transformation:{{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0.8f,-0.1f,0f],scale:[1.5f,1.5f,1f]}}}}"
+            mc.post(hide_points_cmd)
+
+
+
+            
+
+
+
+
+
+
+###################### DEV
+        await self.publish("mc.post", "npc remove all")
+        await self.publish("mc.post", "kill @e[type=!player,tag=podium]")
+        time.sleep(0.2)
+        x = 7.0
+        y = 72.5
+
+        names = ["funyrom", "funy", "portalhub", "herobrine", "jeb"]
+        for i in range(int(args)):
+            f = lambda: spawn_npc(x+0.2, y+0.2, names[i])
+            await self.publish("mc.lambda", dumps(f))
+
+            f = lambda: spawn_box(x + 0.47, y, i)
+            await self.publish("mc.lambda", dumps(f))
+            y -= 2.5
+            time.sleep(0.2)
+
+            
+        
+
+ 
 
     async def remove_podium(self):
-        origin = self.config.podium_pos
-        pass
-        
-    async def build_podium(self):
-        cmd = f"npc remove all"
+        cmd = f"kill @e[tag=podium_sign]"
         await self.publish("mc.post", cmd)
-
-        origin = self.config.podium_pos
-        for y in range(7):
-            cmd = f"setblock {origin.offset(y=y * 2)} barrier"
-            await self.publish("mc.post", cmd)
-
-        pos1 = origin.offset(z=1)
-        pos2 = origin.offset(y=20, z=1)
-        zone = mc.BlockZone(pos1, pos2)
-        cmd = f"fill {zone} light"
-        await self.publish("mc.post", cmd)
-
-        for i in range(6):
-            cmd = f"npc create --at 4.8:{63+i*2}:18.5:world --nameplate false sasa"
-            await self.publish("mc.post", cmd)
-            cmd = f'summon text_display 0.5 69.5 27 {{alignment:"center",text:\'{{"text":"funyrom1","color":"gold"}}\',background:-16777216}}'
-
+    
+    async def build_signs(self):
         def spawn_sign(sign):
-            print(f"SALUT ICI SPAWN {sign}")
-            text1 = f"summon text_display 5.5 74.5 19.00 {{Tags:[\"text1\"],transformation:{{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[2f,2f,1f]}},text:'{{\"text\":\"Salut\"}}',background:16711680}}"
-            mc.post(text1)
+            background = f"summon block_display {sign.pos.x + 2.7} {sign.pos.y - 0.5} {sign.pos.z - 0.1} {{Tags:[\"background{sign.suffix}\",\"sign{sign.suffix}\",\"podium_sign\"],transformation:{{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[2f,1.2f,0.1f]}},block_state:{{Name:\"minecraft:{sign.texture}\"}},teleport_duration:5}}"
+            print(mc.post(background))
 
-        players_sign = AnimatedSign(origin.offset(y=20), "stone", "funyrom", "funyrom1")
+            text = f"summon text_display {sign.pos.x + 3.7} {sign.pos.y - 0.02} {sign.pos.z + 0.0} {{shadow:1b,Tags:[\"text{sign.suffix}\",\"sign{sign.suffix}\",\"podium_sign\"],transformation:{{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[2f,2f,1f]}},text:'{{\"text\":\"{sign.text}\",\"bold\":true}}',background:16711680,teleport_duration:5}}"
+            print(mc.post(text))
+
+            subtext = f"summon text_display {sign.pos.x + 3.7} {sign.pos.y - 0.38} {sign.pos.z + 0.0} {{shadow:1b,Tags:[\"subtext{sign.suffix}\",\"sign{sign.suffix}\",\"podium_sign\"],transformation:{{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.3f,1.3f,1f]}},text:'{{\"text\":\"{sign.subtext}\", \"color\":\"gold\",\"bold\":true}}',background:16711680,teleport_duration:5}}"
+            print(mc.post(subtext))
+
+            tp_background = f"execute at @e[limit=1,tag=background{sign.suffix}] run tp @e[limit=1,tag=background{sign.suffix}] ~-2.6 ~ ~"
+            print(mc.post(tp_background))
+
+            tp_text = f"execute at @e[limit=1,tag=text{sign.suffix}] run tp @e[limit=1,tag=text{sign.suffix}] ~-2.6 ~ ~"
+            print(mc.post(tp_text))
+            
+            tp_subtext = f"execute at @e[limit=1,tag=subtext{sign.suffix}] run tp @e[limit=1,tag=subtext{sign.suffix}] ~-2.6 ~ ~"
+            print(mc.post(tp_subtext))
+
+        origin = self.config.podium_pos
+        players_sign = AnimatedSign(origin.offset(y=17.5), "dark_oak_planks", "2354", "players", "1")
         f = lambda: spawn_sign(players_sign)
         await self.publish("mc.lambda", dumps(f))
 
-    async def reset_podium(self):
-        pass
+        players_sign = AnimatedSign(origin.offset(y=16.2), "spruce_planks", "1.6x", "boost", "2")
+        f = lambda: spawn_sign(players_sign)
+        await self.publish("mc.lambda", dumps(f))
+    async def build_podium(self):
+    
+        await self.build_signs()
+            
+
+        
+
     async def reload_podium(self):
-        await self.reset_podium()
         await self.remove_podium()
         await self.reload_config()
         await self.build_podium()
