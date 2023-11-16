@@ -8,13 +8,13 @@ import signal
 import sys
 import time
 
-import tools.config
+import shulker as mc
 from dill import dumps
+
+import tools.config
 from tools.mimic import gen_fake_profiles
 from tools.pulsar import Portal
 from tools.svg import get_word_list
-
-import shulker as mc
 
 
 class GameLoop(Portal):
@@ -171,7 +171,7 @@ class GameLoop(Portal):
 
     async def place_camera(self):
         print("-> Placing camera")
-        await self.publish("mc.post", f"gamemode creative {self.config.camera_name}")
+        await self.publish("mc.post", f"gamemode spectator {self.config.camera_name}")
         await self.publish(
             "mc.post", f"tp {self.config.camera_name} {self.config.camera_pos}"
         )
