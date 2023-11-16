@@ -300,6 +300,9 @@ class Painter(Portal):
             
             f = lambda: paint_chunk(height, start_pos, chunk)
             await self.publish("mc.lambda", dumps(f))
+            
+            # if n % 10 == 0:
+            #     await self.publish("mc.post", "execute as @e[type=player] at @s run playsound minecraft:entity.fox.sniff master @s ~ ~ ~ 0.2 0.8")
 
             if self.stop_painting:
                 print("\n-> Was ordered to stop painting")
