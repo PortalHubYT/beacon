@@ -27,7 +27,7 @@ config_values = {
         "color": "gold",
     },
     # PAINTER #####################
-    "paint_start": mc.BlockCoordinates(-60, 43, -130),
+    "paint_start": mc.BlockCoordinates(-62, 43, -130),
     "keep_layering": True,
     "drawing_finished_at_percentage": 80,
     "width": 100,
@@ -63,7 +63,7 @@ config_values = {
     "gifters_name_styling": "random",
     "gifter_message": "&lThanks for the gift! <3",
     # TIMER #####################
-    "timer_start": mc.BlockCoordinates(-65, 175, -132),
+    "timer_start": mc.BlockCoordinates(-67, 175, -132),
     "timer_lenght": 120,
     "timer_palette": [
         "light_blue_concrete",
