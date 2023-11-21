@@ -44,6 +44,7 @@ class GameLoop(Portal):
         self.previous_winners = []
         self.winstreakers = []
         self.winstreak_enabled = False
+        self.viewer_boost = 1
 
         await self.place_camera()
 
@@ -58,12 +59,16 @@ class GameLoop(Portal):
         await self.subscribe("painter.joined", self.on_painter_joined)
         await self.subscribe("live.viewer_update", self.toggle_winstreak)
         await self.subscribe("gl.pause", self.toggle_pause)
+        await self.subscribe("live.viewer_update", self.viewer_update)
 
         await self.subscribe("gl.clear_map", self.clear_map)
         await self.subscribe("gl.reload_map", self.reload_map)
         await self.subscribe("gl.fast_mode", self.toggle_fast_mode)
 
         await self.game_loop()
+
+    async def viewer_update(self, viewer_count):
+        self.viewer_boost = 1 + viewer_count / 1000
 
     async def reload_config(self):
         importlib.reload(tools.config)
@@ -263,6 +268,7 @@ class GameLoop(Portal):
             else:
                 self.rush_round = True
 
+        
         scores_template = self.config.scores_template
         if len(self.winners) - 1 < len(scores_template):
             points_won = scores_template[len(self.winners) - 1]
@@ -284,7 +290,7 @@ class GameLoop(Portal):
         multiplier = self.compute_winstreak_multiplier(winstreak_amount)
 
         score = await self.call(
-            "db", ("add_and_get_user_score", points_won * multiplier, user["user_id"])
+            "db", ("add_and_get_user_score", int(points_won * self.viewer_boost), user["user_id"])
         )
 
         if not score:
