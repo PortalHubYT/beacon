@@ -37,10 +37,11 @@ class Podium(Portal):
     async def on_join(self):
         await self.reload_config()
 
-        self.winner_ids = []
+        self.winners = []
         random.seed()
 
         await self.subscribe("podium.spawn_winner", self.spawn)
+        await self.subscribe("podium.fake_win", self.fake_win)
         await self.subscribe("live.viewer_update", self.update_signs)
         await self.subscribe("podium.reload", self.reload_podium)
         await self.subscribe("podium.reset", self.reset_podium)
@@ -52,8 +53,18 @@ class Podium(Portal):
         importlib.reload(tools.config)
         self.config = tools.config.config
 
+
+    async def fake_win(self):
+
+        pos = len(self.winners)
+        name = f"portal{pos}"
+        score = 10 + (pos * 30)
+        points_won = 10 - pos
+        
+        await self.publish("podium.spawn_winner", (pos, name, score, points_won) )
+
     async def spawn(self, args):
-    
+        self.winners.append(args)
         def spawn_npc(x, y, skin):
             pos = f"{x}:{y}:18.7"
             cmd = f'npc create --at {pos}:world --nameplate false {skin}'
@@ -74,19 +85,7 @@ class Podium(Portal):
 
 
         def spawn_box(x, y, podium_pos, name, score, points, box_data=box_data):
-            
-            # ##SUPER CURSED DEV CODE
-            # import importlib
 
-            # import models.podium_box as podium_box
-            # importlib.reload(podium_box)
-            # box_data = podium_box.data
-
-            # names = ["funyrom", "Yasbaltrine", "portalhub", "123456l8", "jeb"]
-            # score = ["19856", "156", "123", "1", "0"]
-            # points = ["11", "34", "100", "210", "1"]
-            ############
-            print(f"{x=},{y=},{podium_pos=},{name=},{score=},{points=}")
             
             for data in box_data:
                 tags = [f"podium{podium_pos}", "podium"]
@@ -149,6 +148,7 @@ class Podium(Portal):
         await self.publish("mc.post", tp_box_cmd) 
         time.sleep(0.2)
         await self.publish("mc.post", "kill @e[type=!player,tag=podium]")
+        self.winners = []
  
 
     async def remove_podium(self):
@@ -157,6 +157,8 @@ class Podium(Portal):
     
     async def update_signs(self, viewer_count):
         cmd = f"data merge entity @e[tag=text1,limit=1] {{text:'{{\"bold\":true,\"text\":\"{viewer_count}\"}}'}}"
+        await self.publish("mc.post", cmd)
+        cmd = f"data merge entity @e[tag=text2,limit=1] {{text:'{{\"bold\":true,\"text\":\"{1 + viewer_count/1000:.1f}x\"}}'}}"
         await self.publish("mc.post", cmd)
 
 
