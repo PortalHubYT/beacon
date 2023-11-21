@@ -1,5 +1,6 @@
 import asyncio
 import random
+import textwrap
 import time
 from pprint import pprint
 
@@ -20,7 +21,7 @@ CHARACTER = PLATFORM.offset(0.88, 1, 1.75)
 PARTICLES = CHARACTER.offset(0.06, 1, 0.5)
 
 CHAT_BUBBLE = PLATFORM.offset(-1.3, 2.27, 0)
-CHAT_TEXT = CHAT_BUBBLE.offset(2, 1, 1)
+CHAT_TEXT = CHAT_BUBBLE.offset(2, 0.8, 1)
 
 ################################################################################
 
@@ -97,11 +98,28 @@ class Gift(Portal):
         f = lambda: spawn_bubble(cmds)
         await self.publish("mc.lambda", dumps(f))
 
-        cmd = """/summon text_display ~ ~ ~ {line_width:50,alignment:"center",Tags:["gifters_chat"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[2f,2f,1f]},text:'{"text":"$text","font":"uniform","color":"#1C1B18","bold":true}',background:16711680}"""
-        cmd = cmd.replace("/summon", "summon")
-        cmd = cmd.replace("~ ~ ~", str(CHAT_TEXT))
-        cmd = cmd.replace("$text", chat)
-        await self.publish("mc.post", cmd)
+
+        chat = textwrap.wrap(chat, 16, max_lines=2, placeholder='...')
+
+        
+        if len(chat) == 1:
+            cmd = """/summon text_display ~ ~ ~ {alignment:"center",Tags:["gifters_chat"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[2f,2f,1f]},text:'{"text":"$text","font":"uniform","color":"#1C1B18","bold":true}',background:16711680}"""
+            cmd = cmd.replace("/summon", "summon")
+            cmd = cmd.replace("~ ~ ~", str(CHAT_TEXT.offset(x=-0.05,y=0.35)))
+            cmd = cmd.replace("$text", chat[0])
+            await self.publish("mc.post", cmd)
+        else: 
+            cmd = """/summon text_display ~ ~ ~ {alignment:"center",Tags:["gifters_chat"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.7f,1.7f,1f]},text:'{"text":"$text","font":"uniform","color":"#1C1B18","bold":true}',background:16711680}"""
+            cmd = cmd.replace("/summon", "summon")
+            cmd = cmd.replace("~ ~ ~", str(CHAT_TEXT.offset(y=0.55)))
+            cmd = cmd.replace("$text", chat[0])
+            await self.publish("mc.post", cmd)
+            cmd = """/summon text_display ~ ~ ~ {alignment:"center",Tags:["gifters_chat"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.7f,1.7f,1f]},text:'{"text":"$text","font":"uniform","color":"#1C1B18","bold":true}',background:16711680}"""
+            cmd = cmd.replace("/summon", "summon")
+            cmd = cmd.replace("~ ~ ~", str(CHAT_TEXT.offset(y=0.2)))
+            cmd = cmd.replace("$text", chat[1])
+            await self.publish("mc.post", cmd)
+
 
     async def remove_chat(self):
         cmd = 'kill @e[tag=gifters_chat]'
