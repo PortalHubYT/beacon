@@ -20,12 +20,11 @@ CHARACTER = PLATFORM.offset(0.88, 1, 1.75)
 PARTICLES = CHARACTER.offset(0.06, 1, 0.5)
 
 CHAT_BUBBLE = PLATFORM.offset(-1.3, 2.27, 0)
-CHAT_TEXT = CHAT_BUBBLE.offset(0.9, 1.12, 1)
-CHAT_NAME = CHAT_TEXT.offset(0, 0.3, 0)
+CHAT_TEXT = CHAT_BUBBLE.offset(2, 1, 1)
 
 ################################################################################
 
-class Template(Portal):
+class Gift(Portal):
     async def on_join(self):
         self.current_gifter = {
             "npc_id": None,
@@ -33,13 +32,18 @@ class Template(Portal):
         }
         
         self.current_yaw = 0
+        self.chat_spawn_time = None
         
         await self.subscribe("live.gift", self.on_gift)
-        # await self.subscribe("live.comment", self.on_comment)
+        await self.subscribe("live.comment", self.on_comment)
+        await self.subscribe("gift.spawn_platform", self.spawn_platform)
+        await self.subscribe("gift.spawn_gifter", self.spawn_gifter)
+        await self.subscribe("gift.spawn_chat", self.spawn_chat)
+        await self.subscribe("gift.remove_chat", self.remove_chat)
     
         await self.clean_gifters()
-        await self.spawn_gifters()
-        await self.loop_around()
+        await self.spawn_platform()
+        await self.loop()
         
     async def clean_gifters(self):
         await self.publish("mc.post", remove_model("gifters_platform"))
@@ -48,34 +52,20 @@ class Template(Portal):
         await self.publish("mc.post", remove_model("gifters_name"))
         await self.publish("mc.post", "npc remove all")
         
-    async def spawn_gifters(self):
+    async def spawn_platform(self):
+        print("spawn platform")
         
         cmds = get_spawn_commands("gifters_platform", PLATFORM)
         for cmd in cmds:
             await self.publish("mc.post", cmd)
-        cmds = get_spawn_commands("gifters_chat", CHAT_BUBBLE)
-        for cmd in cmds:
-            await self.publish("mc.post", cmd)
-        cmd = """summon text_display $pos {text:'{"text":"DEFAULT"}', Tags:["gifters_text"]}""".replace("$pos", str(CHAT_TEXT))
-        await self.publish("mc.post", cmd)
-        cmd = """summon text_display $pos {text:'{"text":"DEFAULT"}', Tags:["gifters_name"]}""".replace("$pos", str(CHAT_NAME))
-        await self.publish("mc.post", cmd)
-    
-    async def on_comment(self, user):
-        if user["user_id"] == self.current_gifter["user"]["user_id"]:
-            cmd = ...
-    
-    async def on_gift(self, user):
         
-        if self.current_gifter["npc_id"] != None:
-            cmd = f"npc remove {self.current_gifter['npc_id']}"
-            await self.publish("mc.post", cmd)
-        
-        def spawn_shopper(name, pos):
+
+    async def spawn_gifter(self, user):
+        print("spawn gifter")
+        def spawn_gifter(name, pos):
             cmd = f'npc create --at {pos}:world --nameplate false {name}'
             
             ret = mc.post(cmd)
-
             ret = (
                 ret.replace("\x1b[0m", "")
                 .replace("\x1b[32;1m", "")
@@ -90,16 +80,52 @@ class Template(Portal):
         
         name = user['display']
         pos = str(CHARACTER).replace(" ", ":")
-        f = lambda: spawn_shopper(name, pos)
+        f = lambda: spawn_gifter(name, pos)
         self.current_gifter["npc_id"] = await self.call("mc.lambda", dumps(f))
         self.current_gifter["user"] = user
+        pass
     
-    async def loop_around(self):
+    async def spawn_chat(self, chat):
+        await self.remove_chat()
+        self.chat_spawn_time = time.time()
+
+        print("chat:", chat)
+        def spawn_bubble(cmds):
+            for cmd in cmds:
+                print(mc.post(cmd))
+        cmds = get_spawn_commands("gifters_chat", CHAT_BUBBLE)
+        f = lambda: spawn_bubble(cmds)
+        await self.publish("mc.lambda", dumps(f))
+
+        cmd = """/summon text_display ~ ~ ~ {line_width:50,alignment:"center",Tags:["gifters_chat"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[2f,2f,1f]},text:'{"text":"$text","font":"uniform","color":"#1C1B18","bold":true}',background:16711680}"""
+        cmd = cmd.replace("/summon", "summon")
+        cmd = cmd.replace("~ ~ ~", str(CHAT_TEXT))
+        cmd = cmd.replace("$text", chat)
+        await self.publish("mc.post", cmd)
+
+    async def remove_chat(self):
+        cmd = 'kill @e[tag=gifters_chat]'
+        await self.publish("mc.post", cmd)
+
+    
+    async def on_comment(self, user):
+        if user["user_id"] == self.current_gifter["user"]["user_id"]:
+            cmd = ...
+    
+    async def on_gift(self, user):
+        
+        if self.current_gifter["npc_id"] != None:
+            cmd = f"npc remove {self.current_gifter['npc_id']}"
+            await self.publish("mc.post", cmd)
+
+        await self.spawn_gifter(user)
+        
+    async def loop(self):
         
         i = 0
         while True:
             if self.current_gifter["npc_id"] == None:
-                await asyncio.sleep(0.05)
+                await asyncio.sleep(0.1)
                 continue
             
             cmd = f"npc moveto --yaw {i} --id {self.current_gifter['npc_id']}"
@@ -112,8 +138,12 @@ class Template(Portal):
                 await self.publish("mc.post", cmd)
             if i > 360:
                 i = 0
+            if self.chat_spawn_time != None:
+                if time.time() - self.chat_spawn_time > 5:
+                    await self.remove_chat()
+                    self.chat_spawn_time = None
         
 if __name__ == "__main__":
-    action = Template()
+    action = Gift()
     asyncio.run(action.run())
 
