@@ -30,8 +30,7 @@ class AnimatedSign():
         self.suffix = suffix
         self.sign_size = sign_size
         self.translation = translation
-
-
+       
 class Podium(Portal):
     
     async def on_join(self):
@@ -54,14 +53,16 @@ class Podium(Portal):
         self.config = tools.config.config
 
 
-    async def fake_win(self):
-
-        pos = len(self.winners)
-        name = f"portal{pos}"
-        score = 10 + (pos * 30)
-        points_won = 10 - pos
+    async def fake_win(self, num):
         
-        await self.publish("podium.spawn_winner", (pos, name, score, points_won) )
+        for i in range(int(num)):
+            pos = len(self.winners)
+            name = f"portal{pos}"
+            score = 10 + (pos * 30)
+            points_won = 10 - pos
+            
+            await self.publish("podium.spawn_winner", (pos, name, score, points_won))
+            await asyncio.sleep(0.01)
 
     async def spawn(self, args):
         self.winners.append(args)
@@ -112,6 +113,13 @@ class Podium(Portal):
             sound_cmd = f"execute as @e[type=player] at @s run playsound minecraft:entity.experience_orb.pickup master @s ~ ~ ~ 1 {0.4+(podium_pos*0.2)}"
             mc.post(sound_cmd)
             
+            import random
+            for _ in range(random.randint(3, 15)):
+                y_range = random.uniform(-2, 2)
+                speed_range = random.uniform(0.02, 0.09)
+                particle_cmd = f"particle minecraft:end_rod {x - 1} {y + 1.75} 19 -4 {y_range} 0 {speed_range} 0"
+                mc.post(particle_cmd)
+            
             time.sleep(0.05)
             hide_points_cmd = f"data merge entity @e[type=text_display,limit=1,tag=points{podium_pos}] {{start_interpolation:30,interpolation_duration:10,transformation:{{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0.8f,-0.1f,0f],scale:[1.5f,1.5f,1f]}}}}"
             mc.post(hide_points_cmd)
@@ -145,7 +153,7 @@ class Podium(Portal):
         await self.publish("mc.post", "npc remove all")
 
         tp_box_cmd = f"execute as @e[tag=podium] at @s run tp @s ~2.5 ~ ~"
-        await self.publish("mc.post", tp_box_cmd) 
+        await self.publish("mc.post", tp_box_cmd)
         time.sleep(0.2)
         await self.publish("mc.post", "kill @e[type=!player,tag=podium]")
         self.winners = []
