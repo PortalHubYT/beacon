@@ -1,0 +1,12 @@
+cmd = """
+
+/summon block_display ~-0.5 ~-0.5 ~-0.5 {Passengers:[{id:"minecraft:block_display",block_state:{Name:"minecraft:pearlescent_froglight",Properties:{axis:"x"}},transformation:[1.4868f,0.0000f,0.0000f,0.1348f,0.0000f,0.5469f,0.0000f,0.2422f,0.0000f,0.0000f,1.8457f,-0.0703f,0.0000f,0.0000f,0.0000f,1.0000f],Tags:["gifters_platform"]},{id:"minecraft:block_display",block_state:{Name:"minecraft:pearlescent_froglight",Properties:{axis:"x"}},transformation:[1.6919f,0.0000f,0.0000f,0.0322f,0.0000f,0.5469f,0.0000f,0.2422f,0.0000f,0.0000f,1.6406f,0.0322f,0.0000f,0.0000f,0.0000f,1.0000f],Tags:["gifters_platform"]},{id:"minecraft:block_display",block_state:{Name:"minecraft:pearlescent_froglight",Properties:{axis:"x"}},transformation:[1.8970f,0.0000f,0.0000f,-0.0703f,0.0000f,0.5469f,0.0000f,0.2422f,0.0000f,0.0000f,1.4355f,0.1348f,0.0000f,0.0000f,0.0000f,1.0000f],Tags:["gifters_platform"]},{id:"minecraft:block_display",block_state:{Name:"minecraft:dark_oak_planks",Properties:{}},transformation:[1.6992f,0.0000f,0.0000f,0.0469f,0.0000f,0.6250f,0.0000f,0.1250f,0.0000f,0.0000f,2.1094f,-0.1875f,0.0000f,0.0000f,0.0000f,1.0000f],Tags:["gifters_platform"]},{id:"minecraft:block_display",block_state:{Name:"minecraft:dark_oak_planks",Properties:{}},transformation:[1.9336f,0.0000f,0.0000f,-0.0703f,0.0000f,0.6250f,0.0000f,0.1250f,0.0000f,0.0000f,1.8750f,-0.0703f,0.0000f,0.0000f,0.0000f,1.0000f],Tags:["gifters_platform"]},{id:"minecraft:block_display",block_state:{Name:"minecraft:dark_oak_planks",Properties:{}},transformation:[2.1680f,0.0000f,0.0000f,-0.1875f,0.0000f,0.6250f,0.0000f,0.1250f,0.0000f,0.0000f,1.6406f,0.0469f,0.0000f,0.0000f,0.0000f,1.0000f],Tags:["gifters_platform"]},{id:"minecraft:text_display",text:"{\"text\":\"GIFTER\",\"color\":\"#ffd06f\",\"bold\":\"true\",\"italic\":\"false\",\"underlined\":\"false\",\"strikethrough\":\"false\",\"font\":\"minecraft:default\"}",text_opacity:255,background:0,alignment:"center",line_width:210,default_background:false,transformation:[1.4063f,0.0000f,0.0000f,0.8738f,0.0000f,1.2500f,0.0000f,0.2969f,0.0000f,0.0000f,1.8750f,1.9672f,0.0000f,0.0000f,0.0000f,1.0000f],Tags:["gifters_platform"]}]}
+
+
+"""
+
+data = cmd.replace("uniform", "default")
+data = data.strip()
+data = data.replace("/summon block_display ~-0.5 ~-0.5 ~-0.5 {Passengers:[", "")[:-2]
+data = data.split("]},")
+data = [d + "]}" for d in data]
