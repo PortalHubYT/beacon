@@ -5,6 +5,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+# For something to end up in a config var it must be one of the following:
+# - A constant shared by multiple components (ex: camera)
+# - A value that is subject to frequent change (every stream, every day...) (ex: stream_id)
+# If a value is rarely changed and used by only one component, it should be declared as a CONSTANT at the top of the component's file
+
 config_values = {
     # ENV #####################
     "server_ip": os.getenv("MINECRAFT_IP"),
