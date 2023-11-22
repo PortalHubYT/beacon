@@ -62,10 +62,10 @@ class Podium(Portal):
             points_won = 10 - pos
             
             await self.publish("podium.spawn_winner", (pos, name, score, points_won))
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.3)
 
     async def spawn(self, args):
-        self.winners.append(args)
+        
         def spawn_npc(x, y, skin):
             pos = f"{x}:{y}:18.7"
             cmd = f'npc create --at {pos}:world --nameplate false {skin}'
@@ -79,10 +79,13 @@ class Podium(Portal):
                 .replace("\n", "")
             )
             id = ret.split("ID ")[1].replace(").", "")
+
             
             mc.post(f"npc gravity --id {id}")
             time.sleep(0.05)
             print(mc.post(f"npc moveto --x {x - 2} --yaw 30 --id {id}"))
+            return id
+            
 
 
         def spawn_box(x, y, podium_pos, name, score, points, box_data=box_data):
@@ -132,25 +135,12 @@ class Podium(Portal):
         await self.publish("mc.lambda", dumps(f))
         
         f = lambda: spawn_npc(x+0.2, y+0.2, name)
-        await self.publish("mc.lambda", dumps(f))
+        id = await self.call("mc.lambda", dumps(f))
+        self.winners.append(id)
 
-###################### DEV
-        # await self.publish("mc.post", "npc remove all")
-        # await self.publish("mc.post", "kill @e[type=!player,tag=podium]")
-        # time.sleep(0.2)
-        
-
-        # names = ["funyrom", "funy", "portalhub", "herobrine", "jeb"]
-        # for i in range(int(args)):
-            
-
-        
-        #     time.sleep(0.2)
-
-            
-        
     async def reset_podium(self):
-        await self.publish("mc.post", "npc remove all")
+        for winner in self.winners:
+            await self.publish("mc.post", f"npc remove {winner}")
 
         tp_box_cmd = f"execute as @e[tag=podium] at @s run tp @s ~2.5 ~ ~"
         await self.publish("mc.post", tp_box_cmd)
@@ -160,7 +150,8 @@ class Podium(Portal):
  
 
     async def remove_podium(self):
-        await self.publish("mc.post", "npc remove all")
+        for winner in self.winners:
+            await self.publish("mc.post", f"npc remove {winner}")
         await self.publish("mc.post", "kill @e[type=!player,tag=podium]")
     
     async def update_signs(self, viewer_count):
@@ -191,11 +182,11 @@ class Podium(Portal):
             print(mc.post(tp_subtext))
 
         origin = self.config.podium_pos
-        players_sign = AnimatedSign(origin.offset(y=17.5), "dark_oak_planks", "2354", "players", "1")
+        players_sign = AnimatedSign(origin.offset(y=17.5), "dark_oak_planks", "0", "players", "1")
         f = lambda: spawn_sign(players_sign)
         await self.publish("mc.lambda", dumps(f))
 
-        players_sign = AnimatedSign(origin.offset(y=16.2), "spruce_planks", "1.6x", "boost", "2")
+        players_sign = AnimatedSign(origin.offset(y=16.2), "spruce_planks", "1.0x", "boost", "2")
         f = lambda: spawn_sign(players_sign)
         await self.publish("mc.lambda", dumps(f))
 
