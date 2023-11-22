@@ -1,9 +1,9 @@
 import asyncio
+import math
 import random
 import textwrap
 import time
 from pprint import pprint
-import math
 
 import shulker as mc
 from dill import dumps
@@ -40,24 +40,25 @@ class Gift(Portal):
         await self.subscribe("live.comment", self.on_comment)
         await self.subscribe("gift.spawn_platform", self.spawn_platform)
         await self.subscribe("gift.spawn_gifter", self.spawn_gifter)
+        await self.subscribe("gift.remove_gifter", self.remove_gifter)
         await self.subscribe("gift.spawn_chat", self.spawn_chat)
         await self.subscribe("gift.remove_chat", self.remove_chat)
     
-        await self.clean_gifters()
-        await self.spawn_platform()
-        await self.loop()
-        
-    async def clean_gifters(self):
-        await self.publish("mc.post", remove_model("gifters_platform"))
-        await self.publish("mc.post", remove_model("gifters_chat"))
-        await self.publish("mc.post", remove_model("gifters_text"))
-        await self.publish("mc.post", remove_model("gifters_name"))
-
-        
         # can't use because we don't keep the npc id between reloads
         # if self.current_gifter['npc_id'] != None:
         #     await self.publish("mc.post", f"npc remove {self.current_gifter['npc_id']}")
         await self.publish("mc.post", f"npc remove all")
+        await self.publish("mc.post", remove_model("gifters_platform"))
+        await self.publish("mc.post", "kill @e[tag=gifters_name]")
+        await self.spawn_platform()
+        await self.loop()
+        
+
+        
+        
+        
+        
+        
     async def spawn_platform(self):
         print("spawn platform")
         
@@ -65,7 +66,7 @@ class Gift(Portal):
         for cmd in cmds:
             await self.publish("mc.post", cmd)
 
-        cmd = """/summon text_display ~ ~ ~ {start_interpolation:0,interpolation_duration:20,line_width:100,alignment:"center",Tags:["gifters_chat"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.3f,1.3f,1f]},text:'{"text":"$text","color":"#630E55","bold":true}',background:16711680}"""
+        cmd = """/summon text_display ~ ~ ~ {start_interpolation:0,interpolation_duration:20,line_width:100,alignment:"center",Tags:["gifters_platform"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.3f,1.3f,1f]},text:'{"text":"$text","color":"#630E55","bold":true}',background:16711680}"""
         cmd = cmd.replace("/summon", "summon")
         cmd = cmd.replace("~ ~ ~", str(PLATFORM.offset(x=0.85, y=0.3, z=2)))
         cmd = cmd.replace("$text", "GIFTER")
@@ -89,19 +90,33 @@ class Gift(Portal):
             time.sleep(0.05)
             return id
         
+        cmd = f"particle minecraft:cloud {str(PLATFORM.offset(x=1, y=1.5, z=1.5))} 0 0.5 0 0.05 100"
+        await self.publish("mc.post", cmd)
+        particles_cmd = f"particle minecraft:wax_off {str(PLATFORM.offset(x=1, y=1.5, z=1.5))} 0.2 0.4 0.2 6 50"
+        await self.publish("mc.post", particles_cmd)
+        
         name = user['display']
         pos = str(CHARACTER).replace(" ", ":")
         f = lambda: spawn_gifter(name, pos)
+        self.current_gifter["npc_id"] = await self.call("mc.lambda", dumps(f))
 
-        cmd = """/summon text_display ~ ~ ~ {start_interpolation:0,interpolation_duration:20,line_width:100,alignment:"center",Tags:["gifters_name"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.3f,1.3f,1f]},text:'{"text":"$text","color":"#3B0439","bold":true}',background:-2182660}"""
+        
+
+        cmd = """/summon text_display ~ ~ ~ {start_interpolation:0,interpolation_duration:20,shadow:1b,alignment:"center",Tags:["gifters_name"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.9f,1.9f,1f]},text:'{"text":"$text","font":"uniform","color":"white","bold":true}',background:838860800}"""
         cmd = cmd.replace("/summon", "summon")
-        cmd = cmd.replace("~ ~ ~", str(PLATFORM.offset(x=0.85, y=0.8, z=2)))
-        cmd = cmd.replace("$text", "GIFTER")
+        cmd = cmd.replace("~ ~ ~", str(PLATFORM.offset(x=1.05, y=2, z=-1)))
+        cmd = cmd.replace("$text", name)
         await self.publish("mc.post", cmd)
 
-        self.current_gifter["npc_id"] = await self.call("mc.lambda", dumps(f))
-        self.current_gifter["user"] = user
         
+        self.current_gifter["user"] = user
+    
+    async def remove_gifter(self):
+        if self.current_gifter["npc_id"] != None:
+            cmd = f"npc remove {self.current_gifter['npc_id']}"
+            await self.publish("mc.post", cmd)
+            cmd = f"kill @e[tag=gifters_name]"
+            await self.publish("mc.post", cmd)
         
     
     async def spawn_chat(self, chat):
@@ -117,13 +132,13 @@ class Gift(Portal):
         await self.publish("mc.lambda", dumps(f))
 
 
-        chat = textwrap.wrap(chat, 16, max_lines=2, placeholder='...')
+        chat = textwrap.wrap(chat, 16, max_lines=2, placeholder='..')
 
         
         if len(chat) == 1:
-            cmd = """/summon text_display ~ ~ ~ {alignment:"center",Tags:["gifters_chat"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[2f,2f,1f]},text:'{"text":"$text","font":"uniform","color":"#1C1B18","bold":true}',background:16711680}"""
+            cmd = """/summon text_display ~ ~ ~ {alignment:"center",Tags:["gifters_chat"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.94f,2f,1f]},text:'{"text":"$text","font":"uniform","color":"#1C1B18","bold":true}',background:16711680}"""
             cmd = cmd.replace("/summon", "summon")
-            cmd = cmd.replace("~ ~ ~", str(CHAT_TEXT.offset(x=-0.05,y=0.35)))
+            cmd = cmd.replace("~ ~ ~", str(CHAT_TEXT.offset(x=-0.08,y=0.35)))
             cmd = cmd.replace("$text", chat[0])
             await self.publish("mc.post", cmd)
         else: 
@@ -150,42 +165,27 @@ class Gift(Portal):
     
     async def on_gift(self, user):
         
-        if self.current_gifter["npc_id"] != None:
-            cmd = f"npc remove {self.current_gifter['npc_id']}"
-            await self.publish("mc.post", cmd)
-
+        await self.remove_gifter()
         self.current_yaw = 0
         await self.spawn_gifter(user)
     
     async def loop(self):
-        def compute_position(x, y, angle, distance):
-            angle_rad = math.radians(angle)
-            new_x = x + distance * math.cos(angle_rad)
-            new_y = y + distance * math.sin(angle_rad)
-            return (new_x, new_y)
-        
     
         while True:
-            #nametag:
-            nametag_x, nametag_z = compute_position(CHARACTER.x, CHARACTER.z +0.7, self.current_yaw + 15, 0.1)
-            cmd = f"tp @e[tag=gifters_name] {nametag_x} {CHARACTER.y + 1} {nametag_z}"
-            await self.publish("mc.post", cmd)
+            await asyncio.sleep(0.1)
 
             #turntable
-            if self.current_gifter["npc_id"] == None:
-                await asyncio.sleep(0.1)
-                continue
-            
-            cmd = f"npc moveto --yaw {self.current_yaw} --id {self.current_gifter['npc_id']}"
-            await self.publish("mc.post", cmd)
-            await asyncio.sleep(0.1)
-            self.current_yaw += 3
-            rand = random.uniform(0, 1)
-            if rand < 0.1:
-                cmd = f"particle minecraft:electric_spark {PARTICLES} 0.2 0.45 0.2 0 1"
+            if self.current_gifter["npc_id"] != None:
+                cmd = f"npc moveto --yaw {self.current_yaw} --id {self.current_gifter['npc_id']}"
                 await self.publish("mc.post", cmd)
-            if self.current_yaw > 360:
-                self.current_yaw = 0
+                
+                self.current_yaw += 3
+                rand = random.uniform(0, 1)
+                if rand < 0.1:
+                    cmd = f"particle minecraft:electric_spark {PARTICLES} 0.2 0.45 0.2 0 1"
+                    await self.publish("mc.post", cmd)
+                if self.current_yaw > 360:
+                    self.current_yaw = 0
 
             #chat
             if self.chat_spawn_time != None:
