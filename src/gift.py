@@ -39,25 +39,30 @@ class Gift(Portal):
         await self.subscribe("live.gift", self.on_gift)
         await self.subscribe("live.comment", self.on_comment)
         await self.subscribe("gift.spawn_platform", self.spawn_platform)
+        await self.subscribe("gift.remove_platform", self.remove_platform)
         await self.subscribe("gift.spawn_gifter", self.spawn_gifter)
         await self.subscribe("gift.remove_gifter", self.remove_gifter)
         await self.subscribe("gift.spawn_chat", self.spawn_chat)
         await self.subscribe("gift.remove_chat", self.remove_chat)
+        await self.subscribe("live.comment", self.on_comment)
     
         # can't use because we don't keep the npc id between reloads
         # if self.current_gifter['npc_id'] != None:
         #     await self.publish("mc.post", f"npc remove {self.current_gifter['npc_id']}")
         await self.publish("mc.post", f"npc remove all")
-        await self.publish("mc.post", remove_model("gifters_platform"))
         await self.publish("mc.post", "kill @e[tag=gifters_name]")
+        await self.remove_platform()
         await self.spawn_platform()
         await self.loop()
-        
+    
+    async def on_comment(self, user):
+        if self.current_gifter["user"] != None:
+            if user['user_id'] == self.current_gifter["user"]['user_id']:
+                await self.spawn_chat(user['comment'])
 
         
-        
-        
-        
+    async def remove_platform(self):
+        await self.publish("mc.post", remove_model("gifters_platform"))
         
     async def spawn_platform(self):
         print("spawn platform")
@@ -157,11 +162,6 @@ class Gift(Portal):
     async def remove_chat(self):
         cmd = 'kill @e[tag=gifters_chat]'
         await self.publish("mc.post", cmd)
-
-    
-    async def on_comment(self, user):
-        if user["user_id"] == self.current_gifter["user"]["user_id"]:
-            cmd = ...
     
     async def on_gift(self, user):
         
@@ -182,14 +182,14 @@ class Gift(Portal):
                 self.current_yaw += 3
                 rand = random.uniform(0, 1)
                 if rand < 0.1:
-                    cmd = f"particle minecraft:electric_spark {PARTICLES} 0.2 0.45 0.2 0 1"
+                    cmd = f"particle minecraft:electric_spark {PARTICLES} 0.2 0.45 0.2 0 2"
                     await self.publish("mc.post", cmd)
                 if self.current_yaw > 360:
                     self.current_yaw = 0
 
             #chat
             if self.chat_spawn_time != None:
-                if time.time() - self.chat_spawn_time > 5:
+                if time.time() - self.chat_spawn_time > 10:
                     await self.remove_chat()
                     self.chat_spawn_time = None
         
