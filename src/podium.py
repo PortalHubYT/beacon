@@ -47,11 +47,9 @@ class Podium(Portal):
         await self.subscribe("podium.remove", self.remove_podium)
         await self.subscribe("gl.reload_config", self.reload_config)
 
-
     async def reload_config(self):
         importlib.reload(tools.config)
         self.config = tools.config.config
-
 
     async def fake_win(self, num):
         
@@ -148,18 +146,17 @@ class Podium(Portal):
         await self.publish("mc.post", "kill @e[type=!player,tag=podium]")
         self.winners = []
  
-
     async def remove_podium(self):
         for winner in self.winners:
             await self.publish("mc.post", f"npc remove {winner}")
         await self.publish("mc.post", "kill @e[type=!player,tag=podium]")
+        await self.publish("mc.post", "kill @e[type=!player,tag=podium_sign]")
     
     async def update_signs(self, viewer_count):
         cmd = f"data merge entity @e[tag=text1,limit=1] {{text:'{{\"bold\":true,\"text\":\"{viewer_count}\"}}'}}"
         await self.publish("mc.post", cmd)
         cmd = f"data merge entity @e[tag=text2,limit=1] {{text:'{{\"bold\":true,\"text\":\"{1 + viewer_count/1000:.1f}x\"}}'}}"
         await self.publish("mc.post", cmd)
-
 
     async def build_signs(self):
         def spawn_sign(sign):
@@ -189,12 +186,6 @@ class Podium(Portal):
         players_sign = AnimatedSign(origin.offset(y=16.2), "spruce_planks", "1.0x", "boost", "2")
         f = lambda: spawn_sign(players_sign)
         await self.publish("mc.lambda", dumps(f))
-
-
-
-            
-
-    
 
     async def reload_podium(self):
         await self.remove_podium()
