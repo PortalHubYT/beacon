@@ -15,3 +15,4 @@ src/tools/png/*
 /venv_skrib/
 src/long_msgs.txt
 src/short_msgs.txt
+src/sound_test.py
