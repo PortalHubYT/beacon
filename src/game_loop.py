@@ -58,7 +58,7 @@ class GameLoop(Portal):
         await self.subscribe("painter.svg_ready", self.on_svg_ready)
         await self.subscribe("painter.joined", self.on_painter_joined)
         await self.subscribe("live.viewer_update", self.toggle_winstreak)
-        await self.subscribe("gl.pause", self.toggle_pause)
+        # await self.subscribe("gl.pause", self.toggle_pause)
         await self.subscribe("live.viewer_update", self.viewer_update)
 
         await self.subscribe("gl.clear_map", self.clear_map)
@@ -312,9 +312,10 @@ class GameLoop(Portal):
             await self.publish("mc.post", cmd)
             
 
-        await self.publish(
-            "podium.spawn_winner", (len(self.winners)-1, user["display"], score, points_won)
-        )
+        if len(self.winners) <= 5:
+            await self.publish(
+                "podium.spawn_winner", (len(self.winners)-1, user["display"], score, points_won)
+            )
 
     async def change_next_word(self, word):
         print(word)
