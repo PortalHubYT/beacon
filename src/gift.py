@@ -80,7 +80,8 @@ class Gift(Portal):
     async def spawn_gifter(self, user):
         print("spawn gifter")
         def spawn_gifter(name, pos):
-            cmd = f'npc create --at {pos}:world --nameplate false {name}'
+            import uuid
+            cmd = f'npc create --at {pos}:world --nameplate false {uuid.uuid4()}'
             
             ret = mc.post(cmd)
             ret = (
@@ -92,6 +93,7 @@ class Gift(Portal):
             id = ret.split("ID ")[1].replace(").", "")
             
             mc.post(f"npc gravity --id {id}")
+            mc.post(f"npc skin {name} --id {id}")
             time.sleep(0.05)
             return id
         
@@ -122,6 +124,8 @@ class Gift(Portal):
             await self.publish("mc.post", cmd)
             cmd = f"kill @e[tag=gifters_name]"
             await self.publish("mc.post", cmd)
+            
+            await self.remove_chat()
         
     
     async def spawn_chat(self, chat):
@@ -162,6 +166,7 @@ class Gift(Portal):
     async def remove_chat(self):
         cmd = 'kill @e[tag=gifters_chat]'
         await self.publish("mc.post", cmd)
+        self.chat_spawn_time = None
     
     async def on_gift(self, user):
         
@@ -181,17 +186,17 @@ class Gift(Portal):
                 
                 self.current_yaw += 3
                 rand = random.uniform(0, 1)
-                if rand < 0.1:
-                    cmd = f"particle minecraft:electric_spark {PARTICLES} 0.2 0.45 0.2 0 2"
+                if rand < 0.2:
+                    cmd = f"particle minecraft:electric_spark {PARTICLES} 0.2 0.45 0.2 0 1"
                     await self.publish("mc.post", cmd)
-                if self.current_yaw > 360:
+                if self.current_yaw >= 360:
                     self.current_yaw = 0
 
             #chat
             if self.chat_spawn_time != None:
                 if time.time() - self.chat_spawn_time > 10:
                     await self.remove_chat()
-                    self.chat_spawn_time = None
+                    
         
 if __name__ == "__main__":
     action = Gift()
