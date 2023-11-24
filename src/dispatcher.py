@@ -112,7 +112,7 @@ class Dispatch(Portal):
         user = get_profile(event)
 
         await self.publish("db", ("add_new_user", user))
-        await self.publish("db", ("add_event", user, listener))
+        # await self.publish("db", ("add_event", user, listener))
         
         try:
             await self.publish(topic_prefix + listener, user)

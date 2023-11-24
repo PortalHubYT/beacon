@@ -284,42 +284,43 @@ class GameLoop(Portal):
 
         winstreak_amount = 0
 
-        if len(self.winners) <= 5 and await self.handle_winstreak(user):
-            winstreak_amount = next(
-                (
-                    item
-                    for item in self.winstreakers
-                    if item["user_id"] == user["user_id"]
-                ),
-                None,
-            )["count"]
-
-        multiplier = self.compute_winstreak_multiplier(winstreak_amount)
-        points_won = int(points_won * self.viewer_boost)
-        score = await self.call(
-            "db", ("add_and_get_user_score", int(points_won), user["user_id"])
-        )
-
-        if not score:
-            print(
-                f"-> Error: user_id [{user['user_id']}] nickname: [{user['display']}] was NOT FOUND in db, adding it now"
+        if len(self.winners) <= 5:
+            # if await self.handle_winstreak(user):
+            #     winstreak_amount = next(
+            #     (
+            #         item
+            #         for item in self.winstreakers
+            #         if item["user_id"] == user["user_id"]
+            #     ),
+            #     None,
+            # )["count"]
+                
+            # multiplier = self.compute_winstreak_multiplier(winstreak_amount)
+            
+            points_won = int(points_won * self.viewer_boost)
+            score = await self.call(
+                "db", ("add_and_get_user_score", int(points_won), user["user_id"])
             )
 
-            await self.publish("db", ("add_user", user))
-            score = points_won + random.randint(0, 100)
+            if not score:
+                print(
+                    f"-> Error: user_id [{user['user_id']}] nickname: [{user['display']}] was NOT FOUND in db, adding it now"
+                )
 
-        if (score % 100) - points_won < 0:
-            cmd = f"execute as @e[type=player] at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 0.2 2"
-            await self.publish("mc.post", cmd)
+                await self.publish("db", ("add_user", user))
+                score = points_won + random.randint(0, 100)
 
-            cmd = f'title {self.config.camera_name} subtitle {{"text":"For reaching {score} points","color":"gold"}}'
-            await self.publish("mc.post", cmd)
+            if (score % 100) - points_won < 0:
+                cmd = f"execute as @e[type=player] at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 0.2 2"
+                await self.publish("mc.post", cmd)
 
-            cmd = f'title {self.config.camera_name} title {{"text":"GG {user["display"]}","color":"gold"}}'
-            await self.publish("mc.post", cmd)
-            
+                cmd = f'title {self.config.camera_name} subtitle {{"text":"For reaching {score} points","color":"gold"}}'
+                await self.publish("mc.post", cmd)
 
-        if len(self.winners) <= 5:
+                cmd = f'title {self.config.camera_name} title {{"text":"GG {user["display"]}","color":"gold"}}'
+                await self.publish("mc.post", cmd)
+                
+
             # Announce winner in blue in chat
             cmd = f"tellraw @a [{{\"text\":\"{user['display']}\",\"color\":\"light_purple\"}},{{\"text\":\" guessed! +{points_won} ⭐!\",\"color\":\"gray\"}}]"
             await self.publish("mc.post", cmd)
