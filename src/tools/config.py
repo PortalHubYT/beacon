@@ -96,6 +96,9 @@ config_values = {
 }
 
 config_values["banned_words"] = [
+    "whisk",
+    "frog",
+    "hippopotamus",
     "alien",
     "penguin",
     "snowflake",
@@ -108,7 +111,8 @@ config_values["banned_words"] = [
     "beaver",
     "elephant",
     "mushroom",
-    "milk tank" "dinosaur",
+    "milk tank",
+    "dinosaur",
     "pig",
     "torpedo",
     "whale",

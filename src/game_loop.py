@@ -251,6 +251,13 @@ class GameLoop(Portal):
         return 1 + (winstreak / 10)
 
     async def on_comment(self, user):
+        comment_len = len(user["comment"].split(" "))
+        guess_len = comment_len if self.round_word == None else len(self.round_word.split(" "))
+        if (comment_len > 1 and comment_len != guess_len):
+            
+            cmd1 = f"tellraw @a [{{\"text\":\"[{user['display']}]\",\"color\":\"gold\"}},{{\"text\":\": {user['comment']}\",\"color\":\"white\"}}]"
+            await self.publish("mc.post", cmd1)
+        
         if user["comment"].lower() != self.round_word:
             print(f"[{self.round_word}] {user['display']}: {user['comment']}")
             return
@@ -288,9 +295,9 @@ class GameLoop(Portal):
             )["count"]
 
         multiplier = self.compute_winstreak_multiplier(winstreak_amount)
-
+        points_won = int(points_won * self.viewer_boost)
         score = await self.call(
-            "db", ("add_and_get_user_score", int(points_won * self.viewer_boost), user["user_id"])
+            "db", ("add_and_get_user_score", int(points_won), user["user_id"])
         )
 
         if not score:
@@ -302,7 +309,7 @@ class GameLoop(Portal):
             score = points_won + random.randint(0, 100)
 
         if (score % 100) - points_won < 0:
-            cmd = f"execute as @e[type=player] at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 5 2"
+            cmd = f"execute as @e[type=player] at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 0.2 2"
             await self.publish("mc.post", cmd)
 
             cmd = f'title {self.config.camera_name} subtitle {{"text":"For reaching {score} points","color":"gold"}}'
@@ -313,6 +320,9 @@ class GameLoop(Portal):
             
 
         if len(self.winners) <= 5:
+            # Announce winner in blue in chat
+            cmd = f"tellraw @a [{{\"text\":\"{user['display']}\",\"color\":\"light_purple\"}},{{\"text\":\" guessed! +{points_won} ⭐!\",\"color\":\"gray\"}}]"
+            await self.publish("mc.post", cmd)
             await self.publish(
                 "podium.spawn_winner", (len(self.winners)-1, user["display"], score, points_won)
             )
@@ -360,12 +370,17 @@ class GameLoop(Portal):
         await self.publish("podium.reset")
         await self.publish("timer.reset")
 
-    def print_word(self):
+    async def print_word(self):
         print("--------------------------------------")
         print(
             f"-> New round with: {self.word_filename} [{self.amount_of_words - len(self.word_list)}/{self.amount_of_words}]"
         )
 
+        cmd = "tellraw @a [\"\",{\"text\":\""
+        cmd += self.word_filename.replace(".svg", "")
+        cmd += f"\",\"color\":\"green\"}},{{\"text\":\" [{self.amount_of_words - len(self.word_list)}/{self.amount_of_words}]\",\"color\":\"white\"}}]"
+        await self.publish("mc.post", cmd)
+        
         # Get next 3 words from the list.
         next_words = self.word_list[:3]
 
@@ -380,10 +395,10 @@ class GameLoop(Portal):
     async def round(self):
         await asyncio.sleep(1)
         self.winners = []
-        self.print_word()
+        await self.print_word()
         self.round_word = self.upcoming_word
         hint = "".join(["_" if c.isalnum() else c for c in self.round_word])
-
+        
         self.painting_finished = False
         await self.publish("gl.paint_svg", self.round_word)
 

@@ -84,8 +84,6 @@ class Podium(Portal):
             print(mc.post(f"npc moveto --x {x - 2} --yaw 30 --id {id}"))
             return id
             
-
-
         def spawn_box(x, y, podium_pos, name, score, points, box_data=box_data):
 
             
@@ -127,6 +125,12 @@ class Podium(Portal):
 
         pos, name, score, points_won = args
 
+        if pos < 0:
+            print("-> Tried to spawn a winner at invalid position?")
+            pos = 20
+            
+        print(f"-> Spawning winner ({name}) at position {pos} with {points_won} points")
+            
         x = 7.0
         y = 72.5 - (pos * 2.5)
         f = lambda: spawn_box(x + 0.47, y, pos, name, score, points_won)
@@ -183,7 +187,7 @@ class Podium(Portal):
         f = lambda: spawn_sign(players_sign)
         await self.publish("mc.lambda", dumps(f))
 
-        players_sign = AnimatedSign(origin.offset(y=16.2), "spruce_planks", "1.0x", "boost", "2")
+        players_sign = AnimatedSign(origin.offset(y=16.2), "spruce_planks", "1.0x", "⭐ boost", "2")
         f = lambda: spawn_sign(players_sign)
         await self.publish("mc.lambda", dumps(f))
 

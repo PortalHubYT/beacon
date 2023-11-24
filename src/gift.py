@@ -51,6 +51,9 @@ class Gift(Portal):
         #     await self.publish("mc.post", f"npc remove {self.current_gifter['npc_id']}")
         await self.publish("mc.post", f"npc remove all")
         await self.publish("mc.post", "kill @e[tag=gifters_name]")
+        await self.publish("mc.post", "kill @e[tag=gifters_name]")
+        await self.publish("mc.post", "kill @e[tag=gifters_score]")
+        await self.publish("mc.post", "kill @e[tag=gifters_rank]")
         await self.remove_platform()
         await self.spawn_platform()
         await self.loop()
@@ -58,9 +61,8 @@ class Gift(Portal):
     async def on_comment(self, user):
         if self.current_gifter["user"] != None:
             if user['user_id'] == self.current_gifter["user"]['user_id']:
-                await self.spawn_chat(user['comment'])
-
-        
+                await self.spawn_chat(user)
+       
     async def remove_platform(self):
         await self.publish("mc.post", remove_model("gifters_platform"))
         
@@ -78,10 +80,17 @@ class Gift(Portal):
         await self.publish("mc.post", cmd)
 
     async def spawn_gifter(self, user):
-        print("spawn gifter")
-        def spawn_gifter(name, pos):
+
+        cmd = f"tellraw @a [\"\",{{\"text\":\"-> New gifter: \",\"color\":\"gray\"}},{{\"text\":\"{user['display']}\",\"color\":\"pink\"}}]"
+        await self.publish("mc.post", cmd)
+        
+        def spawn_gifter(name, character_pos, platform_pos):
             import uuid
-            cmd = f'npc create --at {pos}:world --nameplate false {uuid.uuid4()}'
+            
+            sound_cmd = "execute as @e[type=player] at @s run playsound minecraft:item.goat_horn.sound.1 master @s ~ ~ ~ 0.25 1.5"
+            mc.post(sound_cmd)
+            
+            cmd = f'npc create --at {character_pos}:world --nameplate false {uuid.uuid4()}'
             
             ret = mc.post(cmd)
             ret = (
@@ -95,40 +104,63 @@ class Gift(Portal):
             mc.post(f"npc gravity --id {id}")
             mc.post(f"npc skin {name} --id {id}")
             time.sleep(0.05)
+
+            particles_cmds = [
+                f"particle minecraft:cloud {str(platform_pos.offset(x=1, y=1.5, z=1.5))} 0 0.5 0 0.05 100",
+                f"particle minecraft:wax_off {str(platform_pos.offset(x=1, y=1.5, z=1.5))} 0.2 0.4 0.2 6 50"
+            ]
+            for cmd in particles_cmds:
+                mc.post(cmd)
+    
+            name_cmd = """summon text_display ~ ~ ~ {start_interpolation:0,interpolation_duration:20,shadow:1b,alignment:"center",Tags:["gifters_name"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.9f,1.9f,1f]},text:'{"text":"$text","font":"uniform","color":"white","bold":true}',background:838860800}"""
+            name_cmd = name_cmd.replace("~ ~ ~", str(platform_pos.offset(x=1.05, y=2, z=-1)))
+            name_cmd = name_cmd.replace("$text", name)
+            mc.post(name_cmd)
+            
             return id
         
-        cmd = f"particle minecraft:cloud {str(PLATFORM.offset(x=1, y=1.5, z=1.5))} 0 0.5 0 0.05 100"
-        await self.publish("mc.post", cmd)
-        particles_cmd = f"particle minecraft:wax_off {str(PLATFORM.offset(x=1, y=1.5, z=1.5))} 0.2 0.4 0.2 6 50"
-        await self.publish("mc.post", particles_cmd)
-        
         name = user['display']
-        pos = str(CHARACTER).replace(" ", ":")
-        f = lambda: spawn_gifter(name, pos)
+        character_pos = str(CHARACTER).replace(" ", ":")
+        platform_pos = PLATFORM
+        f = lambda: spawn_gifter(name, character_pos, platform_pos)
         self.current_gifter["npc_id"] = await self.call("mc.lambda", dumps(f))
-
-        
-
-        cmd = """/summon text_display ~ ~ ~ {start_interpolation:0,interpolation_duration:20,shadow:1b,alignment:"center",Tags:["gifters_name"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.9f,1.9f,1f]},text:'{"text":"$text","font":"uniform","color":"white","bold":true}',background:838860800}"""
-        cmd = cmd.replace("/summon", "summon")
-        cmd = cmd.replace("~ ~ ~", str(PLATFORM.offset(x=1.05, y=2, z=-1)))
-        cmd = cmd.replace("$text", name)
-        await self.publish("mc.post", cmd)
-
-        
         self.current_gifter["user"] = user
-    
+        
+        data = await self.call(
+            "db", ("get_user_score_and_rank", user["user_id"])
+        )
+        score = data[1]
+        
+        score_text = f"{score}⭐"
+        
+        cmd = """summon text_display ~ ~ ~ {start_interpolation:0,interpolation_duration:20,shadow:1b,alignment:"center",Tags:["gifters_score"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.9f,1.9f,1f]},text:'{"text":"$text","font":"default","color":"gold","bold":true}',background:838860800}"""
+        cmd = cmd.replace("~ ~ ~", str(PLATFORM.offset(x=1.05, y=2.5, z=-1)))
+        cmd = cmd.replace("$text", score_text)
+        await self.publish("mc.post", cmd)
+        
+        rank = data[2]
+        rank_text = f"Rank: #{rank}"
+        cmd = """summon text_display ~ ~ ~ {start_interpolation:0,interpolation_duration:20,shadow:1b,alignment:"center",Tags:["gifters_rank"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.9f,1.9f,1f]},text:'{"text":"$text","font":"default","color":"yellow","bold":false}',background:838860800}"""
+        cmd = cmd.replace("~ ~ ~", str(PLATFORM.offset(x=1.05, y=3, z=-1)))
+        cmd = cmd.replace("$text", rank_text)
+        await self.publish("mc.post", cmd)
+        
     async def remove_gifter(self):
         if self.current_gifter["npc_id"] != None:
             cmd = f"npc remove {self.current_gifter['npc_id']}"
             await self.publish("mc.post", cmd)
             cmd = f"kill @e[tag=gifters_name]"
             await self.publish("mc.post", cmd)
+            cmd = f"kill @e[tag=gifters_score]"
+            await self.publish("mc.post", cmd)
+            cmd = f"kill @e[tag=gifters_rank]"
+            await self.publish("mc.post", cmd)
             
             await self.remove_chat()
         
-    
-    async def spawn_chat(self, chat):
+    async def spawn_chat(self, user):
+        chat = user['comment']
+        
         await self.remove_chat()
         self.chat_spawn_time = time.time()
 
@@ -136,6 +168,7 @@ class Gift(Portal):
         def spawn_bubble(cmds):
             for cmd in cmds:
                 print(mc.post(cmd))
+        
         cmds = get_spawn_commands("gifters_chat", CHAT_BUBBLE)
         f = lambda: spawn_bubble(cmds)
         await self.publish("mc.lambda", dumps(f))
@@ -143,14 +176,13 @@ class Gift(Portal):
 
         chat = textwrap.wrap(chat, 16, max_lines=2, placeholder='..')
 
-        
         if len(chat) == 1:
             cmd = """/summon text_display ~ ~ ~ {alignment:"center",Tags:["gifters_chat"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.94f,2f,1f]},text:'{"text":"$text","font":"uniform","color":"#1C1B18","bold":true}',background:16711680}"""
             cmd = cmd.replace("/summon", "summon")
             cmd = cmd.replace("~ ~ ~", str(CHAT_TEXT.offset(x=-0.08,y=0.35)))
             cmd = cmd.replace("$text", chat[0])
             await self.publish("mc.post", cmd)
-        else: 
+        else:
             cmd = """/summon text_display ~ ~ ~ {alignment:"center",Tags:["gifters_chat"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.7f,1.7f,1f]},text:'{"text":"$text","font":"uniform","color":"#1C1B18","bold":true}',background:16711680}"""
             cmd = cmd.replace("/summon", "summon")
             cmd = cmd.replace("~ ~ ~", str(CHAT_TEXT.offset(y=0.55)))
@@ -161,7 +193,20 @@ class Gift(Portal):
             cmd = cmd.replace("~ ~ ~", str(CHAT_TEXT.offset(y=0.2)))
             cmd = cmd.replace("$text", chat[1])
             await self.publish("mc.post", cmd)
-
+            
+        data = await self.call(
+            "db", ("get_user_score_and_rank", user["user_id"])
+        )
+        score = data[1]
+        score_text = f"{score}⭐"
+        rank = data[2]
+        rank_text = f"Rank: #{rank}"
+        update_score = """data modify entity @e[tag=gifters_score,limit=1,sort=nearest] text set value '{"text":"$rank_text","font":"default","color":"gold","bold":true}'"""
+        update_score = update_score.replace("$rank_text", score_text)
+        update_rank = """data modify entity @e[tag=gifters_rank,limit=1,sort=nearest] text set value '{"text":"$score_text","font":"default","color":"yellow","bold":false}'"""
+        update_rank = update_rank.replace("$score_text", rank_text)
+        await self.publish("mc.post", update_score)
+        await self.publish("mc.post", update_rank)
 
     async def remove_chat(self):
         cmd = 'kill @e[tag=gifters_chat]'
@@ -170,9 +215,15 @@ class Gift(Portal):
     
     async def on_gift(self, user):
         
-        await self.remove_gifter()
-        self.current_yaw = 0
-        await self.spawn_gifter(user)
+        async def process_gift(user):
+            await self.remove_gifter()
+            self.current_yaw = 0
+            await self.spawn_gifter(user)
+            
+        if self.current_gifter["user"] == None:
+            await process_gift(user)
+        elif user['user_id'] != self.current_gifter["user"]['user_id']:
+            await process_gift(user)
     
     async def loop(self):
     

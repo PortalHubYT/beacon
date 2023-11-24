@@ -1,5 +1,9 @@
 import string
+
 from .config import config
+
+# from custom_skin import custom_skins
+
 
 
 def pick_display(nickname, unique_id):
@@ -49,20 +53,27 @@ def role_parser(event):
 
 
 def get_profile(event):
+    display_name = pick_display(event.user.nickname, event.user.unique_id)
+    # custom_skin = custom_skins.get(event.user.unique_id, None)
+    custom_skin = display_name
     profile = {
-        "display": pick_display(event.user.nickname, event.user.unique_id),
-        "nickname": event.user.nickname,
-        "unique_id": event.user.unique_id,
-        "user_id": event.user.user_id,
+        "display": display_name, # Curated display name between nickname and unique_id, shortened and sanitized
+        "skin_display": display_name if custom_skin == None else custom_skin, # Actual skin to use for the display name
+        "nickname": event.user.nickname, # Visual name seen in TikTok
+        "unique_id": event.user.unique_id, # @name in TikTok
+        "user_id": event.user.user_id, # Hidden to view, actual unique ID of the user (825582808 kinda stuff)
         "role": role_parser(event),
         "avatars": event.user.avatar.urls,
         "followers": event.user.info.followers,
         "following": event.user.info.following,
         "comment": None if "comment" not in vars(event) else event.comment,
         "gift": None if "gift" not in vars(event) else event.gift.info.name,
-        "gift_value": None
-        if "gift" not in vars(event)
-        else event.gift.info.diamond_count,
+        "gift_value": None if "gift" not in vars(event) else event.gift.info.diamond_count,
+        "gift_streakable": None if "gift" not in vars(event) else event.gift.streakable,
     }
 
+    if profile["gift"] and profile["gift_streakable"]:
+        profile["gift_streaking"] = event.gift.streaking
+        profile["gift_count"] = event.gift.count
+    
     return profile
