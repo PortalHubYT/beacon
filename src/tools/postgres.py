@@ -445,17 +445,7 @@ class StreamDB(PostgresDB):
 
     @function_logger
     def get_user_score_and_rank(self, user_id):
-        sql = f"WITH RankedUsers AS ( \
-                SELECT \
-                    user_id, \
-                    score, \
-                    RANK() OVER (ORDER BY score DESC) as rank \
-                FROM \
-                    users \
-                ) \
-                SELECT * FROM RankedUsers WHERE user_id = '{user_id}'; \
-        "
-        
+        sql = f"WITH RankedUsers AS (SELECT user_id, score, RANK() OVER (ORDER BY score DESC) as rank FROM users ) SELECT * FROM RankedUsers WHERE user_id = '{user_id}';"
         ret = self.get(sql, (user_id,), one=True)
         return ret
         

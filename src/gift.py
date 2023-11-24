@@ -216,6 +216,7 @@ class Gift(Portal):
     async def on_gift(self, user):
         
         async def process_gift(user):
+            await self.publish("db", ("add_new_user", user))
             await self.remove_gifter()
             self.current_yaw = 0
             await self.spawn_gifter(user)

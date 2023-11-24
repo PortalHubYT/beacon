@@ -285,6 +285,9 @@ class GameLoop(Portal):
         winstreak_amount = 0
 
         if len(self.winners) <= 5:
+            
+            await self.publish("db", ("add_new_user", user))
+            
             # if await self.handle_winstreak(user):
             #     winstreak_amount = next(
             #     (
@@ -314,7 +317,8 @@ class GameLoop(Portal):
                 cmd = f"execute as @e[type=player] at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 0.2 2"
                 await self.publish("mc.post", cmd)
 
-                cmd = f'title {self.config.camera_name} subtitle {{"text":"For reaching {score} points","color":"gold"}}'
+                rounded_down_score = score - (score % 100)
+                cmd = f'title {self.config.camera_name} subtitle {{"text":"For reaching {rounded_down_score} points","color":"gold"}}'
                 await self.publish("mc.post", cmd)
 
                 cmd = f'title {self.config.camera_name} title {{"text":"GG {user["display"]}","color":"gold"}}'
