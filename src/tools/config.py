@@ -165,7 +165,14 @@ config_values["banned_words"] = [
     "sperm",
     "sheep",
     "pizza cutter",
-    "tart"
+    "tart",
+    "clown fish",
+    "poodle",
+    "clownfish",
+    "wild pig",
+    "cracker",
+    "sperm",
+    "back",
 ]
 
 

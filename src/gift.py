@@ -30,7 +30,8 @@ class Gift(Portal):
     async def on_join(self):
         self.current_gifter = {
             "npc_id": None,
-            "user": None
+            "user": None,
+            "clones": []
         }
         
         self.current_yaw = 0
@@ -51,7 +52,7 @@ class Gift(Portal):
         #     await self.publish("mc.post", f"npc remove {self.current_gifter['npc_id']}")
         await self.publish("mc.post", f"npc remove all")
         await self.publish("mc.post", "kill @e[tag=gifters_name]")
-        await self.publish("mc.post", "kill @e[tag=gifters_name]")
+        await self.publish("mc.post", "kill @e[tag=gifters_chat]")
         await self.publish("mc.post", "kill @e[tag=gifters_score]")
         await self.publish("mc.post", "kill @e[tag=gifters_rank]")
         await self.remove_platform()
@@ -76,7 +77,7 @@ class Gift(Portal):
         cmd = """/summon text_display ~ ~ ~ {start_interpolation:0,interpolation_duration:20,line_width:100,alignment:"center",Tags:["gifters_platform"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[1.3f,1.3f,1f]},text:'{"text":"$text","color":"#630E55","bold":true}',background:16711680}"""
         cmd = cmd.replace("/summon", "summon")
         cmd = cmd.replace("~ ~ ~", str(PLATFORM.offset(x=0.85, y=0.3, z=2)))
-        cmd = cmd.replace("$text", "GIFTER")
+        cmd = cmd.replace("$text", "DONATOR")
         await self.publish("mc.post", cmd)
 
     async def spawn_gifter(self, user):
@@ -124,6 +125,7 @@ class Gift(Portal):
         platform_pos = PLATFORM
         f = lambda: spawn_gifter(name, character_pos, platform_pos)
         self.current_gifter["npc_id"] = await self.call("mc.lambda", dumps(f))
+        print(f"npc id: {self.current_gifter['npc_id']}")
         self.current_gifter["user"] = user
         
         data = await self.call(
@@ -157,6 +159,11 @@ class Gift(Portal):
             await self.publish("mc.post", cmd)
             
             await self.remove_chat()
+            
+            for clone in self.current_gifter["clones"]:
+                await self.publish("mc.post", f"npc remove {clone}")
+            
+            self.current_gifter["clones"] = []
         
     async def spawn_chat(self, user):
         chat = user['comment']
@@ -208,6 +215,10 @@ class Gift(Portal):
         await self.publish("mc.post", update_score)
         await self.publish("mc.post", update_rank)
 
+        for clone in self.current_gifter["clones"]:
+            cmd = f"npc jump --id {clone}"
+            await self.publish("mc.post", cmd)
+            
     async def remove_chat(self):
         cmd = 'kill @e[tag=gifters_chat]'
         await self.publish("mc.post", cmd)
@@ -218,14 +229,44 @@ class Gift(Portal):
         async def process_gift(user):
             await self.publish("db", ("add_new_user", user))
             await self.remove_gifter()
+            await asyncio.sleep(0.3)
             self.current_yaw = 0
             await self.spawn_gifter(user)
+        
+        def spawn_clone(clone_name):
+            cmd = f'npc create --at -2:64:14:world --nameplate true {clone_name}'
             
+            ret = mc.post(cmd)
+            ret = (
+                ret.replace("\x1b[0m", "")
+                .replace("\x1b[32;1m", "")
+                .replace("\x1b[33;1m", "")
+                .replace("\n", "")
+            )
+            id = ret.split("ID ")[1].replace(").", "")
+            
+            print("###" * 20, ret, "###" * 20)
+            ret = mc.post(f"npc skin {clone_name} --id {id}")
+            print("###" * 20, ret, "###" * 20)
+            ret = mc.post(f"npc wander --id {id}")
+            print("###" * 20, ret, "###" * 20)
+            time.sleep(0.05)
+            
+            return id
+        
         if self.current_gifter["user"] == None:
             await process_gift(user)
         elif user['user_id'] != self.current_gifter["user"]['user_id']:
             await process_gift(user)
+        elif user['user_id'] == self.current_gifter["user"]['user_id']:
+            clone_name = user['display']
+            f = lambda: spawn_clone(clone_name)
+            id = await self.call("mc.lambda", dumps(f))
+            self.current_gifter["clones"].append(id)
     
+        print(f"Received gift from {user['display']}")
+        print(f"Gifter's clones: {self.current_gifter['clones']}")
+        
     async def loop(self):
     
         while True:

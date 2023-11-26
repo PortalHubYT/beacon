@@ -94,6 +94,7 @@ class Dispatch(Portal):
             error_msg = f"(in dispatcher.py) An error occurred: {event}"
             print(error_msg)
             logging.error(error_msg)
+            exit("-> Exiting...")
 
         return client
 
@@ -109,7 +110,11 @@ class Dispatch(Portal):
 
         start = time.time()
         
-        user = get_profile(event)
+        try:
+            user = get_profile(event)
+        except:
+            print(f"-> Failed to parse {event}")
+            return
 
         # await self.publish("db", ("add_new_user", user))
         # await self.publish("db", ("add_event", user, listener))

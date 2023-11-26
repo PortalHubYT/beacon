@@ -126,8 +126,8 @@ class Podium(Portal):
         pos, name, score, points_won = args
 
         if pos < 0:
-            print("-> Tried to spawn a winner at invalid position?")
             pos = 20
+            print("-> Tried to spawn a winner at position 0, spawning at 20 instead")
             
         print(f"-> Spawning winner ({name}) at position {pos} with {points_won} points")
             
