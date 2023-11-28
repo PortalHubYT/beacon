@@ -52,12 +52,11 @@ class GameLoop(Portal):
         await self.subscribe("gl.reset_camera", self.place_camera)
         await self.subscribe("gl.reset_arena", self.reset_arena)
         await self.subscribe("gl.next_round", self.next_round)
-        await self.subscribe("gl.fake_win", self.fake_win)
         await self.subscribe("painter.finished", self.on_painting_finished)
         await self.subscribe("gl.change_next_word", self.change_next_word)
         await self.subscribe("painter.svg_ready", self.on_svg_ready)
         await self.subscribe("painter.joined", self.on_painter_joined)
-        await self.subscribe("live.viewer_update", self.toggle_winstreak)
+        # await self.subscribe("live.viewer_update", self.toggle_winstreak)
         # await self.subscribe("gl.pause", self.toggle_pause)
         await self.subscribe("live.viewer_update", self.viewer_update)
 
@@ -134,13 +133,6 @@ class GameLoop(Portal):
     async def on_svg_ready(self):
         print("-> SVG is ready")
         self.svg_ready = True
-
-    async def fake_win(self):
-        fake_winner = gen_fake_profiles(1)[0]
-        fake_winner["comment"] = self.round_word
-        fake_winner["display"] = fake_winner["display"][2:]
-        print(f"[{self.round_word}]----> Correct guess from [{fake_winner['display']}]")
-        await self.on_comment(fake_winner)
 
     async def next_round(self):
         print("-> Skipped to next round")
@@ -400,6 +392,8 @@ class GameLoop(Portal):
     async def round(self):
         await asyncio.sleep(1)
         self.winners = []
+        await self.publish("gl.new_round")
+        
         await self.print_word()
         self.round_word = self.upcoming_word
         hint = "".join(["_" if c.isalnum() else c for c in self.round_word])
@@ -450,6 +444,7 @@ class GameLoop(Portal):
         await asyncio.sleep(4.5)
 
         await self.publish("gl.clear_svg")
+        await self.publish("gl.round_over")
 
     async def toggle_pause(self):
         if self.pause:
