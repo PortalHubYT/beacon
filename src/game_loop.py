@@ -305,17 +305,20 @@ class GameLoop(Portal):
                 await self.publish("db", ("add_user", user))
                 score = points_won + random.randint(0, 100)
 
-            if (score % 100) - points_won < 0:
-                cmd = f"execute as @e[type=player] at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 0.2 2"
-                await self.publish("mc.post", cmd)
+            for step in self.config.celebration_steps[::-1]:
+                if score  - points_won < step and score >= step:
+                    cmd = f"execute as @e[type=player] at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 0.2 2"
+                    await self.publish("mc.post", cmd)
 
-                rounded_down_score = score - (score % 100)
-                cmd = f'title {self.config.camera_name} subtitle {{"text":"For reaching {rounded_down_score} points","color":"gold"}}'
-                await self.publish("mc.post", cmd)
+                    rounded_down_score = score - (score % 100)
+                    cmd = f'title {self.config.camera_name} subtitle {{"text":"For reaching {step} points","color":"gold"}}'
+                    await self.publish("mc.post", cmd)
 
-                cmd = f'title {self.config.camera_name} title {{"text":"GG {user["display"]}","color":"gold"}}'
-                await self.publish("mc.post", cmd)
-                
+                    cmd = f'title {self.config.camera_name} title {{"text":"GG {user["display"]}","color":"gold"}}'
+                    await self.publish("mc.post", cmd)
+                    print(f"CELEBRATION score before:{score - points_won}, after:{score}, step {step}")
+
+                    break
 
             # Announce winner in blue in chat
             cmd = f"tellraw @a [{{\"text\":\"{user['display']}\",\"color\":\"light_purple\"}},{{\"text\":\" guessed! +{points_won} ⭐!\",\"color\":\"gray\"}}]"
