@@ -12,6 +12,7 @@ import shulker as mc
 from dill import dumps
 
 import tools.config
+from tools.custom_skin import custom_skins
 from tools.mimic import gen_fake_profiles
 from tools.pulsar import Portal
 from tools.svg import get_word_list
@@ -243,6 +244,10 @@ class GameLoop(Portal):
         return 1 + (winstreak / 10)
 
     async def on_comment(self, user):
+        
+        if user["unique_id"] in custom_skins:
+            user["display"] = custom_skins[user["unique_id"]]
+            
         comment_len = len(user["comment"].split(" "))
         guess_len = comment_len if self.round_word == None else len(self.round_word.split(" "))
         if (comment_len > 1 and comment_len != guess_len):
@@ -307,10 +312,9 @@ class GameLoop(Portal):
 
             for step in self.config.celebration_steps[::-1]:
                 if score  - points_won < step and score >= step:
-                    cmd = f"execute as @e[type=player] at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 0.2 2"
+                    cmd = f"execute as @e[type=player] at @s run playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1 2"
                     await self.publish("mc.post", cmd)
 
-                    rounded_down_score = score - (score % 100)
                     cmd = f'title {self.config.camera_name} subtitle {{"text":"For reaching {step} points","color":"gold"}}'
                     await self.publish("mc.post", cmd)
 
